@@ -515,7 +515,8 @@ using (
 create policy "hourly_insert_published"
 on public.pm_hourly_production for insert to authenticated
 with check (
-  recorded_by = (select auth.uid())
+  public.pm_current_role() in ('admin', 'supervisor', 'operator')
+  and recorded_by = (select auth.uid())
   and exists (
     select 1 from public.pm_production_plans p
     where p.id = plan_id and p.status = 'published'
