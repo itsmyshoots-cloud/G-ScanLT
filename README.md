@@ -7,7 +7,7 @@ This repository is the development/staging project for the Production Management
 - UI baseline: Production Management V6.1 (individual rework resolution).
 - V6.1 is currently a standalone HTML prototype and stores data in the browser's \`localStorage\` key \`productionManagementV4\`.
 - The Supabase schema in \`supabase/migrations\` is the first backend migration.
-- The V6.1 UI is **not yet connected** to this database. Do not use the standalone prototype for live multi-user production.
+- The V6.1 UI source HTML is still maintained in the separately delivered V6.1 prototype archive and has **not yet been committed to this repository**. The backend migration in this repository is not connected to that UI yet. Do not use the standalone prototype for live multi-user production.
 
 ## Stack
 
