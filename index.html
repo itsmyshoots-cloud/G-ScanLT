@@ -1384,15 +1384,11 @@ function planForm(p=null){
   updatePlanTotal();modal.classList.remove('hidden');
 }
 function pModelLookup(b,x){return productModels[b+'|'+x]||'';}function openPlanModal(){planForm();}function editPlan(id){planForm(plans.find(function(x){return String(x.id)===String(id);}));}function updatePlanProducts(selected){
-  var product=document.getElementById('pproduct');if(!product)return;
-  var current=selected||product.value;
-  product.innerHTML='<option value="">Select product</option>'+pmProductNames.map(x=>'<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>').join('');
-  product.value=pmProductNames.includes(current)?current:'';
+  var field=document.getElementById('pproduct');
+  if(field&&selected)field.value=selected;
 }function updatePlanModels(selected){
-  var model=document.getElementById('pmodel');if(!model)return;
-  var current=selected||model.value;
-  model.innerHTML='<option value="">Select model number</option>'+pmModelNumbers.map(x=>'<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>').join('');
-  model.value=pmModelNumbers.includes(current)?current:'';
+  var field=document.getElementById('pmodel');
+  if(field&&selected)field.value=selected;
 }
 function updatePlanTotal(){let total=[...document.querySelectorAll('.targetqty')].reduce((sum,x)=>sum+Math.max(0,Number(x.value)||0),0);let el=document.getElementById('planTotal');if(el)el.textContent=total;}function fillAllHourlyTargets(value){let qty=Math.max(0,Number(value)||0);document.querySelectorAll('.targetqty').forEach(x=>x.value=qty);updatePlanTotal();}
 function rebuildHourlyPlan(){
@@ -1915,17 +1911,18 @@ function printReportPDF(){window.print();}
 function exportReportCSV(){let rows=[...document.querySelectorAll('#reportTable tr')].map(tr=>[...tr.querySelectorAll('th,td')].map(c=>'"'+c.innerText.replaceAll('"','""')+'"').join(','));let blob=new Blob([rows.join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='production-report.csv';a.click();URL.revokeObjectURL(url);toast('CSV exported');}
 function refreshProductOptions(){
   var brands=pmBrandNames.slice(),products=pmProductNames.slice(),models=pmModelNumbers.slice();
-  function fillSelect(id,values,label){
+  function fillSelect(id,values,label,firstValue){
     var el=document.getElementById(id);if(!el)return;
     var keep=el.value;
-    el.innerHTML='<option value="'+(label==='All brands'||label==='All products'?'':'all')+'">'+label+'</option>'+
+    el.innerHTML='<option value="'+firstValue+'">'+label+'</option>'+
       values.map(function(x){return '<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>';}).join('');
     if(values.includes(keep))el.value=keep;
+    else el.value=firstValue;
   }
-  fillSelect('overviewBrandFilter',brands,'All brands');
-  fillSelect('overviewProductFilter',products,'All products');
-  fillSelect('reportBrand',brands,'All brands');
-  fillSelect('reportProduct',products,'All products');
+  fillSelect('overviewBrandFilter',brands,'All brands','');
+  fillSelect('overviewProductFilter',products,'All products','');
+  fillSelect('reportBrand',brands,'All brands','all');
+  fillSelect('reportProduct',products,'All products','all');
   [
     ['pmBrandOptions',brands],['pmProductOptions',products],['pmModelOptions',models]
   ].forEach(function(pair){
