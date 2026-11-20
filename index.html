@@ -63,16 +63,22 @@
 </section>
 
 <section id="rework" class="page hidden"><div class="pagehead"><div><h1>Rework Workspace</h1><div class="sub">Resolve rejected units individually and retain their disposition history</div></div></div>
-<div class="panel"><div class="paneltitle"><h3>Rework Filters</h3><span>Filter rejection records by production plan and disposition</span></div><div class="filters reworkfilters">
-<label class="sub" for="reworkDate">Production date</label><input class="input" type="date" id="reworkDate" onchange="renderRework()"><button class="btn" type="button" onclick="clearReworkDate()">Clear date</button>
-<select class="select" id="reworkPlanStatus" onchange="renderRework()"><option value="all">All plan statuses</option><option value="Published">Published</option><option value="Completed">Completed</option><option value="Draft">Draft</option></select>
-<select class="select" id="reworkLine" onchange="renderRework()"><option value="all">All lines</option></select>
-<select class="select" id="reworkBrand" onchange="renderRework()"><option value="all">All brands</option></select>
-<select class="select" id="reworkProduct" onchange="renderRework()"><option value="all">All products</option></select>
-<select class="select" id="reworkModel" onchange="renderRework()"><option value="all">All models</option></select>
-<select class="select" id="reworkShift" onchange="renderRework()"><option value="all">All shifts</option></select>
-<select class="select" id="reworkResolutionStatus" onchange="renderRework()"><option value="all">All resolution statuses</option><option value="Pending">Pending</option><option value="Completed">Reworked / Completed</option><option value="Finally Rejected">Finally Rejected</option></select>
-</div></div><div class="cards" id="reworkKpis"></div><div class="panel"><div class="paneltitle"><h3>Production plans with rejection</h3><span id="reworkCount"></span></div><div class="report-table-scroll"><table id="reworkTable"><thead></thead><tbody></tbody></table></div></div></section>
+<div class="panel rework-filter-panel">
+<div class="paneltitle rework-filter-heading"><div><h3>Rework Filters</h3><span class="sub">Narrow rejected units by production date, line or resolution</span></div><button class="btn rework-reset" type="button" onclick="resetReworkFilters()">Reset filters</button></div>
+<div class="rework-primary-filters">
+<div class="rework-filter-field"><label for="reworkDate">Production date</label><input class="input" type="date" id="reworkDate" onchange="renderRework()"></div>
+<div class="rework-filter-field"><label for="reworkLine">Production line</label><select class="select" id="reworkLine" onchange="renderRework()"><option value="all">All lines</option></select></div>
+<div class="rework-filter-field"><label for="reworkResolutionStatus">Resolution</label><select class="select" id="reworkResolutionStatus" onchange="renderRework()"><option value="all">All resolutions</option><option value="Pending">Pending</option><option value="Completed">Reworked / Completed</option><option value="Finally Rejected">Finally Rejected</option></select></div>
+<div class="rework-filter-field"><label for="reworkPlanStatus">Plan status</label><select class="select" id="reworkPlanStatus" onchange="renderRework()"><option value="all">All plan statuses</option><option value="Published">Published</option><option value="Completed">Completed</option><option value="Draft">Draft</option></select></div>
+</div>
+<details class="rework-advanced-filter-details" id="reworkAdvancedFilters"><summary><span>More filters</span><span class="rework-advanced-count" id="reworkAdvancedCount">Optional filters</span></summary>
+<div class="rework-advanced-filters">
+<div class="rework-filter-field"><label for="reworkBrand">Brand</label><select class="select" id="reworkBrand" onchange="renderRework()"><option value="all">All brands</option></select></div>
+<div class="rework-filter-field"><label for="reworkProduct">Product</label><select class="select" id="reworkProduct" onchange="renderRework()"><option value="all">All products</option></select></div>
+<div class="rework-filter-field"><label for="reworkModel">Model</label><select class="select" id="reworkModel" onchange="renderRework()"><option value="all">All models</option></select></div>
+<div class="rework-filter-field"><label for="reworkShift">Shift</label><select class="select" id="reworkShift" onchange="renderRework()"><option value="all">All shifts</option></select></div>
+</div></details>
+</div><div class="cards" id="reworkKpis"></div><div class="panel"><div class="paneltitle"><h3>Production plans with rejection</h3><span id="reworkCount"></span></div><div class="report-table-scroll"><table id="reworkTable"><thead></thead><tbody></tbody></table></div></div></section>
 </div></main></div>
 <div id="modal" class="modalback hidden"><div class="modal"><h2>Create Production Plan</h2><div class="formgrid"><div class="field"><label>Production Date</label><input id="pdate" type="date" value=""/></div><div class="field"><label>Shift</label><select id="pshift"><option>Shift 1</option><option>Shift 2</option><option>Shift 3</option></select></div><div class="field"><label>Production Line</label><select id="pline"><option>Line 1</option><option>Line 2</option><option>Line 3</option></select></div><div class="field"><label>Brand</label><select id="pbrand" onchange="updatePlanProducts()"><option value="">Select brand</option><option>Gerat</option><option>Cuisino</option><option>Kabel</option></select></div><div class="field"><label>Product</label><select id="pproduct"><option value="">Select product</option></select></div><div class="field"><label>Model Number</label><input id="pmodel" placeholder="Model / SKU" value="${p?.model||''}"/></div><div class="field"><label>Planned Quantity</label><input id="pqty" type="number" min="1" placeholder="Quantity"/></div><div class="field"><label>Start Time</label><input id="pstart" type="time" value="09:00"/></div><div class="field"><label>End Time</label><input id="pend" type="time" value="17:00"/></div><div class="field"><label>Supervisor</label><input id="psuper" placeholder="Supervisor name"/></div></div><div class="modalactions"><button class="btn" onclick="closePlanModal()">Cancel</button><button class="btn primary" onclick="savePlan()">Save plan</button></div></div></div><div class="toast" id="toast"></div>
 <script defer src="js/app.js"></script>
