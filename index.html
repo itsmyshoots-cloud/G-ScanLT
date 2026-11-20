@@ -1775,13 +1775,150 @@ html,body{max-width:100%;overflow-x:hidden}
   }
 }
 
+
+/* V7.7 Fixed desktop navigation rail + Overview filter toolbar */
+@media(min-width:761px){
+  .app{
+    display:block!important;
+    position:relative!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:100vh!important;
+    overflow:visible!important;
+  }
+  .sidebar{
+    position:fixed!important;
+    top:0!important;left:0!important;right:auto!important;bottom:0!important;
+    width:238px!important;min-width:238px!important;max-width:238px!important;
+    height:100vh!important;min-height:100vh!important;
+    margin:0!important;
+    overflow-x:hidden!important;overflow-y:auto!important;
+    align-self:auto!important;
+    z-index:1200!important;
+  }
+  .main{
+    display:block!important;
+    position:relative!important;
+    width:calc(100% - 238px)!important;
+    max-width:calc(100% - 238px)!important;
+    min-width:0!important;
+    margin:0 0 0 238px!important;
+    padding:0!important;
+    flex:none!important;
+    overflow-x:clip!important;
+  }
+  .main>.topbar{
+    position:sticky!important;top:0!important;
+    width:100%!important;max-width:none!important;
+  }
+  .main>.content{
+    display:block!important;
+    width:100%!important;max-width:1600px!important;
+    margin:0 auto!important;
+    padding:26px clamp(22px,2vw,34px) 42px!important;
+    box-sizing:border-box!important;
+  }
+  #overview.page,#plans.page,#operator.page,#reports.page,#rework.page,#pmAdmin.page{
+    width:100%!important;max-width:none!important;min-width:0!important;
+    margin:0!important;padding:0!important;box-sizing:border-box!important;
+  }
+  #overview.page.hidden,#plans.page.hidden,#operator.page.hidden,
+  #reports.page.hidden,#rework.page.hidden,#pmAdmin.page.hidden{display:none!important}
+}
+@media(min-width:761px) and (max-width:1050px){
+  .sidebar{width:205px!important;min-width:205px!important;max-width:205px!important}
+  .main{
+    width:calc(100% - 205px)!important;max-width:calc(100% - 205px)!important;
+    margin-left:205px!important;
+  }
+  .main>.content{padding:22px 20px 36px!important}
+}
+@media(max-width:760px){
+  .app{display:block!important;width:100%!important;min-height:100vh!important;overflow-x:hidden!important}
+  .sidebar{
+    position:fixed!important;left:0!important;right:0!important;top:auto!important;bottom:0!important;
+    width:100%!important;min-width:0!important;max-width:none!important;
+    height:calc(66px + env(safe-area-inset-bottom))!important;
+    min-height:0!important;margin:0!important;z-index:1200!important;
+  }
+  .main{
+    display:block!important;position:relative!important;
+    width:100%!important;max-width:100%!important;min-width:0!important;
+    margin:0!important;padding:0!important;flex:none!important;overflow-x:hidden!important;
+  }
+  .main>.content{
+    width:100%!important;max-width:none!important;margin:0!important;
+    padding:14px 12px calc(96px + env(safe-area-inset-bottom))!important;
+    box-sizing:border-box!important;
+  }
+  #overview.page,#plans.page,#operator.page,#reports.page,#rework.page,#pmAdmin.page{
+    width:100%!important;max-width:none!important;min-width:0!important;
+    margin:0!important;padding:0!important;box-sizing:border-box!important;
+  }
+  #overview.page.hidden,#plans.page.hidden,#operator.page.hidden,
+  #reports.page.hidden,#rework.page.hidden,#pmAdmin.page.hidden{display:none!important}
+}
+@media(max-width:390px){
+  .main>.content{padding-left:10px!important;padding-right:10px!important}
+}
+
+/* Put Overview filters immediately beneath the title as a compact toolbar. */
+#overview .overview-filter-details{
+  display:block;width:100%;min-width:0;
+  margin:0 0 16px;
+  padding:0;
+  border:1px solid var(--line);
+  border-radius:13px;
+  background:#fff;
+  overflow:visible;
+}
+#overview .overview-filter-details>summary{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;min-height:54px;padding:13px 16px;
+  cursor:pointer;list-style:none;
+}
+#overview .overview-filter-details>summary::-webkit-details-marker{display:none}
+#overview .overview-filter-details>summary:after{
+  content:"+";display:flex;align-items:center;justify-content:center;
+  flex:0 0 26px;width:26px;height:26px;border-radius:8px;
+  background:#edf4ff;color:var(--blue);font-size:19px;font-weight:600;
+}
+#overview .overview-filter-details[open]>summary:after{content:"−"}
+#overview .overview-filter-details>summary>span{
+  color:var(--ink);font-size:13px;font-weight:700;white-space:nowrap;
+}
+#overview .overview-filter-details>summary>small{
+  margin-left:auto;color:var(--muted);font-size:11px;line-height:1.35;text-align:right;
+}
+#overview .overview-filter-controls{
+  display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:10px;padding:0 14px 14px;margin:0;
+}
+#overview .overview-filter-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+#overview .overview-filter-field>span{font-size:10px;color:var(--muted);font-weight:600}
+#overview .overview-filter-field .input,
+#overview .overview-filter-field .select{width:100%;min-width:0;height:42px}
+#overview .overview-filter-details[open]{box-shadow:0 5px 18px rgba(20,40,70,.045)}
+@media(max-width:900px){
+  #overview .overview-filter-controls{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  #overview .overview-filter-details{margin:0 0 12px}
+  #overview .overview-filter-details>summary{min-height:50px;padding:11px 12px;gap:8px}
+  #overview .overview-filter-details>summary>span{font-size:12px}
+  #overview .overview-filter-details>summary>small{font-size:9px;max-width:48%;white-space:normal}
+  #overview .overview-filter-controls{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:0 11px 11px}
+  #overview .overview-filter-field .input,#overview .overview-filter-field .select{height:42px;font-size:13px}
+}
+@media(max-width:370px){
+  #overview .overview-filter-details>summary>small{display:none}
+  #overview .overview-filter-controls{grid-template-columns:minmax(0,1fr)}
+}
+
 </style></head><body>
 <div class="app"><aside class="sidebar"><div class="brand">Production Management<small>OPERATIONS CONTROL</small></div><div class="navlabel">WORKSPACE</div><nav class="nav" aria-label="Main navigation"><button class="active" data-page="overview"><span class="ico">▦</span><span>Overview</span></button><button data-page="plans"><span class="ico">▤</span><span>Production Plans</span></button><button data-page="operator"><span class="ico">◉</span><span>Operator</span></button><button data-page="reports"><span class="ico">▧</span><span>Reports</span></button><button data-page="rework"><span class="ico">↻</span><span>Rework</span></button></nav><div class="sidebottom">Production Control · V6 update</div></aside>
 <main class="main"><header class="topbar"><div class="crumb" id="crumb">Overview</div><div class="user"><div class="avatar">SP</div><div><strong style="color:#263449">Supervisor</strong><br/>Production Control</div></div></header><div class="content">
 <section id="overview" class="page"><div class="pagehead overview-heading"><div><h1>Production Overview</h1><div class="sub">Live production performance across all lines</div></div></div>
-<div class="cards"><div class="card"><div class="klabel">Today's Planned</div><div class="kvalue">300</div><div class="kfoot">Units across 3 lines</div></div><div class="card"><div class="klabel">Actual Produced</div><div class="kvalue">242</div><div class="kfoot good">80.7% of daily target</div></div><div class="card"><div class="klabel">Remaining</div><div class="kvalue">58</div><div class="kfoot">Units to plan</div></div><div class="card"><div class="klabel">Rejections</div><div class="kvalue">6</div><div class="kfoot">Recorded at shift close</div></div></div>
-<div class="panel plan-status-panel"><div class="paneltitle"><h3>Production Plan Status</h3><span id="overviewPlanStatusCount">Loading plans…</span></div><div id="overviewPlanStatusCards" class="plan-status-grid"></div></div>
-<div class="overview-main"><div class="panel overview-chart-panel"><div class="paneltitle"><div class="overview-chart-heading"><h3>Hourly Plan vs Actual</h3><span class="chart-subtitle">Live · Units per hour · Right-click or long-press to share</span></div><button class="btn chart-export-trigger" type="button" onclick="shareOverviewReport()">Share / Download</button></div><div class="legend"><span><i class="dot" style="background:#3978f6"></i>Planned</span><span><i class="dot" style="background:#18a66b"></i>Actual</span></div><div id="overviewBarChart" class="chart" role="img" aria-label="Hourly planned versus actual production bar chart" tabindex="0"></div><div id="overviewChartPlanDetails" class="overview-chart-plan-details"></div><div id="chartExportMenu" class="chart-export-menu hidden" role="menu"><button type="button" onclick="downloadOverviewReport()">Download WhatsApp PNG</button><button type="button" onclick="shareOverviewReport()">Share report</button></div></div>
 <details class="overview-filter-details">
   <summary><span>Set date & filters</span><small>Choose production date, shift, line, brand or product</small></summary>
   <div class="filters overview-filter-controls">
@@ -1792,6 +1929,11 @@ html,body{max-width:100%;overflow-x:hidden}
     <label class="overview-filter-field"><span>Product</span><select class="select" id="overviewProductFilter" onchange="refreshOverview()"><option>All products</option></select></label>
   </div>
 </details>
+
+<div class="cards"><div class="card"><div class="klabel">Today's Planned</div><div class="kvalue">300</div><div class="kfoot">Units across 3 lines</div></div><div class="card"><div class="klabel">Actual Produced</div><div class="kvalue">242</div><div class="kfoot good">80.7% of daily target</div></div><div class="card"><div class="klabel">Remaining</div><div class="kvalue">58</div><div class="kfoot">Units to plan</div></div><div class="card"><div class="klabel">Rejections</div><div class="kvalue">6</div><div class="kfoot">Recorded at shift close</div></div></div>
+<div class="panel plan-status-panel"><div class="paneltitle"><h3>Production Plan Status</h3><span id="overviewPlanStatusCount">Loading plans…</span></div><div id="overviewPlanStatusCards" class="plan-status-grid"></div></div>
+<div class="overview-main"><div class="panel overview-chart-panel"><div class="paneltitle"><div class="overview-chart-heading"><h3>Hourly Plan vs Actual</h3><span class="chart-subtitle">Live · Units per hour · Right-click or long-press to share</span></div><button class="btn chart-export-trigger" type="button" onclick="shareOverviewReport()">Share / Download</button></div><div class="legend"><span><i class="dot" style="background:#3978f6"></i>Planned</span><span><i class="dot" style="background:#18a66b"></i>Actual</span></div><div id="overviewBarChart" class="chart" role="img" aria-label="Hourly planned versus actual production bar chart" tabindex="0"></div><div id="overviewChartPlanDetails" class="overview-chart-plan-details"></div><div id="chartExportMenu" class="chart-export-menu hidden" role="menu"><button type="button" onclick="downloadOverviewReport()">Download WhatsApp PNG</button><button type="button" onclick="shareOverviewReport()">Share report</button></div></div>
+
 <div class="panel"><div class="paneltitle"><h3>Line Production Summary</h3><span>Click a plan for details</span></div><div class="table-scroll"><table><thead><tr><th>LINE</th><th>PRODUCT</th><th>PLAN</th><th>ACTUAL</th><th>ACHIEVEMENT</th><th>STATUS</th></tr></thead><tbody id="lineSummaryBody"></tbody></table></div></div></div>
 </div></section>
 <section id="plans" class="page hidden"><div class="pagehead"><div><h1>Production Plans</h1><div class="sub">Create, publish and monitor production plans</div></div><div class="filters"><button class="btn primary" onclick="openPlanModal()">＋ Create plan</button></div></div><div class="filters" style="margin-bottom:16px"><select class="select"><option>All plan status</option><option>Draft</option><option>Published</option><option>Completed</option></select><select class="select"><option>All lines</option><option>Line 1</option><option>Line 2</option><option>Line 3</option></select><input class="input" type="date" value="2026-11-19"/></div><div class="planlist" id="planlist"></div></section>
