@@ -1117,7 +1117,22 @@ function submitHour(id,h){
   renderOverviewChart();renderReports();renderPlans();renderOperator();openExecution(id);
   toast(alreadySaved?'Super-admin correction saved':'Hourly production record saved and locked');
 }
-function closeShift(id){let p=plans.find(x=>x.id===id);if(!hours.every((_,i)=>!!p.entries?.[i])){toast('Record all hourly entries before closing shift');return}p.status='Completed';toast('Shift closed and plan completed');renderOperator();renderPlans();renderOverviewChart();renderReports();document.getElementById('execution').classList.add('hidden');}
+
+async function closeShift(id){
+  const p=plans.find(x=>String(x.id)===String(id));
+  if(!p)return toast('Production plan not found');
+  if(!planHourTargets(p).every((_,i)=>!!p.entries?.[i])){
+    toast('Record all eight hourly entries before closing shift');return;
+  }
+  try{
+    const result=await pmRequireDb().rpc('pm_close_plan',{p_plan_id:id});
+    if(result.error)throw result.error;
+    const execution=document.getElementById('execution');
+    if(execution)execution.classList.add('hidden');
+    await pmReloadProductionData();
+    toast('Shift closed in Supabase');
+  }catch(error){toast('Could not close shift: '+error.message);}
+}
 function timeSlots(start,end){let [sh,sm]=start.split(':').map(Number),[eh,em]=end.split(':').map(Number),mins=sh*60+sm,endmins=eh*60+em,slots=[];for(let t=mins;t<endmins;t+=60){let a=t,b=Math.min(t+60,endmins);slots.push(`${String(Math.floor(a/60)).padStart(2,'0')}:${String(a%60).padStart(2,'0')}–${String(Math.floor(b/60)).padStart(2,'0')}:${String(b%60).padStart(2,'0')}`)}return slots;}
 
 function todayLocalDate(){
@@ -1137,14 +1152,156 @@ function planForm(p=null){editingPlanId=p?.id??null;let slots=timeSlots(p?.start
 function pModelLookup(b,x){return productModels[b+'|'+x]||'';}function openPlanModal(){planForm();}function editPlan(id){planForm(plans.find(x=>x.id===id));}function updatePlanProducts(selected=''){let brand=document.getElementById('pbrand'),prod=document.getElementById('pproduct');if(!brand||!prod)return;let list=Object.keys(brandProducts[brand.value]||{});prod.innerHTML='<option value="">Select product</option>'+list.map(x=>`<option value="${x}" ${x===selected?'selected':''}>${x}</option>`).join('');prod.onchange=()=>updatePlanModels();if(selected&&list.includes(selected))prod.value=selected;updatePlanModels();}function updatePlanModels(selected=''){let brand=document.getElementById('pbrand')?.value,product=document.getElementById('pproduct')?.value,model=document.getElementById('pmodel');if(!model)return;let raw=brandProducts[brand]?.[product]||[];let list=Array.isArray(raw)?raw:(raw?[String(raw)]:[]);model.innerHTML='<option value="">Select model number</option>'+list.map(x=>`<option value="${x}" ${x===selected?'selected':''}>${x}</option>`).join('');if(!selected&&list.length===1)model.value=list[0];}
 function updatePlanTotal(){let total=[...document.querySelectorAll('.targetqty')].reduce((sum,x)=>sum+Math.max(0,Number(x.value)||0),0);let el=document.getElementById('planTotal');if(el)el.textContent=total;}function fillAllHourlyTargets(value){let qty=Math.max(0,Number(value)||0);document.querySelectorAll('.targetqty').forEach(x=>x.value=qty);updatePlanTotal();}
 function rebuildHourlyPlan(){let start=document.getElementById('pstart').value,end=document.getElementById('pend').value,slots=timeSlots(start,end),container=document.getElementById('hourtargetfields'),defaultQty=Math.max(0,Number(document.getElementById('defaultHourlyQty')?.value)||0);if(!container)return;container.innerHTML=slots.map(slot=>`<div class="field"><label>${slot}</label><input class="targetqty" type="number" min="0" value="${defaultQty}"/></div>`).join('');container.querySelectorAll('.targetqty').forEach(x=>x.addEventListener('input',updatePlanTotal));updatePlanTotal();}
-function savePlan(){let brand=document.getElementById('pbrand').value,product=document.getElementById('pproduct').value.trim(),model=document.getElementById('pmodel').value.trim(),targets=[...document.querySelectorAll('.targetqty')].map(x=>Math.max(0,Number(x.value)||0)),qty=targets.reduce((a,b)=>a+b,0);if(!brand||!product||!model||qty<=0){toast('Select brand, product, model number and assign hourly quantities');return}let data={date:document.getElementById('pdate').value,shift:document.getElementById('pshift').value,line:document.getElementById('pline').value,brand,product,model:document.getElementById('pmodel')?.value.trim()||product,qty,start:document.getElementById('pstart').value,end:document.getElementById('pend').value,supervisor:document.getElementById('psuper').value,hourTargets:targets};if(editingPlanId){let p=plans.find(x=>x.id===editingPlanId);Object.assign(p,data);}else plans.unshift({id:Date.now(),...data,status:'Draft',actual:0,rejection:0,entries:{}});editingPlanId=null;closePlanModal();syncAll();toast('Plan saved');}
-function publishPlan(id){let p=plans.find(x=>x.id===id);p.status='Published';syncAll();toast('Plan published');}
+
+async function savePlan(){
+  const button=document.querySelector('#modal .modalactions .btn.primary');
+  if(button){button.disabled=true;button.textContent='Saving…';}
+  try{
+    const brand=document.getElementById('pbrand').value.trim();
+    const product=document.getElementById('pproduct').value.trim();
+    const model=document.getElementById('pmodel').value.trim();
+    const date=document.getElementById('pdate').value;
+    const shift=document.getElementById('pshift').value;
+    const line=document.getElementById('pline').value;
+    const start=document.getElementById('pstart').value;
+    const end=document.getElementById('pend').value;
+    const supervisor=document.getElementById('psuper').value.trim();
+    const targets=Array.from(document.querySelectorAll('.targetqty')).map(x=>Math.max(0,Number(x.value)||0));
+    const slots=timeSlots(start,end);
+    const qty=targets.reduce((a,b)=>a+b,0);
+    if(!date||!brand||!product||!model||qty<=0){
+      toast('Select production date, brand, product, model and hourly quantities');
+      return;
+    }
+    if(slots.length!==8||targets.length!==8){
+      toast('Production plans must contain exactly eight hourly slots (for example, 09:00–17:00).');
+      return;
+    }
+    const db=pmRequireDb();
+    const result=await db.rpc('pm_save_production_plan',{
+      p_plan_id:editingPlanId||null,
+      p_plan_date:date,
+      p_shift:shift,
+      p_line:line,
+      p_brand_name:brand,
+      p_product_name:product,
+      p_model_number:model,
+      p_planned_qty:qty,
+      p_start_time:start,
+      p_end_time:end,
+      p_supervisor_name:supervisor||null,
+      p_hour_targets:slots.map((label,i)=>({hour_label:label,planned_qty:targets[i]}))
+    });
+    if(result.error)throw result.error;
+    const savedId=result.data;
+    editingPlanId=null;
+    closePlanModal();
+    await pmReloadProductionData();
+    toast('Production plan saved to Supabase');
+    if(savedId)document.getElementById('plans')?.scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(error){
+    toast('Could not save plan: '+error.message);
+  }finally{
+    if(button){button.disabled=false;button.textContent='Save plan';}
+  }
+}
+
+async function publishPlan(id){
+  try{
+    const result=await pmRequireDb().rpc('pm_publish_plan',{p_plan_id:id});
+    if(result.error)throw result.error;
+    await pmReloadProductionData();
+    toast('Plan published in Supabase');
+  }catch(error){toast('Could not publish plan: '+error.message);}
+}
 function viewPlan(id){let p=plans.find(x=>x.id===id);if(!p)return;let accepted=p.actual-p.rejection;let body=hours.map((h,i)=>`<tr><td>${h}</td><td>${planHourTargets(p)[i]||0}</td><td>${getHourlyActual(p,i)}</td><td>${getHourlyRejected(p,i)}</td><td>${getHourlyActual(p,i)-getHourlyRejected(p,i)}</td></tr>`).join('');document.getElementById('modal').innerHTML=`<div class="modal" style="width:min(900px,100%);max-height:90vh;overflow:auto"><div class="paneltitle"><h2>Production Plan Details</h2><span class="pill">${p.status}</span></div><h3 style="margin:0 0 5px">${p.line} · ${p.brand||'Unbranded'} · ${p.product} · ${p.model||p.product}</h3><div class="sub">${p.date} · ${p.shift} · ${p.start}–${p.end} · ${p.supervisor||'Unassigned'}</div><div class="detailgrid" style="margin-top:16px"><div class="detailbox"><div class="klabel">Planned</div><div class="num">${p.qty}</div></div><div class="detailbox"><div class="klabel">Actual</div><div class="num">${p.actual}</div></div><div class="detailbox"><div class="klabel">Rejected · Accepted</div><div class="num">${p.rejection} · ${accepted}</div></div></div><div class="panel"><div class="paneltitle"><h3>Hourly Plan & Production</h3></div><div class="report-table-scroll"><table><thead><tr><th>Hour</th><th>Plan</th><th>Actual</th><th>Rejected</th><th>Accepted</th></tr></thead><tbody>${body}</tbody></table></div></div><div class="modalactions"><button class="btn" onclick="closePlanModal()">Close</button><button class="btn primary" onclick="editPlan(${p.id})">Edit plan</button></div></div>`;document.getElementById('modal').classList.remove('hidden');}
 function closePlanModal(){let modal=document.getElementById('modal');modal.classList.add('hidden');modal.classList.remove('modalback-rework');editingPlanId=null;}
-function addBrandInline(){let b=prompt('Enter new brand name');if(!b)return;b=b.trim();if(!b)return;if(brandProducts[b])return toast('Brand already exists');brandProducts[b]={};let sel=document.getElementById('pbrand');sel.insertAdjacentHTML('beforeend',`<option value="${b}">${b}</option>`);sel.value=b;updatePlanProducts();persistAppData();toast('Brand added');}
-function addProductInline(){let b=document.getElementById('pbrand')?.value;if(!b)return toast('Select a brand first');let x=prompt('Enter product name for '+b);if(!x)return;x=x.trim();if(!x)return;let m=prompt('Enter model number for '+x);if(!m)return;m=m.trim();if(!m)return;if(!brandProducts[b][x])brandProducts[b][x]=[];if(brandProducts[b][x].includes(m))return toast('Product/model already exists');brandProducts[b][x].push(m);persistAppData();updatePlanProducts(x);updatePlanModels(m);toast('Product and model added');}
-function addModelInline(){let b=document.getElementById('pbrand')?.value,x=document.getElementById('pproduct')?.value;if(!b||!x)return toast('Select brand and product first');let m=prompt('Enter model number for '+x);if(!m)return;m=m.trim();if(!m)return;if((brandProducts[b][x]||[]).includes(m))return toast('Model already exists');brandProducts[b][x].push(m);persistAppData();updatePlanModels(m);toast('Model number added');}
-function closeShift(id){let p=plans.find(x=>x.id===id);if(!hours.every((_,i)=>!!p.entries?.[i]))return toast('Record all hourly entries before closing shift');p.status='Completed';syncAll();document.getElementById('execution').classList.add('hidden');toast('Shift closed');}
+
+async function addBrandInline(){
+  let name=prompt('Enter new brand name');
+  if(!name)return;
+  name=name.trim();if(!name)return;
+  if(brandProducts[name])return toast('Brand already exists');
+  try{
+    const result=await pmRequireDb().from('pm_brands')
+      .insert({name:name,created_by:window.pmCurrentUserId||null})
+      .select('id,name').single();
+    if(result.error)throw result.error;
+    await pmReloadProductionData();
+    const select=document.getElementById('pbrand');
+    if(select){select.value=name;updatePlanProducts();}
+    toast('Brand saved to Supabase');
+  }catch(error){toast('Could not add brand: '+error.message);}
+}
+
+async function addProductInline(){
+  const brandName=document.getElementById('pbrand')?.value;
+  if(!brandName)return toast('Select a brand first');
+  let productName=prompt('Enter product name for '+brandName);
+  if(!productName)return;
+  productName=productName.trim();if(!productName)return;
+  let modelNumber=prompt('Enter model number for '+productName);
+  if(!modelNumber)return;
+  modelNumber=modelNumber.trim();if(!modelNumber)return;
+  try{
+    const db=pmRequireDb();
+    const brandResult=await db.from('pm_brands').select('id').eq('name',brandName).single();
+    if(brandResult.error)throw brandResult.error;
+    const productResult=await db.from('pm_products')
+      .insert({brand_id:brandResult.data.id,name:productName,created_by:window.pmCurrentUserId||null})
+      .select('id,name').single();
+    if(productResult.error)throw productResult.error;
+    const modelResult=await db.from('pm_models')
+      .insert({product_id:productResult.data.id,model_number:modelNumber,created_by:window.pmCurrentUserId||null})
+      .select('id,model_number').single();
+    if(modelResult.error)throw modelResult.error;
+    await pmReloadProductionData();
+    const brandSelect=document.getElementById('pbrand');if(brandSelect)brandSelect.value=brandName;
+    updatePlanProducts(productName);updatePlanModels(modelNumber);
+    toast('Product and model saved to Supabase');
+  }catch(error){toast('Could not add product/model: '+error.message);}
+}
+
+async function addModelInline(){
+  const brandName=document.getElementById('pbrand')?.value;
+  const productName=document.getElementById('pproduct')?.value;
+  if(!brandName||!productName)return toast('Select brand and product first');
+  let modelNumber=prompt('Enter model number for '+productName);
+  if(!modelNumber)return;
+  modelNumber=modelNumber.trim();if(!modelNumber)return;
+  try{
+    const db=pmRequireDb();
+    const brandResult=await db.from('pm_brands').select('id').eq('name',brandName).single();
+    if(brandResult.error)throw brandResult.error;
+    const productResult=await db.from('pm_products').select('id')
+      .eq('brand_id',brandResult.data.id).eq('name',productName).single();
+    if(productResult.error)throw productResult.error;
+    const result=await db.from('pm_models')
+      .insert({product_id:productResult.data.id,model_number:modelNumber,created_by:window.pmCurrentUserId||null})
+      .select('id,model_number').single();
+    if(result.error)throw result.error;
+    await pmReloadProductionData();
+    const b=document.getElementById('pbrand');if(b)b.value=brandName;
+    updatePlanProducts(productName);updatePlanModels(modelNumber);
+    toast('Model saved to Supabase');
+  }catch(error){toast('Could not add model: '+error.message);}
+}
+
+async function closeShift(id){
+  const p=plans.find(x=>String(x.id)===String(id));
+  if(!p)return toast('Production plan not found');
+  if(!planHourTargets(p).every((_,i)=>!!p.entries?.[i])){
+    toast('Record all eight hourly entries before closing shift');return;
+  }
+  try{
+    const result=await pmRequireDb().rpc('pm_close_plan',{p_plan_id:id});
+    if(result.error)throw result.error;
+    const execution=document.getElementById('execution');
+    if(execution)execution.classList.add('hidden');
+    await pmReloadProductionData();
+    toast('Shift closed in Supabase');
+  }catch(error){toast('Could not close shift: '+error.message);}
+}
 function clearReworkDate(){const field=window.document.querySelector('#reworkDate');if(field)field.value='';renderRework();}
 function normalizeReworkItems(entry){
   if(!entry)return [];
