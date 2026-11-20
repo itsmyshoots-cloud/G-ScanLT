@@ -1015,7 +1015,8 @@ function renderRework(){
     return `<tr><td>${escapeHtml(p.date||'—')}</td><td>${escapeHtml(p.status||'—')}</td><td>${escapeHtml(p.line||'—')}</td><td>${escapeHtml(p.brand||'—')}</td><td>${escapeHtml(p.product||'—')} / ${escapeHtml(p.model||'—')}</td><td>${Number(p.qty)||0}</td><td>${Number(p.actual)||0}</td><td>${rej}</td><td>${pend}</td><td>${done}</td><td>${final}</td><td><button class="btn primary" onclick="openReworkPlan('${p.id}')">Rework</button></td></tr>`;
   }).join('')||'<tr><td colspan="12" class="rework-empty">No rejected production matches these filters.</td></tr>'
   var advanced=document.getElementById('reworkAdvancedCount');
-  if(advanced){var active=[brandForProducts!=='all',selectedProduct!=='all',selectedModel!=='all',shift!=='all'].filter(Boolean).length;advanced.textContent=active?active+' active':'Optional filters';};
+  if(advanced){var active=[brandForProducts!=='all',selectedProduct!=='all',selectedModel!=='all',shift!=='all'].filter(Boolean).length;advanced.textContent=active?active+' active':'Optional filters';}
+}
 function resetReworkFilters(){
   ['reworkDate','reworkPlanStatus','reworkLine','reworkBrand','reworkProduct','reworkModel','reworkShift','reworkResolutionStatus'].forEach(function(id){
     var el=document.getElementById(id);
