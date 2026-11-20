@@ -1311,168 +1311,23 @@ function clearReportFilters(){
 }
 function filteredReportPlans(){
   var from=document.getElementById('reportFrom')?.value||'',to=document.getElementById('reportTo')?.value||'';
-  var brand=document.getElementById('reportBrand')?.value||'all';
-  var product=document.getElementById('reportProduct')?.value||'all';
-  var model=document.getElementById('reportModel')?.value||'all';
-  var line=document.getElementById('reportLine')?.value||'all';
-  var shift=document.getElementById('reportShift')?.value||'all';
-  return plans.filter(function(p){
-    return (!from||p.date>=from)&&(!to||p.date<=to)&&
-      (brand==='all'||p.brand===brand)&&(product==='all'||p.product===product)&&
-      (model==='all'||p.model===model)&&(line==='all'||p.line===line)&&(shift==='all'||p.shift===shift);
-  });
+  var brand=document.getElementById('reportBrand')?.value||'all',product=document.getElementById('reportProduct')?.value||'all',model=document.getElementById('reportModel')?.value||'all',line=document.getElementById('reportLine')?.value||'all',shift=document.getElementById('reportShift')?.value||'all';
+  return plans.filter(function(p){return (!from||p.date>=from)&&(!to||p.date<=to)&&(brand==='all'||p.brand===brand)&&(product==='all'||p.product===product)&&(model==='all'||p.model===model)&&(line==='all'||p.line===line)&&(shift==='all'||p.shift===shift);});
 }
 function renderReports(){
-  var filtered=filteredReportPlans();
-  var type=document.getElementById('reportType')?.value||'plan';
-  var groups=new Map();
-
-  function reasonQty(plan,reason){
-    return Object.values(plan.entries||{}).reduce(function(total,entry){
-      return total+(entry.reason===reason?(Number(entry.rejected)||0):0);
-    },0);
-  }
-  function keyFor(plan){
-    if(type==='day')return plan.date;
-    if(type==='line')return plan.line;
-    if(type==='model')return [plan.brand,plan.product,plan.model].filter(Boolean).join(' · ');
-    if(type==='rejection')return [plan.date,plan.line,plan.shift].join(' · ');
-    return plan.id;
-  }
-  filtered.forEach(function(p){
-    var key=keyFor(p),r=groups.get(key);
-    if(!r){
-      r={
-        id:p.id,key:type==='plan'?[p.date,p.shift,p.line].join(' · '):key,
-        date:p.date,shift:p.shift,line:p.line,brand:p.brand,product:p.product,model:p.model,
-        plan:0,actual:0,rejection:0,accepted:0,iqc:0,lqc:0,unclassified:0,
-        rework:0,pending:0,finalRejected:0,missing:0,achievement:0,
-        status:getPlanStatusLabel(p),plans:[]
-      };
-      groups.set(key,r);
-    }
-    r.plan+=Number(p.qty)||0;
-    r.actual+=Number(p.actual)||0;
-    r.rejection+=Number(p.rejection)||0;
-    r.accepted+=(Number(p.actual)||0)-(Number(p.rejection)||0);
-    r.iqc+=reasonQty(p,'IQC Rejection');
-    r.lqc+=reasonQty(p,'LQC Rejection');
-    r.unclassified+=Math.max(0,(Number(p.rejection)||0)-reasonQty(p,'IQC Rejection')-reasonQty(p,'LQC Rejection'));
-    r.rework+=sumRework(p,'Completed');
-    r.pending+=sumRework(p,'Pending');
-    r.finalRejected+=sumRework(p,'Finally Rejected');
-    r.missing+=Object.values(p.entries||{}).reduce(function(n,e){return n+(Number(e.missingSerialQty)||0);},0);
-    if(r.status!==getPlanStatusLabel(p))r.status='Mixed';
-    if(r.line!==p.line)r.line='Multiple';
-    if(r.shift!==p.shift)r.shift='Multiple';
-    if(r.brand!==p.brand)r.brand='Multiple';
-    if(r.product!==p.product)r.product='Multiple';
-    if(r.model!==p.model)r.model='Multiple';
-    if(r.date!==p.date)r.date='Multiple';
-    r.plans.push(p);
-  });
-  var rows=Array.from(groups.values()).map(function(r){
-    r.achievement=r.plan?Math.round(r.actual/r.plan*100):0;
-    return r;
-  }).sort(function(a,b){
-    if(type==='day')return String(b.date).localeCompare(String(a.date));
-    if(type==='plan')return String(b.date).localeCompare(String(a.date))||String(a.line).localeCompare(String(b.line));
-    return String(a.key).localeCompare(String(b.key));
-  });
-  var titles={plan:'Production plan register',day:'Daily production performance',line:'Line-wise production performance',model:'Product & model performance',rejection:'Rejection & rework register'};
-  var subtitles={
-    plan:'One row per production plan, including output and quality results.',
-    day:'Daily totals across the selected shifts and production lines.',
-    line:'Compare output, achievement and quality across production lines.',
-    model:'Compare output by product and model number.',
-    rejection:'Review rejected quantities, rejection categories, missing stickers and rework disposition.'
-  };
-  var count=document.getElementById('reportRowCount');if(count)count.textContent=rows.length+' '+(rows.length===1?'group':'groups');
-  var title=document.getElementById('reportTableTitle');if(title)title.textContent=titles[type]||titles.plan;
-  var sub=document.getElementById('reportTableSubtitle');if(sub)sub.textContent=subtitles[type]||subtitles.plan;
-  var visualTitle=document.getElementById('reportVisualTitle');if(visualTitle)visualTitle.textContent=type==='rejection'?'Quality and rework breakdown':'Production achievement';
-  var summary=document.getElementById('reportFilterSummary');
-  if(summary)summary.textContent=filtered.length+' plans included · '+(document.getElementById('reportFrom')?.value||'All dates')+' to '+(document.getElementById('reportTo')?.value||'Today');
-  var tableCount=document.getElementById('reportTableCount');if(tableCount)tableCount.textContent=rows.length+' report rows';
-  renderReportRows(rows,type);
+ var filtered=filteredReportPlans(),type=document.getElementById('reportType')?.value||'hourly',groups=new Map();
+ function reasonQty(plan,reason){return Object.values(plan.entries||{}).reduce(function(n,e){return n+(e.reason===reason?(Number(e.rejected)||0):0);},0);}
+ function makeKey(p,h){if(type==='hourly')return [p.date,p.shift,p.line,h].join(' · ');if(type==='day')return p.date;if(type==='month')return String(p.date||'').slice(0,7);if(type==='shift')return [p.date,p.shift,p.line].join(' · ');if(type==='model')return [p.brand,p.product,p.model].filter(Boolean).join(' · ');if(type==='product')return [p.brand,p.product].filter(Boolean).join(' · ');if(type==='brand')return p.brand||'—';if(type==='rejection')return [p.date,p.line,p.shift].join(' · ');if(type==='rework')return [p.date,p.line,p.shift,p.product,p.model].join(' · ');if(type==='sticker')return [p.date,p.line,p.shift,p.product,p.model].join(' · ');return p.id;}
+ filtered.forEach(function(p){var hoursToUse=(type==='hourly'?Object.keys(p.entries||{}):['summary']);if(type==='rework'&&!sumRework(p,'Completed')&&!sumRework(p,'Pending')&&!sumRework(p,'Finally Rejected'))return;if(type==='sticker'&&!sumMissingSticker(p))return;hoursToUse.forEach(function(h){var key=makeKey(p,h),r=groups.get(key);if(!r){r={key:key,date:p.date,shift:p.shift,line:p.line,brand:p.brand,product:p.product,model:p.model,hour:type==='hourly'?(p.hourLabels?.[Number(h)]||hours[Number(h)]||('Hour '+(Number(h)+1))):'—',plan:0,actual:0,rejection:0,accepted:0,iqc:0,lqc:0,other:0,rework:0,pending:0,finalRejected:0,missing:0,achievement:0,status:getPlanStatusLabel(p),plans:[]};groups.set(key,r);}var entry=type==='hourly'?p.entries?.[h]:null; r.plan+=type==='hourly'?(Number(p.hourTargets?.[Number(h)])||0):Number(p.qty)||0;r.actual+=type==='hourly'?(Number(entry?.actual)||0):Number(p.actual)||0;r.rejection+=type==='hourly'?(Number(entry?.rejected)||0):Number(p.rejection)||0;r.accepted+=type==='hourly'?Math.max(0,(Number(entry?.actual)||0)-(Number(entry?.rejected)||0)):Math.max(0,(Number(p.actual)||0)-(Number(p.rejection)||0));r.iqc+=type==='hourly'?(entry?.reason==='IQC Rejection'?(Number(entry.rejected)||0):0):reasonQty(p,'IQC Rejection');r.lqc+=type==='hourly'?(entry?.reason==='LQC Rejection'?(Number(entry.rejected)||0):0):reasonQty(p,'LQC Rejection');r.other+=type==='hourly'?(entry?.rejected&&entry.reason!=='IQC Rejection'&&entry.reason!=='LQC Rejection'?(Number(entry.rejected)||0):0):Math.max(0,(Number(p.rejection)||0)-reasonQty(p,'IQC Rejection')-reasonQty(p,'LQC Rejection'));r.rework+=type==='hourly'?planReworkUnits(p).filter(x=>String(x.hour)===String(p.hourLabels?.[Number(h)])&&(x.unit.status||'Pending')==='Completed').length:sumRework(p,'Completed');r.pending+=type==='hourly'?planReworkUnits(p).filter(x=>String(x.hour)===String(p.hourLabels?.[Number(h)])&&(x.unit.status||'Pending')==='Pending').length:sumRework(p,'Pending');r.finalRejected+=type==='hourly'?planReworkUnits(p).filter(x=>String(x.hour)===String(p.hourLabels?.[Number(h)])&&(x.unit.status||'Pending')==='Finally Rejected').length:sumRework(p,'Finally Rejected');r.missing+=type==='hourly'?(Number(entry?.missingSerialQty)||0):sumMissingSticker(p);if(r.status!==getPlanStatusLabel(p))r.status='Mixed';r.plans.push(p);});});
+ var rows=Array.from(groups.values()).map(function(r){r.achievement=r.plan?Math.round(r.actual/r.plan*100):0;return r;}).sort(function(a,b){return String(b.date).localeCompare(String(a.date))||String(a.key).localeCompare(String(b.key));});
+ var titles={hourly:'Hourly production detail',day:'Daily production summary',month:'Monthly production summary',shift:'Shift production summary',model:'Model-wise production',product:'Product-wise production',brand:'Brand-wise production',rejection:'Rejection analysis',rework:'Rework disposition',sticker:'Missing / damaged sticker report'},subtitles={hourly:'Actual output for each production hour and shift',day:'Totals by production date',month:'Totals grouped by calendar month',shift:'Totals for each date, shift and line',model:'Compare production by model number',product:'Compare production by product',brand:'Compare production by brand',rejection:'Rejected quantity by recorded category',rework:'Rework pending, completed and finally rejected',sticker:'Missing sticker quantities by production entry'};
+ document.getElementById('reportTableTitle').textContent=titles[type]||titles.hourly;document.getElementById('reportTableSubtitle').textContent=subtitles[type]||'';document.getElementById('reportTableCount').textContent=rows.length+' rows';document.getElementById('reportFilterSummary').textContent=filtered.length+' plans matched';renderReportRows(rows,type);
 }
-function renderReportRows(rows,type){
-  var filtered=filteredReportPlans();
-  var totals=filtered.reduce(function(a,p){
-    a.plan+=Number(p.qty)||0;a.actual+=Number(p.actual)||0;a.rejected+=Number(p.rejection)||0;
-    a.rework+=sumRework(p,'Completed');a.pending+=sumRework(p,'Pending');a.finalRejected+=sumRework(p,'Finally Rejected');
-    return a;
-  },{plan:0,actual:0,rejected:0,rework:0,pending:0,finalRejected:0});
-  var accepted=Math.max(0,totals.actual-totals.rejected);
-  var achievement=totals.plan?Math.round(totals.actual/totals.plan*100):0;
-  var kpis=document.getElementById('reportKpis');
-  if(kpis){
-    kpis.innerHTML=[
-      ['Planned quantity',totals.plan,'Units scheduled'],
-      ['Actual produced',totals.actual,achievement+'% of plan'],
-      ['Accepted quantity',accepted,'Actual less rejected'],
-      ['Rejected quantity',totals.rejected,'Rejected from hourly production'],
-      ['Achievement',achievement+'%','Actual against planned']
-    ].map(function(x){
-      return '<article class="report-kpi"><div class="klabel">'+x[0]+'</div><div class="kvalue">'+x[1]+'</div><div class="kfoot">'+x[2]+'</div></article>';
-    }).join('');
-  }
-
-  var reasonTotals={iqc:0,lqc:0,other:0,missing:0};
-  filtered.forEach(function(p){
-    Object.values(p.entries||{}).forEach(function(e){
-      if(e.reason==='IQC Rejection')reasonTotals.iqc+=Number(e.rejected)||0;
-      else if(e.reason==='LQC Rejection')reasonTotals.lqc+=Number(e.rejected)||0;
-      else reasonTotals.other+=Number(e.rejected)||0;
-      reasonTotals.missing+=Number(e.missingSerialQty)||0;
-    });
-  });
-  var visuals=document.getElementById('reportVisuals');
-  if(visuals){
-    var top=rows.slice(0,8);
-    visuals.innerHTML=top.length?top.map(function(r){
-      var percent=r.plan?Math.min(100,Math.max(0,r.actual/r.plan*100)):0;
-      return '<div class="report-performance-row"><div class="report-performance-label"><strong>'+escapeHtml(r.key)+'</strong><span>'+r.actual.toLocaleString()+' / '+r.plan.toLocaleString()+' units · '+r.achievement+'%</span></div>'+
-        '<div class="report-performance-track"><i style="width:'+percent.toFixed(1)+'%"></i></div></div>';
-    }).join(''):'<div class="report-empty">No production plans match these filters.</div>';
-  }
-  var reasonHost=document.getElementById('reportReasonSummary');
-  if(reasonHost){
-    var maxReason=Math.max(1,reasonTotals.iqc,reasonTotals.lqc,reasonTotals.other);
-    reasonHost.innerHTML='<div class="report-reason-heading"><strong>Rejection categories</strong><span>Missing sticker units: '+reasonTotals.missing+'</span></div>'+
-      [['IQC Rejection',reasonTotals.iqc],['LQC Rejection',reasonTotals.lqc],['Other / Unassigned',reasonTotals.other]].map(function(x){
-        return '<div class="report-reason-item"><span>'+x[0]+'</span><div><i style="width:'+(x[1]/maxReason*100)+'%"></i></div><b>'+x[1]+'</b></div>';
-      }).join('');
-  }
-
-  var table=document.getElementById('reportTable'),historyEnabled=!!document.getElementById('reportHistoryToggle')?.checked;
-  var headers=['Plan / period','Date','Shift','Line','Brand','Product / Model','Planned','Actual','Rejected','Accepted','IQC / LQC','Reworked','Pending','Final rejected','Missing stickers','Achievement','Status'];
-  if(table){
-    table.querySelector('thead').innerHTML='<tr>'+headers.map(function(x){return '<th>'+x.toUpperCase()+'</th>';}).join('')+'</tr>';
-    table.querySelector('tbody').innerHTML=rows.map(function(r,i){
-      var category='IQC '+r.iqc+' · LQC '+r.lqc+(r.unclassified?' · Other '+r.unclassified:'');
-      return '<tr><td><strong>'+escapeHtml(r.key)+'</strong></td><td>'+escapeHtml(r.date||'—')+'</td><td>'+escapeHtml(r.shift||'—')+'</td><td>'+escapeHtml(r.line||'—')+'</td>'+
-        '<td>'+escapeHtml(r.brand||'—')+'</td><td>'+escapeHtml((r.product||'—')+' / '+(r.model||'—'))+'</td>'+
-        '<td>'+r.plan+'</td><td>'+r.actual+'</td><td>'+(historyEnabled&&r.rejection?'<button class="btn report-history-btn" onclick="showReportHistory('+i+')" title="View rejected-unit history">'+r.rejection+'</button>':r.rejection)+'</td>'+
-        '<td>'+r.accepted+'</td><td>'+escapeHtml(category)+'</td><td>'+r.rework+'</td><td>'+r.pending+'</td><td>'+r.finalRejected+'</td><td>'+r.missing+'</td>'+
-        '<td><span class="report-achievement '+(r.achievement>=100?'good':r.achievement<80?'warn':'')+'">'+r.achievement+'%</span></td><td><span class="pill">'+escapeHtml(r.status)+'</span></td></tr>';
-    }).join('')||'<tr><td colspan="17" class="report-empty">No production records match these filters.</td></tr>';
-  }
-  var mobile=document.getElementById('reportCards');
-  if(mobile){
-    mobile.innerHTML=rows.map(function(r,i){
-      var category='IQC '+r.iqc+' · LQC '+r.lqc;
-      return '<article class="report-mobile-card"><div class="report-mobile-card-head"><div><strong>'+escapeHtml(r.key)+'</strong><small>'+escapeHtml(r.date||'—')+' · '+escapeHtml(r.shift||'—')+'</small></div><span class="pill">'+escapeHtml(r.status)+'</span></div>'+
-        '<div class="report-mobile-product">'+escapeHtml(r.brand||'—')+' · '+escapeHtml(r.product||'—')+' · '+escapeHtml(r.model||'—')+'</div>'+
-        '<div class="report-mobile-metrics"><span><small>Planned</small><b>'+r.plan+'</b></span><span><small>Actual</small><b>'+r.actual+'</b></span><span><small>Rejected</small><b>'+r.rejection+'</b></span><span><small>Accepted</small><b>'+r.accepted+'</b></span><span><small>Rework done</small><b>'+r.rework+'</b></span><span><small>Pending</small><b>'+r.pending+'</b></span></div>'+
-        '<div class="report-mobile-foot"><span>'+category+'</span><strong>'+r.achievement+'% achieved</strong></div>'+
-        (historyEnabled&&r.rejection?'<button class="btn report-mobile-history" type="button" onclick="showReportHistory('+i+')">View rejection history</button>':'')+
-      '</article>';
-    }).join('')||'<div class="report-empty">No production records match these filters.</div>';
-  }
-  window.currentReportRows=rows;
+function sumMissingSticker(p){return Object.values(p.entries||{}).reduce(function(n,e){return n+(Number(e.missingSerialQty)||0);},0);}
+function renderReportRows(rows,type){var totals=rows.reduce(function(a,r){a.plan+=r.plan;a.actual+=r.actual;a.rejected+=r.rejection;a.accepted+=r.accepted;a.rework+=r.rework;a.pending+=r.pending;a.finalRejected+=r.finalRejected;a.missing+=r.missing;return a;},{plan:0,actual:0,rejected:0,accepted:0,rework:0,pending:0,finalRejected:0,missing:0});var kpis=document.getElementById('reportKpis');kpis.innerHTML=[['Actual output',totals.actual],['Accepted',totals.accepted],['Rejected',totals.rejected],['Rework / pending',totals.rework+' / '+totals.pending],['Missing stickers',totals.missing]].map(function(x){return '<article class="report-kpi"><div class="klabel">'+x[0]+'</div><div class="kvalue">'+x[1]+'</div></article>';}).join('');
+ var hourly=type==='hourly',headers=hourly?['Date','Shift','Line','Brand','Product / Model','Hour','Target','Actual','Rejected','Accepted','Achievement']:type==='rejection'?['Date','Shift','Line','Product / Model','Rejected','IQC','LQC','Other']:type==='rework'?['Date','Shift','Line','Product / Model','Reworked','Pending','Finally rejected']:type==='sticker'?['Date','Shift','Line','Product / Model','Missing sticker units']:['Period','Brand','Product','Model','Shift','Line','Planned','Actual','Rejected','Accepted','Reworked','Pending','Final rejected','Missing stickers','Achievement'];
+ var tbody=rows.map(function(r){var productModel=(r.product||'—')+' / '+(r.model||'—'),base='<td>'+escapeHtml(r.date)+'</td><td>'+escapeHtml(r.shift)+'</td><td>'+escapeHtml(r.line)+'</td><td>'+escapeHtml(productModel)+'</td>';if(hourly)return '<tr>'+base.replace('</td><td>'+escapeHtml(productModel)+'</td>','</td><td>'+escapeHtml(r.brand)+'</td><td>'+escapeHtml(productModel)+'</td>')+'<td>'+escapeHtml(r.hour)+'</td><td>'+r.plan+'</td><td>'+r.actual+'</td><td>'+r.rejection+'</td><td>'+r.accepted+'</td><td>'+r.achievement+'%</td></tr>';if(type==='rejection')return '<tr>'+base+'<td>'+r.rejection+'</td><td>'+r.iqc+'</td><td>'+r.lqc+'</td><td>'+r.other+'</td></tr>';if(type==='rework')return '<tr>'+base+'<td>'+r.rework+'</td><td>'+r.pending+'</td><td>'+r.finalRejected+'</td></tr>';if(type==='sticker')return '<tr>'+base+'<td>'+r.missing+'</td></tr>';return '<tr><td>'+escapeHtml(r.key)+'</td><td>'+escapeHtml(r.brand)+'</td><td>'+escapeHtml(r.product)+'</td><td>'+escapeHtml(r.model)+'</td><td>'+escapeHtml(r.shift)+'</td><td>'+escapeHtml(r.line)+'</td><td>'+r.plan+'</td><td>'+r.actual+'</td><td>'+r.rejection+'</td><td>'+r.accepted+'</td><td>'+r.rework+'</td><td>'+r.pending+'</td><td>'+r.finalRejected+'</td><td>'+r.missing+'</td><td>'+r.achievement+'%</td></tr>';});var table=document.getElementById('reportTable');table.querySelector('thead').innerHTML='<tr>'+headers.map(x=>'<th>'+x.toUpperCase()+'</th>').join('')+'</tr>';table.querySelector('tbody').innerHTML=tbody.join('')||'<tr><td colspan="'+headers.length+'" class="report-empty">No records found for these filters.</td></tr>';document.getElementById('reportCards').innerHTML='';window.currentReportRows=rows;
 }
-function sumRework(p,status){return planReworkUnits(p).reduce((n,row)=>n+(((row.unit.status||'Pending')===status)?1:0),0)}
 function showReportHistory(i){
   const row=window.currentReportRows?.[i];if(!row)return;
   const detailRows=(row.plans||[]).flatMap(p=>planReworkUnits(p).map(item=>`<tr><td>${escapeHtml(p.date)}</td><td>${escapeHtml(p.line)}</td><td>${escapeHtml(p.product)} / ${escapeHtml(p.model||'—')}</td><td>${escapeHtml(item.hour)}</td><td>${escapeHtml(item.unit.serial||('Unit #'+(item.unit.unitNumber||item.unitIndex+1)))}</td><td>1</td><td>${escapeHtml(item.unit.reason||item.entry.reason||'—')}</td><td>${escapeHtml(reworkStatusLabel(item.unit.status||'Pending'))}</td><td>${escapeHtml(item.unit.remark||'—')}</td></tr>`)).join('');
