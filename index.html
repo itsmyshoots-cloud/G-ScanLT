@@ -819,16 +819,164 @@
 </div></main></div>
 <div id="modal" class="modalback hidden"><div class="modal"><h2>Create Production Plan</h2><div class="formgrid"><div class="field"><label>Production Date</label><input id="pdate" type="date" value=""/></div><div class="field"><label>Shift</label><select id="pshift"><option>Shift 1</option><option>Shift 2</option><option>Shift 3</option></select></div><div class="field"><label>Production Line</label><select id="pline"><option>Line 1</option><option>Line 2</option><option>Line 3</option></select></div><div class="field"><label>Brand</label><select id="pbrand" onchange="updatePlanProducts()"><option value="">Select brand</option><option>Gerat</option><option>Cuisino</option><option>Kabel</option></select></div><div class="field"><label>Product</label><select id="pproduct"><option value="">Select product</option></select></div><div class="field"><label>Model Number</label><input id="pmodel" placeholder="Model / SKU" value="${p?.model||''}"/></div><div class="field"><label>Planned Quantity</label><input id="pqty" type="number" min="1" placeholder="Quantity"/></div><div class="field"><label>Start Time</label><input id="pstart" type="time" value="09:00"/></div><div class="field"><label>End Time</label><input id="pend" type="time" value="17:00"/></div><div class="field"><label>Supervisor</label><input id="psuper" placeholder="Supervisor name"/></div></div><div class="modalactions"><button class="btn" onclick="closePlanModal()">Cancel</button><button class="btn primary" onclick="savePlan()">Save plan</button></div></div></div><div class="toast" id="toast"></div>
 <script>
-let brandProducts={'Gerat':{'Mixer A':['MIX-A'],'Kettle B':['KET-B'],'Product A':['MOD-A']},'Cuisino':{'Cooker C':['CKR-C'],'Product C':['MOD-C']},'Kabel':{'Cable Set':['CBL-01'],'Product K':['MOD-K']}};const productModels={};if(!brandProducts['Bajaj'])brandProducts['Bajaj']={};if(!brandProducts['Bajaj']['OTG'])brandProducts['Bajaj']['OTG']=['RCAD 60'];else if(!brandProducts['Bajaj']['OTG'].includes('RCAD 60'))brandProducts['Bajaj']['OTG'].push('RCAD 60');
+
+/* Production and catalog data are sourced exclusively from Supabase. */
+try{window.localStorage&&window.localStorage.removeItem('productionManagementV4');}catch(_oldLocalDataError){}
+let brandProducts={};
+const productModels={};
 const hours=['09:00–10:00','10:00–11:00','11:00–12:00','12:00–13:00','13:00–14:00','14:00–15:00','15:00–16:00','16:00–17:00'];
-let plans=[
-{id:1,date:'2026-11-19',shift:'Shift 1',line:'Line 1',brand:'Gerat',product:'Mixer A',model:'MIX-A',qty:100,start:'09:00',end:'17:00',supervisor:'Supervisor',status:'Published',entries:{},actual:82,rejection:2},
-{id:2,date:'2026-11-19',shift:'Shift 1',line:'Line 2',brand:'Gerat',product:'Kettle B',model:'KET-B',qty:120,start:'09:00',end:'17:00',supervisor:'Supervisor',status:'Published',entries:{},actual:98,rejection:1},
-{id:3,date:'2026-11-19',shift:'Shift 1',line:'Line 3',brand:'Cuisino',product:'Cooker C',model:'CKR-C',qty:80,start:'09:00',end:'17:00',supervisor:'Supervisor',status:'Published',entries:{},actual:62,rejection:3}];
-plans.forEach(p=>{p.hourTargets=Array.from({length:8},(_,i)=>Math.floor(p.qty/8)+(i<p.qty%8?1:0));p.entries={};let base=Math.floor(p.actual/8),rem=p.actual%8;for(let i=0;i<8;i++){let q=base+(i<rem?1:0);if(q)p.entries[i]={actual:q,rejected:0,startSerial:'',endSerial:'',reason:'',remarks:''};}let rej=p.rejection||0;if(rej&&p.entries[0]){p.entries[0].rejected=Math.min(rej,p.entries[0].actual);p.entries[0].reason='Assembly defect';p.entries[0].reworkStatus='Pending';p.entries[0].reworkRemark='';}});
-plans.forEach(p=>recalcPlan(p));
-try{const saved=JSON.parse(localStorage.getItem('productionManagementV4')||'null');if(saved){if(saved.brandProducts)brandProducts=saved.brandProducts;if(saved.plans)plans=saved.plans;}}catch(err){console.warn('Saved production data could not be loaded',err);}
-if(!brandProducts['Bajaj'])brandProducts['Bajaj']={};if(!brandProducts['Bajaj']['OTG'])brandProducts['Bajaj']['OTG']=['RCAD 60'];else if(!brandProducts['Bajaj']['OTG'].includes('RCAD 60'))brandProducts['Bajaj']['OTG'].push('RCAD 60');plans.forEach(p=>{if(p.entries&&Object.keys(p.entries).length)recalcPlan(p)});let editingPlanId=null;
+let plans=[];
+let editingPlanId=null;
+let pmProductionDataLoaded=false;
+
+
+function pmRequireDb(){
+  const db=window.pmSupabaseClient;
+  if(!db)throw new Error('Supabase client is not ready. Please refresh and sign in again.');
+  return db;
+}
+function pmThrowDbError(result,context){
+  if(result&&result.error)throw new Error((context?context+': ':'')+result.error.message);
+  return result&&result.data;
+}
+function pmDbTime(value){
+  return String(value||'').slice(0,5);
+}
+function pmTitleStatus(value){
+  return String(value||'draft').charAt(0).toUpperCase()+String(value||'draft').slice(1);
+}
+async function pmLoadProductionData(client){
+  const db=client||pmRequireDb();
+  const [brandResult,productResult,modelResult,planResult]=await Promise.all([
+    db.from('pm_brands').select('id,name').order('name'),
+    db.from('pm_products').select('id,brand_id,name').order('name'),
+    db.from('pm_models').select('id,product_id,model_number').order('model_number'),
+    db.from('pm_production_plans').select('*').order('plan_date',{ascending:false}).order('created_at',{ascending:false})
+  ]);
+  const brands=pmThrowDbError(brandResult,'Loading brands')||[];
+  const products=pmThrowDbError(productResult,'Loading products')||[];
+  const models=pmThrowDbError(modelResult,'Loading models')||[];
+  const dbPlans=pmThrowDbError(planResult,'Loading production plans')||[];
+  const planIds=dbPlans.map(p=>p.id);
+  const [targetResult,hourResult]=planIds.length?await Promise.all([
+    db.from('pm_plan_hour_targets').select('*').in('plan_id',planIds).order('hour_index'),
+    db.from('pm_hourly_production').select('*').in('plan_id',planIds).order('hour_index')
+  ]):[{data:[],error:null},{data:[],error:null}];
+  const targets=pmThrowDbError(targetResult,'Loading hourly targets')||[];
+  const hourly=pmThrowDbError(hourResult,'Loading hourly production')||[];
+  const hourlyIds=hourly.map(h=>h.id);
+  const reworkResult=hourlyIds.length
+    ?await db.from('pm_rework_units').select('*').in('hourly_production_id',hourlyIds).order('unit_number')
+    :{data:[],error:null};
+  const rework=pmThrowDbError(reworkResult,'Loading rework records')||[];
+
+  const brandById=new Map(brands.map(b=>[b.id,b]));
+  const productById=new Map(products.map(p=>[p.id,p]));
+  const modelById=new Map(models.map(m=>[m.id,m]));
+  brandProducts={};
+  brands.forEach(b=>{brandProducts[b.name]={};});
+  products.forEach(p=>{
+    const brand=brandById.get(p.brand_id);
+    if(!brand)return;
+    if(!brandProducts[brand.name])brandProducts[brand.name]={};
+    brandProducts[brand.name][p.name]=[];
+  });
+  models.forEach(m=>{
+    const product=productById.get(m.product_id);
+    const brand=product&&brandById.get(product.brand_id);
+    if(brand&&product){
+      if(!brandProducts[brand.name])brandProducts[brand.name]={};
+      if(!brandProducts[brand.name][product.name])brandProducts[brand.name][product.name]=[];
+      brandProducts[brand.name][product.name].push(m.model_number);
+    }
+  });
+  Object.keys(brandProducts).forEach(brand=>{
+    Object.keys(brandProducts[brand]).forEach(product=>{
+      brandProducts[brand][product].sort((a,b)=>String(a).localeCompare(String(b)));
+    });
+  });
+
+  const targetsByPlan=new Map();
+  targets.forEach(t=>{
+    if(!targetsByPlan.has(t.plan_id))targetsByPlan.set(t.plan_id,[]);
+    targetsByPlan.get(t.plan_id)[Number(t.hour_index)]=t;
+  });
+  const reworkByHour=new Map();
+  rework.forEach(unit=>{
+    if(!reworkByHour.has(unit.hourly_production_id))reworkByHour.set(unit.hourly_production_id,[]);
+    reworkByHour.get(unit.hourly_production_id).push(unit);
+  });
+  const entriesByPlan=new Map();
+  hourly.forEach(record=>{
+    const units=(reworkByHour.get(record.id)||[]).map(unit=>({
+      dbId:unit.id,
+      unitNumber:unit.unit_number,
+      serial:unit.serial_number||'',
+      reason:unit.original_reason||record.rejection_reason||'',
+      status:unit.status==='completed'?'Completed':unit.status==='finally_rejected'?'Finally Rejected':'Pending',
+      remark:unit.resolution_remark||'',
+      resolvedAt:unit.resolved_at||null,
+      resolvedBy:unit.resolved_by||null
+    }));
+    const entry={
+      dbId:record.id,
+      actual:Number(record.actual_qty)||0,
+      rejected:Number(record.rejected_qty)||0,
+      startSerial:record.serial_start||'',
+      endSerial:record.serial_end||'',
+      reason:record.rejection_reason||'',
+      remarks:record.remarks||'',
+      recordedAt:record.recorded_at,
+      recordedBy:record.recorded_by,
+      reworkItems:units,
+      locked:true
+    };
+    if(!entriesByPlan.has(record.plan_id))entriesByPlan.set(record.plan_id,{});
+    entriesByPlan.get(record.plan_id)[Number(record.hour_index)]=entry;
+  });
+
+  plans=dbPlans.map(row=>{
+    const brand=brandById.get(row.brand_id);
+    const product=productById.get(row.product_id);
+    const model=modelById.get(row.model_id);
+    const targetRows=targetsByPlan.get(row.id)||[];
+    const hourTargets=Array.from({length:8},(_,i)=>Number(targetRows[i]&&targetRows[i].planned_qty)||0);
+    const hourLabels=Array.from({length:8},(_,i)=>targetRows[i]&&targetRows[i].hour_label||hours[i]);
+    const plan={
+      id:row.id,
+      date:row.plan_date,
+      shift:row.shift,
+      line:row.line,
+      brand:brand?brand.name:'',
+      product:product?product.name:'',
+      model:model?model.model_number:'',
+      qty:Number(row.planned_qty)||0,
+      start:pmDbTime(row.start_time),
+      end:pmDbTime(row.end_time),
+      supervisor:row.supervisor_name||'',
+      status:pmTitleStatus(row.status),
+      hourTargets:hourTargets,
+      hourLabels:hourLabels,
+      entries:entriesByPlan.get(row.id)||{},
+      actual:0,
+      rejection:0,
+      createdBy:row.created_by,
+      createdAt:row.created_at
+    };
+    recalcPlan(plan);
+    return plan;
+  });
+  pmProductionDataLoaded=true;
+  refreshProductOptions();
+  syncAll();
+  return {brands:brands.length,products:products.length,models:models.length,plans:plans.length};
+}
+window.pmLoadProductionData=pmLoadProductionData;
+async function pmReloadProductionData(){
+  const result=await pmLoadProductionData();
+  return result;
+}
+
 function sumEntries(p,key){return Object.values(p.entries||{}).reduce((a,e)=>a+(Number(e[key])||0),0)}
 function getHourlyActual(p,h){return Number(p.entries?.[h]?.actual)||0}
 function getHourlyRejected(p,h){return Number(p.entries?.[h]?.rejected)||0}
@@ -836,28 +984,48 @@ function planHourTargets(p){return p.hourTargets||Array.from({length:8},(_,i)=>M
 function recalcPlan(p){p.actual=sumEntries(p,'actual');p.rejection=sumEntries(p,'rejected');}
 function showPage(page){document.querySelectorAll('.page').forEach(x=>x.classList.add('hidden'));document.getElementById(page).classList.remove('hidden');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));document.getElementById('crumb').textContent={overview:'Overview',plans:'Production Plans',operator:'Operator Workspace',reports:'Production Reports',rework:'Rework Workspace'}[page]||page;if(page==='plans')renderPlans();if(page==='operator')renderOperator();if(page==='rework')renderRework();if(page==='overview'){requestAnimationFrame(renderOverviewChart);setTimeout(renderOverviewChart,80);}}
 let pageHistory=['overview'];if(!history.state)history.replaceState({pmPage:'overview'},'',location.pathname+'#overview');function navigatePage(page,fromPop=false){if(!fromPop&&pageHistory[pageHistory.length-1]!==page){pageHistory.push(page);history.pushState({pmPage:page},'',`#${page}`);}showPage(page); }document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>navigatePage(b.dataset.page)));window.addEventListener('popstate',e=>{let page=e.state?.pmPage||'overview';let idx=pageHistory.lastIndexOf(page);pageHistory=idx>=0?pageHistory.slice(0,idx+1):[page];showPage(page);});window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('modal').classList.contains('hidden'))closePlanModal();});document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closePlanModal();});
-function renderPlans(){let el=document.getElementById('planlist');el.innerHTML=plans.map(p=>`<div class="plan"><h3>${p.line} · ${p.brand||'Unbranded'} · ${p.product} · ${p.model||p.product}</h3><div class="planmeta">${p.date} · ${p.shift}<br>Target: ${p.qty} units · ${p.actual} actual · ${p.rejection} rejected<br>${p.start}–${p.end} · ${p.supervisor||'Unassigned'}</div><div class="planbottom"><span class="pill ${p.status==='Draft'?'warn':''}">${p.status}</span><div class="filters"><button class="btn" onclick="viewPlan(${p.id})">View</button><button class="btn" onclick="editPlan(${p.id})">Edit</button>${p.status==='Draft'?`<button class="btn primary" onclick="publishPlan(${p.id})">Publish</button>`:''}</div></div></div>`).join('');}
-function renderOperator(){let el=document.getElementById('operatorplans');el.innerHTML=plans.filter(p=>p.status!=='Completed').map(p=>`<div class="plan"><h3>${p.line} · ${p.brand||'Unbranded'} · ${p.product} · ${p.model||p.product}</h3><div class="planmeta">${p.date} · ${p.shift}<br>Target: ${p.qty} units · ${p.start}–${p.end}</div><div class="progress"><i style="width:${Math.min(100,p.actual/p.qty*100)}%"></i></div><div class="linemeta"><span>${p.actual} / ${p.qty} units · Rejected ${p.rejection}</span><span>${Math.round(p.actual/p.qty*100)}%</span></div><div class="planbottom"><span class="pill ${p.status==='Draft'?'warn':''}">${p.status}</span><button class="btn primary" onclick="openExecution(${p.id})">Open plan</button></div></div>`).join('');}
+function renderPlans(){
+  const el=document.getElementById('planlist');
+  if(!el)return;
+  el.innerHTML=plans.map(p=>'<div class="plan"><h3>'+escapeHtml(p.line)+' · '+escapeHtml(p.brand||'Unbranded')+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model||p.product)+'</h3>'+
+    '<div class="planmeta">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+'<br>Target: '+p.qty+' units · '+p.actual+' actual · '+p.rejection+' rejected<br>'+
+    escapeHtml(p.start)+'–'+escapeHtml(p.end)+' · '+escapeHtml(p.supervisor||'Unassigned')+'</div>'+
+    '<div class="planbottom"><span class="pill '+(p.status==='Draft'?'warn':'')+'">'+escapeHtml(p.status)+'</span><div class="filters">'+
+    '<button class="btn" onclick="viewPlan(\''+p.id+'\')">View</button>'+
+    (p.status==='Draft'?'<button class="btn" onclick="editPlan(\''+p.id+'\')">Edit</button><button class="btn primary" onclick="publishPlan(\''+p.id+'\')">Publish</button>':'')+
+    '</div></div></div>').join('')||'<div class="panel"><div class="sub">No production plans have been created yet.</div></div>';
+}
+function renderOperator(){
+  const el=document.getElementById('operatorplans');
+  if(!el)return;
+  const visible=plans.filter(p=>p.status!=='Completed');
+  el.innerHTML=visible.map(p=>'<div class="plan"><h3>'+escapeHtml(p.line)+' · '+escapeHtml(p.brand||'Unbranded')+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model||p.product)+'</h3>'+
+    '<div class="planmeta">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+'<br>Target: '+p.qty+' units · '+escapeHtml(p.start)+'–'+escapeHtml(p.end)+'</div>'+
+    '<div class="progress"><i style="width:'+Math.min(100,p.qty?p.actual/p.qty*100:0)+'%"></i></div>'+
+    '<div class="linemeta"><span>'+p.actual+' / '+p.qty+' units · Rejected '+p.rejection+'</span><span>'+Math.round(p.qty?p.actual/p.qty*100:0)+'%</span></div>'+
+    '<div class="planbottom"><span class="pill '+(p.status==='Draft'?'warn':'')+'">'+escapeHtml(p.status)+'</span>'+
+    '<button class="btn primary" '+(p.status==='Published'?'':'disabled')+' onclick="openExecution(\''+p.id+'\')">Open plan</button></div></div>').join('')||
+    '<div class="panel"><div class="sub">No active production plans are available.</div></div>';
+}
 
 function isHourlyEntrySaved(entry){
   return !!entry&&Object.prototype.hasOwnProperty.call(entry,'actual');
 }
 function hourCards(p){
-  var targets=planHourTargets(p),admin=!!window.pmIsSuperAdmin;
-  return hours.map(function(label,i){
-    var entry=p.entries&&p.entries[i],saved=isHourlyEntrySaved(entry);
+  var targets=planHourTargets(p),labels=p.hourLabels||hours,admin=!!window.pmIsSuperAdmin;
+  return targets.map(function(target,i){
+    var label=labels[i]||hours[i],entry=p.entries&&p.entries[i],saved=isHourlyEntrySaved(entry);
     var q=Number(entry&&entry.actual)||0,r=Number(entry&&entry.rejected)||0;
     var canOpen=saved?admin:p.status!=='Completed';
     var cls='hour '+(saved?'recorded':'pending')+(saved&&!admin?' locked':'')+(saved&&admin?' admin-editable':'');
-    var status=saved?'Updated':'Not recorded';
-    var action=saved?(admin?'Updated / Edit':'Updated'):'Record hour';
-    return '<div class="'+cls+'"><strong>'+label+'</strong><small>Plan: '+targets[i]+' units</small>'+
+    var status=saved?'Updated':'Not recorded',action=saved?(admin?'Updated / Edit':'Updated'):'Record hour';
+    return '<div class="'+cls+'"><strong>'+escapeHtml(label)+'</strong><small>Plan: '+target+' units</small>'+
       '<div class="actual">'+(saved?q+' produced':'—')+'</div>'+
       '<small>'+(saved?r+' rejected · '+(q-r)+' accepted':'Pending')+'</small>'+
       '<small class="hour-status">'+(saved?'✓ ':'')+status+'</small>'+
       '<button class="btn" style="margin-top:10px;width:100%" '+(canOpen?'':'disabled')+
       ' title="'+(saved&&!admin?'Only the super administrator can edit a saved hour':'')+
-      '" onclick="hourEntry('+p.id+','+i+')">'+action+'</button></div>';
+      '" onclick="hourEntry(\''+p.id+'\','+i+')">'+action+'</button></div>';
   }).join('');
 }
 function closeExecution(id){
@@ -867,14 +1035,16 @@ function closeExecution(id){
   if(plansList)plansList.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function openExecution(id){
-  var p=plans.find(function(x){return x.id===id;});
+  var p=plans.find(function(x){return String(x.id)===String(id);});
   if(!p)return;
-  var allRecorded=hours.every(function(_,i){return isHourlyEntrySaved(p.entries&&p.entries[i]);});
+  var labels=p.hourLabels||hours;
+  var allRecorded=planHourTargets(p).every(function(_,i){return isHourlyEntrySaved(p.entries&&p.entries[i]);});
   var admin=!!window.pmIsSuperAdmin;
+  var safeId=String(p.id);
   var html='<div class="panel execution-panel"><div class="pagehead execution-header"><div>'+
-    '<h2 style="margin:0 0 5px;font-size:18px">'+p.line+' · '+p.brand+' · '+p.product+' · '+(p.model||'—')+'</h2>'+
-    '<div class="sub">'+p.date+' · '+p.shift+' · Plan '+p.qty+' units</div></div>'+
-    '<button class="btn execution-back" type="button" onclick="closeExecution('+p.id+')">← Back to plans</button></div>'+
+    '<h2 style="margin:0 0 5px;font-size:18px">'+escapeHtml(p.line)+' · '+escapeHtml(p.brand)+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model||'—')+'</h2>'+
+    '<div class="sub">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+' · Plan '+p.qty+' units</div></div>'+
+    '<button class="btn execution-back" type="button" onclick="closeExecution(\''+safeId+'\')">← Back to plans</button></div>'+
     '<div class="detailgrid"><div class="detailbox"><div class="klabel">Planned</div><div class="num">'+p.qty+'</div></div>'+
     '<div class="detailbox"><div class="klabel">Actual recorded</div><div class="num">'+p.actual+'</div></div>'+
     '<div class="detailbox"><div class="klabel">Accepted · Rejected</div><div class="num">'+(p.actual-p.rejection)+' · '+p.rejection+'</div></div></div>'+
@@ -887,8 +1057,9 @@ function openExecution(id){
     '<div class="detailbox"><div class="klabel">Total rejected</div><div class="num">'+p.rejection+'</div></div>'+
     '<div class="detailbox"><div class="klabel">Accepted</div><div class="num">'+(p.actual-p.rejection)+'</div></div></div>'+
     '<div class="modalactions"><button class="btn primary" '+(allRecorded&&p.status!=='Completed'?'':'disabled')+
-    ' onclick="closeShift('+p.id+')">Close Shift</button></div></div>';
-  var host=document.getElementById('execution');host.innerHTML=html;host.classList.remove('hidden');
+    ' onclick="closeShift(\''+safeId+'\')">Close Shift</button></div></div>';
+  var host=document.getElementById('execution');
+  host.innerHTML=html;host.classList.remove('hidden');
   host.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function hourEntry(id,h){
@@ -1301,8 +1472,18 @@ function showReportHistory(i){
 function printReportPDF(){window.print();}
 function exportReportCSV(){let rows=[...document.querySelectorAll('#reportTable tr')].map(tr=>[...tr.querySelectorAll('th,td')].map(c=>'"'+c.innerText.replaceAll('"','""')+'"').join(','));let blob=new Blob([rows.join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='production-report.csv';a.click();URL.revokeObjectURL(url);toast('CSV exported');}
 function refreshProductOptions(){let products=[...new Set(plans.map(p=>p.product))],brands=[...new Set([...Object.keys(brandProducts),...plans.map(p=>p.brand).filter(Boolean)])],a=document.getElementById('overviewProductFilter'),b=document.getElementById('reportProduct'),ob=document.getElementById('overviewBrandFilter'),rb=document.getElementById('reportBrand');if(a){let keep=a.value;a.innerHTML='<option>All products</option>'+products.map(x=>`<option>${x}</option>`).join('');if(products.includes(keep))a.value=keep;}if(b){let keep=b.value;b.innerHTML='<option value="all">All products</option>'+products.map(x=>`<option>${x}</option>`).join('');if(products.includes(keep))b.value=keep;}if(ob){let keep=ob.value;ob.innerHTML='<option>All brands</option>'+brands.map(x=>`<option>${x}</option>`).join('');if(brands.includes(keep))ob.value=keep;}if(rb){let keep=rb.value;rb.innerHTML='<option value="all">All brands</option>'+brands.map(x=>`<option value="${x}">${x}</option>`).join('');if(brands.includes(keep))rb.value=keep;}}
-function persistAppData(){try{localStorage.setItem('productionManagementV4',JSON.stringify({brandProducts,plans}));}catch(err){console.warn('Could not save production data locally',err);}}
-function syncAll(){persistAppData();refreshProductOptions();try{renderPlans()}catch(e){console.error('Plans render error',e)}try{renderOperator()}catch(e){console.error('Operator render error',e)}try{renderOverviewChart()}catch(e){console.error('Overview render error',e)}try{renderReports()}catch(e){console.error('Reports render error',e)}try{renderRework()}catch(e){console.error('Rework render error',e)}}
+function persistAppData(){
+  // Business data is written directly to Supabase by each save operation.
+  // This function intentionally never stores production records in browser storage.
+}
+function syncAll(){
+  refreshProductOptions();
+  try{renderPlans();}catch(e){console.error('Plans render error',e);}
+  try{renderOperator();}catch(e){console.error('Operator render error',e);}
+  try{renderOverviewChart();}catch(e){console.error('Overview render error',e);}
+  try{renderReports();}catch(e){console.error('Reports render error',e);}
+  try{renderRework();}catch(e){console.error('Rework render error',e);}
+}
 window.addEventListener('resize',()=>requestAnimationFrame(renderOverviewChart));window.addEventListener('pageshow',()=>requestAnimationFrame(renderOverviewChart));document.getElementById('reportType')?.addEventListener('change',renderReports);
 initializeTodayDateFilters();syncAll();requestAnimationFrame(()=>{renderOverviewChart();setTimeout(renderOverviewChart,100);});
 </script>
