@@ -6,8 +6,8 @@
     {id:'overview',label:'Overview'},
     {id:'plans',label:'Production Plans'},
     {id:'operator',label:'Operator'},
-    {id:'reports',label:'Reports'},
-    {id:'rework',label:'Rework'}
+    {id:'rework',label:'Rework'},
+    {id:'reports',label:'Reports'}
   ];
 
   const root=document.createElement('div');
