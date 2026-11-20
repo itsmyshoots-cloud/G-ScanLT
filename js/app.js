@@ -1009,11 +1009,11 @@ function renderRework(){
   if(!k||!count||!table)return;
   k.innerHTML=[['Rejected units',rejectedTotal],['Pending resolution',pending],['Rework completed',completed],['Finally rejected',finalRejected]].map(([label,value])=>`<div class="card"><div class="klabel">${label}</div><div class="kvalue">${value}</div></div>`).join('');
   count.textContent=`${filtered.length} plans · ${rejectedTotal} rejected units`;
-  table.querySelector('thead').innerHTML='<tr><th>DATE</th><th>PLAN STATUS</th><th>LINE</th><th>BRAND</th><th>PRODUCT / MODEL</th><th>PLANNED</th><th>ACTUAL</th><th>REJECTED</th><th>PENDING</th><th>REWORKED</th><th>FINALLY REJECTED</th><th>ACTION</th></tr>';
+  table.querySelector('thead').innerHTML='<tr><th>PRODUCTION</th><th>PRODUCT / MODEL</th><th>OUTPUT</th><th>REJECTED</th><th>PENDING</th><th>REWORKED</th><th>FINAL REJECT</th><th>ACTION</th></tr>';
   table.querySelector('tbody').innerHTML=filtered.map(p=>{
     const units=planReworkUnits(p),rej=units.length,pend=units.filter(x=>(x.unit.status||'Pending')==='Pending').length,done=units.filter(x=>x.unit.status==='Completed').length,final=units.filter(x=>x.unit.status==='Finally Rejected').length;
-    return `<tr><td>${escapeHtml(p.date||'—')}</td><td>${escapeHtml(p.status||'—')}</td><td>${escapeHtml(p.line||'—')}</td><td>${escapeHtml(p.brand||'—')}</td><td>${escapeHtml(p.product||'—')} / ${escapeHtml(p.model||'—')}</td><td>${Number(p.qty)||0}</td><td>${Number(p.actual)||0}</td><td>${rej}</td><td>${pend}</td><td>${done}</td><td>${final}</td><td><button class="btn primary" onclick="openReworkPlan('${p.id}')">Rework</button></td></tr>`;
-  }).join('')||'<tr><td colspan="12" class="rework-empty">No rejected production matches these filters.</td></tr>'
+    return `<tr><td><div class="rw-production-cell"><strong>${escapeHtml(p.date||'—')}</strong><span>${escapeHtml(p.line||'—')} · ${escapeHtml(p.brand||'—')}</span><small>${escapeHtml(p.status||'—')}</small></div></td><td><div class="rw-product-cell"><strong>${escapeHtml(p.product||'—')}</strong><span>${escapeHtml(p.model||'—')}</span></div></td><td><div class="rw-output-cell"><strong>${Number(p.actual)||0}</strong><span>of ${Number(p.qty)||0} planned</span></div></td><td><span class="rw-count-pill rejected">${rej}</span></td><td><span class="rw-count-pill pending">${pend}</span></td><td><span class="rw-count-pill completed">${done}</span></td><td><span class="rw-count-pill final">${final}</span></td><td><button class="btn primary" onclick="openReworkPlan('${p.id}')">Resolve</button></td></tr>`;
+  }).join('')||'<tr><td colspan="8" class="rework-empty">No rejected production matches these filters.</td></tr>'
   var advanced=document.getElementById('reworkAdvancedCount');
   if(advanced){var active=[brandForProducts!=='all',selectedProduct!=='all',selectedModel!=='all',shift!=='all'].filter(Boolean).length;advanced.textContent=active?active+' active':'Optional filters';}
 }
