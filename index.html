@@ -1216,6 +1216,12 @@ select option,optgroup{
   .plan-break-fields{grid-template-columns:minmax(0,1fr)}
 }
 
+
+/* Dropdown and break-information detail polish */
+.catalog-suggestion{font-family:inherit;font-size:13px;font-weight:500;line-height:1.35}
+.plan-break-visible{display:inline-block;margin-top:3px;color:#526b8a;font-size:10px;font-weight:600}
+.plan-chart-breaks{margin:0 0 8px;font-size:10px}
+
 </style></head><body>
 <div class="app"><aside class="sidebar"><div class="brand">Production Management<small>OPERATIONS CONTROL</small></div><div class="navlabel">WORKSPACE</div><nav class="nav" aria-label="Main navigation"><button class="active" data-page="overview"><span class="ico">▦</span><span>Overview</span></button><button data-page="plans"><span class="ico">▤</span><span>Production Plans</span></button><button data-page="operator"><span class="ico">◉</span><span>Operator</span></button><button data-page="reports"><span class="ico">▧</span><span>Reports</span></button><button data-page="rework"><span class="ico">↻</span><span>Rework</span></button></nav><div class="sidebottom">Production Control · V6 update</div></aside>
 <main class="main"><header class="topbar"><div class="crumb" id="crumb">Overview</div><div class="user"><div class="avatar">SP</div><div><strong style="color:#263449">Supervisor</strong><br/>Production Control</div></div></header><div class="content">
@@ -1464,9 +1470,13 @@ installUniversalPopupControls();
 function renderPlans(){
   var el=document.getElementById('planlist');if(!el)return;
   el.innerHTML=plans.map(function(p){
+    var breakText=(p.breakTimes||[]).map(function(x){
+      return formatTime12(x.start_time||x.start)+'–'+formatTime12(x.end_time||x.end);
+    }).join(', ');
     return '<div class="plan"><h3>'+escapeHtml(p.line)+' · '+escapeHtml(p.brand||'Unbranded')+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model||p.product)+'</h3>'+
       '<div class="planmeta">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+'<br>Target: '+p.qty+' units · '+p.actual+' actual · '+p.rejection+' rejected<br>'+
-      escapeHtml(formatTime12(p.start))+'–'+escapeHtml(formatTime12(p.end))+' · '+escapeHtml(p.supervisor||'Unassigned')+'</div>'+
+      escapeHtml(formatTime12(p.start))+'–'+escapeHtml(formatTime12(p.end))+' · '+escapeHtml(p.supervisor||'Unassigned')+
+      (breakText?'<br><span class="plan-break-visible">Breaks: '+escapeHtml(breakText)+'</span>':'')+'</div>'+
       '<div class="planbottom"><span class="pill '+(p.status==='Draft'?'warn':'')+'">'+escapeHtml(p.status)+'</span><div class="filters">'+
       '<button class="btn" onclick="viewPlan(\''+p.id+'\')">View</button>'+
       (p.status==='Draft'?'<button class="btn" onclick="editPlan(\''+p.id+'\')">Edit</button><button class="btn primary" onclick="publishPlan(\''+p.id+'\')">Publish</button>':'')+
@@ -1479,8 +1489,12 @@ function renderOperator(){
   var visible=plans.filter(function(p){return p.status==='Published'&&p.date===today;});
   el.innerHTML=visible.map(function(p){
     var percentage=Math.round(p.qty?p.actual/p.qty*100:0);
+    var breakText=(p.breakTimes||[]).map(function(x){
+      return formatTime12(x.start_time||x.start)+'–'+formatTime12(x.end_time||x.end);
+    }).join(', ');
     return '<div class="plan"><h3>'+escapeHtml(p.line)+' · '+escapeHtml(p.brand||'Unbranded')+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model||p.product)+'</h3>'+
-      '<div class="planmeta">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+'<br>Target: '+p.qty+' units · '+escapeHtml(formatTime12(p.start))+'–'+escapeHtml(formatTime12(p.end))+'</div>'+
+      '<div class="planmeta">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+'<br>Target: '+p.qty+' units · '+escapeHtml(formatTime12(p.start))+'–'+escapeHtml(formatTime12(p.end))+
+      (breakText?'<br><span class="plan-break-visible">Breaks: '+escapeHtml(breakText)+'</span>':'')+'</div>'+
       '<div class="progress"><i style="width:'+Math.min(100,percentage)+'%"></i></div>'+
       '<div class="linemeta"><span>'+p.actual+' / '+p.qty+' units · Rejected '+p.rejection+'</span><span>'+percentage+'%</span></div>'+
       '<div class="planbottom"><span class="pill">Published</span><button class="btn primary" onclick="openExecution(\''+p.id+'\')">Open plan</button></div></div>';
@@ -1947,18 +1961,28 @@ function attachCatalogAutocomplete(fieldId,itemsGetter){
   field.addEventListener('input',render);
   field.addEventListener('keydown',function(event){
     var buttons=Array.from(menu.querySelectorAll('.catalog-suggestion'));
+    if(event.key==='ArrowDown'&&buttons.length){
+      event.preventDefault();buttons[0].focus();
+    }else if(event.key==='Escape'){
+      event.preventDefault();menu.classList.add('hidden');field.blur();
+    }else if(event.key==='Enter'&&buttons.length===1){
+      event.preventDefault();buttons[0].click();
+    }
+  });
+  menu.addEventListener('mousedown',function(event){event.preventDefault();});
+  menu.addEventListener('keydown',function(event){
+    var buttons=Array.from(menu.querySelectorAll('.catalog-suggestion'));
     var active=buttons.findIndex(function(x){return x===document.activeElement;});
     if(event.key==='ArrowDown'&&buttons.length){
       event.preventDefault();buttons[Math.min(active+1,buttons.length-1)].focus();
     }else if(event.key==='ArrowUp'&&buttons.length){
       event.preventDefault();if(active>0)buttons[active-1].focus();else field.focus();
     }else if(event.key==='Escape'){
-      menu.classList.add('hidden');field.blur();
-    }else if(event.key==='Enter'&&buttons.length===1){
-      event.preventDefault();buttons[0].click();
+      event.preventDefault();menu.classList.add('hidden');field.focus();
+    }else if(event.key==='Enter'&&active>=0){
+      event.preventDefault();buttons[active].click();
     }
   });
-  menu.addEventListener('mousedown',function(event){event.preventDefault();});
   menu.addEventListener('click',function(event){
     var option=event.target.closest('.catalog-suggestion');if(!option)return;
     field.value=option.dataset.value||'';
@@ -1966,7 +1990,12 @@ function attachCatalogAutocomplete(fieldId,itemsGetter){
     field.dispatchEvent(new Event('input',{bubbles:true}));
     field.focus();
   });
-  field.addEventListener('blur',function(){setTimeout(function(){menu.classList.add('hidden');},160);});
+  field.addEventListener('blur',function(event){
+    if(event.relatedTarget&&menu.contains(event.relatedTarget))return;
+    setTimeout(function(){
+      if(!menu.contains(document.activeElement))menu.classList.add('hidden');
+    },180);
+  });
 }
 function planForm(p=null){
   editingPlanId=p?.id??null;
@@ -2102,7 +2131,10 @@ async function publishPlan(id){
 }
 function viewPlan(id){
   var p=plans.find(function(x){return String(x.id)===String(id);});if(!p)return;
-  var accepted=p.actual-p.rejection,labels=p.hourLabels||timeSlots(p.start,p.end);
+  var accepted=p.actual-p.rejection,labels=p.hourLabels||timeSlots(p.start,p.end,p.breakTimes||[]);
+  var breakText=(p.breakTimes||[]).map(function(x){
+    return formatTime12(x.start_time||x.start)+'–'+formatTime12(x.end_time||x.end);
+  }).join(', ');
   var body=planHourTargets(p).map(function(_,i){
     var e=p.entries&&p.entries[i]||{};
     return '<tr><td>'+escapeHtml(labels[i]||'Hour '+(i+1))+'</td><td>'+planHourTargets(p)[i]+'</td><td>'+getHourlyActual(p,i)+'</td><td>'+getHourlyRejected(p,i)+'</td><td>'+(getHourlyActual(p,i)-getHourlyRejected(p,i))+'</td><td>'+Number(e.missingSerialQty||0)+'</td></tr>';
@@ -2111,7 +2143,8 @@ function viewPlan(id){
   modal.innerHTML='<div class="modal" style="width:min(900px,100%);max-height:90vh;overflow:auto">'+
     '<div class="paneltitle"><h2>Production Plan Details</h2><span class="pill">'+escapeHtml(p.status)+'</span></div>'+
     '<h3>'+escapeHtml(p.line)+' · '+escapeHtml(p.brand)+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model||'—')+'</h3>'+
-    '<div class="sub">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+' · '+escapeHtml(formatTime12(p.start))+'–'+escapeHtml(formatTime12(p.end))+' · '+escapeHtml(p.supervisor||'Unassigned')+'</div>'+
+    '<div class="sub">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+' · '+escapeHtml(formatTime12(p.start))+'–'+escapeHtml(formatTime12(p.end))+' · '+escapeHtml(p.supervisor||'Unassigned')+
+    (breakText?' · Breaks: '+escapeHtml(breakText):'')+'</div>'+
     '<div class="detailgrid"><div class="detailbox"><div class="klabel">Planned</div><div class="num">'+p.qty+'</div></div><div class="detailbox"><div class="klabel">Actual</div><div class="num">'+p.actual+'</div></div><div class="detailbox"><div class="klabel">Rejected · Accepted</div><div class="num">'+p.rejection+' · '+accepted+'</div></div></div>'+
     '<div class="panel"><div class="paneltitle"><h3>Hourly Plan & Production</h3></div><div class="report-table-scroll"><table><thead><tr><th>Hour</th><th>Plan</th><th>Actual</th><th>Rejected</th><th>Accepted</th><th>Missing serial qty</th></tr></thead><tbody>'+body+'</tbody></table></div></div>'+
     '<div class="modalactions"><button class="btn" onclick="closePlanModal()">Close</button></div></div>';
@@ -2410,7 +2443,7 @@ function renderOverviewChart(){
     updateOverviewKpis();return;
   }
   function renderPlanGraph(p){
-    var labels=p.hourLabels||timeSlots(p.start,p.end);
+    var labels=p.hourLabels||timeSlots(p.start,p.end,p.breakTimes||[]);
     var targets=planHourTargets(p);
     var actual=labels.map(function(_,i){return getHourlyActual(p,i);});
     var planned=labels.map(function(_,i){return Number(targets[i])||0;});
@@ -2433,8 +2466,12 @@ function renderOverviewChart(){
     });
     svg.push('</svg>');
     var pct=p.qty?Math.round(p.actual/p.qty*100):0;
+    var breakText=(p.breakTimes||[]).map(function(x){
+      return formatTime12(x.start_time||x.start)+'–'+formatTime12(x.end_time||x.end);
+    }).join(', ');
     return '<article class="plan-hour-chart-card"><div class="plan-hour-chart-heading"><div><strong>'+escapeHtml(p.line)+' · '+escapeHtml(p.shift)+'</strong><small>'+escapeHtml(p.brand)+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model)+'</small></div><span>'+escapeHtml(getPlanStatusLabel(p))+'</span></div>'+
       '<div class="plan-hour-chart-meta"><span>Planned <b>'+p.qty+'</b></span><span>Actual <b>'+p.actual+'</b></span><span>'+pct+'% complete</span></div>'+
+      (breakText?'<div class="plan-break-visible plan-chart-breaks">Breaks: '+escapeHtml(breakText)+'</div>':'')+
       '<div class="plan-hour-chart-svg">'+svg.join('')+'</div></article>';
   }
   host.innerHTML='<div class="plan-hour-chart-list">'+filtered.map(renderPlanGraph).join('')+'</div>';
