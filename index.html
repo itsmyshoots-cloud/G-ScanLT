@@ -1065,6 +1065,64 @@
   .main{width:100%;max-width:100%;flex:1 1 auto;margin:0}
 }
 
+
+/* V7.0 Operator hourly-entry flow: production, serial replacements, remarks */
+.hourly-entry-wizard{width:min(680px,calc(100vw - 32px));max-height:min(86vh,820px);overflow:auto;padding:20px}
+.hourly-entry-wizard .hourly-modal-heading{margin-bottom:10px}
+.hourly-entry-wizard .hourly-modal-heading h2{font-size:20px}
+.hourly-entry-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px 14px}
+.hourly-entry-grid .field{min-width:0;margin:0}
+.hourly-entry-grid .field input,.hourly-entry-grid .field select{width:100%;min-width:0;min-height:44px;font-size:14px}
+.hourly-flow-hint{margin-top:12px;padding:10px 12px;border:1px solid #dce8f8;border-radius:9px;background:#f7faff;color:#586f8e;font-size:11px;line-height:1.5}
+.hourly-step-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:15px;padding-top:12px;border-top:1px solid var(--line)}
+.hourly-step-actions .btn{min-width:130px;min-height:43px}
+#hourlyFinalStep[hidden],#hourlyInitialStep[hidden]{display:none!important}
+.hourly-serial-summary{padding:12px;border:1px solid #cfe7d9;border-radius:10px;background:#f2faf5;margin-bottom:13px;color:#176b46;font-size:12px}
+.hourly-serial-summary>strong{display:block;font-size:13px;margin-bottom:6px}
+.hourly-serial-summary>span{color:#587468}
+.hourly-serial-summary-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px}
+.hourly-serial-summary-list span{font-size:11px;color:#2f4d40;overflow-wrap:anywhere}
+.hourly-serial-summary-list small{font-size:10px;color:#728a7c;margin-right:4px}
+.hourly-serial-summary-list b{color:#16804f;padding:0 3px}
+.hourly-entry-wizard #hrm{width:100%;font-size:14px}
+.hourly-optional{font-weight:400;color:var(--muted);font-size:10px}
+.hourly-serial-popup-overlay{position:fixed;inset:0;z-index:100050;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(15,26,43,.56);backdrop-filter:blur(2px)}
+.hourly-serial-popup{display:flex;flex-direction:column;width:min(620px,calc(100vw - 32px));max-height:min(86vh,780px);max-height:min(86dvh,780px);background:#fff;border:1px solid #dfe7f1;border-radius:16px;box-shadow:0 24px 70px rgba(12,24,42,.26);padding:18px;overflow:hidden}
+.hourly-serial-popup-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.hourly-serial-popup-head h3{margin:0 0 5px;font-size:17px;color:#172438}
+.hourly-serial-popup-head p{margin:0;font-size:11px;line-height:1.5;color:var(--muted)}
+.hourly-serial-pairs{flex:1 1 auto;min-height:0;overflow-y:auto;padding:12px 2px;overscroll-behavior:contain}
+.hourly-serial-pair-row{padding:11px 0;border-bottom:1px solid #edf1f6}
+.hourly-serial-pair-index{font-size:11px;font-weight:750;color:#39577c;margin-bottom:8px}
+.hourly-serial-pair-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.hourly-serial-pair-fields .field{min-width:0;margin:0}
+.hourly-serial-pair-fields label{display:block;font-size:10px;margin-bottom:5px;color:var(--muted)}
+.hourly-serial-pair-fields input{width:100%;min-width:0;min-height:42px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px}
+.hourly-serial-popup-actions{flex:0 0 auto;display:flex;justify-content:flex-end;gap:9px;padding-top:12px;border-top:1px solid var(--line)}
+.hourly-serial-popup-actions .btn{min-width:130px;min-height:43px}
+@media(max-width:760px){
+ .hourly-entry-wizard{width:min(520px,calc(100vw - 24px));max-height:min(80vh,740px);max-height:min(80dvh,740px);padding:15px;border-radius:15px}
+ .hourly-entry-wizard .hourly-modal-heading h2{font-size:17px}
+ .hourly-entry-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px}
+ .hourly-entry-grid .field label{font-size:10px}
+ .hourly-entry-grid .field input,.hourly-entry-grid .field select{min-height:42px;padding:8px;font-size:14px}
+ .hourly-flow-hint{font-size:10px;padding:9px}
+ .hourly-step-actions .btn{min-width:0;flex:1}
+ .hourly-serial-popup{width:min(500px,calc(100vw - 24px));max-height:78vh;max-height:78dvh;padding:14px}
+ .hourly-serial-popup-head h3{font-size:15px}
+ .hourly-serial-pair-fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .hourly-serial-pair-fields input{font-size:14px;min-height:42px}
+ .hourly-serial-popup-actions .btn{flex:1;min-width:0}
+}
+@media(max-width:390px){
+ .hourly-entry-wizard{max-height:76dvh;padding:12px}
+ .hourly-entry-grid{grid-template-columns:minmax(0,1fr)}
+ .hourly-serial-summary-list{grid-template-columns:minmax(0,1fr)}
+ .hourly-serial-popup{max-height:76dvh;padding:12px}
+ .hourly-serial-pair-fields{grid-template-columns:minmax(0,1fr)}
+ .hourly-serial-popup-actions{flex-direction:column-reverse}
+}
+
 </style></head><body>
 <div class="app"><aside class="sidebar"><div class="brand">Production Management<small>OPERATIONS CONTROL</small></div><div class="navlabel">WORKSPACE</div><nav class="nav" aria-label="Main navigation"><button class="active" data-page="overview"><span class="ico">▦</span><span>Overview</span></button><button data-page="plans"><span class="ico">▤</span><span>Production Plans</span></button><button data-page="operator"><span class="ico">◉</span><span>Operator</span></button><button data-page="reports"><span class="ico">▧</span><span>Reports</span></button><button data-page="rework"><span class="ico">↻</span><span>Rework</span></button></nav><div class="sidebottom">Production Control · V6 update</div></aside>
 <main class="main"><header class="topbar"><div class="crumb" id="crumb">Overview</div><div class="user"><div class="avatar">SP</div><div><strong style="color:#263449">Supervisor</strong><br/>Production Control</div></div></header><div class="content">
@@ -1203,6 +1261,7 @@ async function pmLoadProductionData(client){
       missingSerialEnd:record.missing_serial_end||'',
       alternateSerialStart:record.alternate_serial_start||'',
       alternateSerialEnd:record.alternate_serial_end||'',
+      serialExceptions:Array.isArray(record.serial_exceptions)?record.serial_exceptions:[],
       recordedAt:record.recorded_at,
       recordedBy:record.recorded_by,
       reworkItems:units,
@@ -1384,70 +1443,186 @@ function openExecution(id){
   host.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function hourEntry(id,h){
-  var p=plans.find(function(x){return String(x.id)===String(id);});if(!p)return toast('Production plan not found');
+  var p=plans.find(function(x){return String(x.id)===String(id);});
+  if(!p)return toast('Production plan not found');
   var entry=(p.entries&&p.entries[h])||{},saved=isHourlyEntrySaved(entry),admin=!!window.pmCanEditSavedHours;
   if(saved&&!admin)return toast('This hourly record is locked. Admin or Super Admin access is required to edit it.');
   if(!saved&&p.status!=='Published')return toast('Hourly production can only be recorded against a published plan.');
-  var modal=document.getElementById('modal'),label=(p.hourLabels||timeSlots(p.start,p.end))[h];
-  var note=saved
-    ?'<div class="hourly-admin-note">Admin correction mode. The corrected record remains locked for operators.</div>'
-    :'<div class="hourly-admin-note">After saving, this hourly entry is locked. Admin or Super Admin can make a correction.</div>';
-  var options=['IQC Rejection','LQC Rejection'].map(function(x){return '<option value="'+x+'" '+(entry.reason===x?'selected':'')+'>'+x+'</option>';}).join('');
-  modal.innerHTML='<div class="modal hourly-entry-modal"><div class="hourly-modal-heading"><div><h2>'+(saved?'Edit saved hourly record':'Record hourly production')+'</h2>'+
-    '<div class="sub">'+escapeHtml(p.line)+' · '+escapeHtml(p.product)+' · '+escapeHtml(label||'')+'</div></div>'+
-    (saved?'<span class="hourly-admin-badge">Admin edit</span>':'')+'</div>'+note+
-    '<div class="formgrid">'+
-      '<div class="field"><label>Planned quantity</label><input value="'+planHourTargets(p)[h]+'" disabled/></div>'+
-      '<div class="field"><label>Actual quantity</label><input id="ha" type="number" min="0" inputmode="numeric" value="'+(entry.actual==null?'':entry.actual)+'" placeholder="Actual produced"/></div>'+
-      '<div class="field"><label>Rejected quantity</label><input id="hr" type="number" min="0" inputmode="numeric" value="'+(entry.rejected==null?0:entry.rejected)+'" placeholder="Rejected units"/></div>'+
-      '<div class="field"><label>Rejection category</label><select id="hreason"><option value="">Select reason</option>'+options+'</select></div>'+
-      '<div class="field"><label>Start serial number</label><input id="hs" value="'+escapeHtml(entry.startSerial||'')+'" placeholder="First normal serial"/></div>'+
-      '<div class="field"><label>End serial number</label><input id="he" value="'+escapeHtml(entry.endSerial||'')+'" placeholder="Last normal serial"/></div>'+
-      '<div class="field"><label>Missing serial start</label><input id="hmissstart" value="'+escapeHtml(entry.missingSerialStart||'')+'" placeholder="Missing sticker serial / range start"/></div>'+
-      '<div class="field"><label>Missing serial end</label><input id="hmissend" value="'+escapeHtml(entry.missingSerialEnd||'')+'" placeholder="Same as start for one missing serial"/></div>'+
-      '<div class="field"><label>Missing serial quantity</label><input id="hmissqty" type="number" min="0" inputmode="numeric" value="'+(entry.missingSerialQty||0)+'" placeholder="0"/></div>'+
-      '<div class="field"><label>Alternate serial start</label><input id="hmaltstart" value="'+escapeHtml(entry.alternateSerialStart||'')+'" placeholder="First replacement serial"/></div>'+
-      '<div class="field"><label>Alternate serial end</label><input id="hmaltend" value="'+escapeHtml(entry.alternateSerialEnd||'')+'" placeholder="Last replacement serial"/></div>'+
-      '<div class="field hourly-remarks-field"><label>Remarks</label><input id="hrm" value="'+escapeHtml(entry.remarks||'')+'" placeholder="Optional"/></div>'+
-    '</div><div class="sub hourly-serial-note">Use the missing serial start/end and quantity when original stickers are damaged or absent. Enter the alternate serial range applied to those units. For one missing serial, enter the same value in both missing fields.</div>'+
-    '<div class="modalactions"><button class="btn" type="button" onclick="closePlanModal()">← Back to plan</button><button class="btn primary" type="button" onclick="submitHour(\''+String(p.id)+'\','+h+')">'+(saved?'Save admin correction':'Save hourly record')+'</button></div></div>';
+
+  var labels=p.hourLabels||timeSlots(p.start,p.end),label=labels[h]||'Hourly interval';
+  var serialPairs=Array.isArray(entry.serialExceptions)?entry.serialExceptions.map(function(x){
+    return {missing_serial_number:x.missing_serial_number||'',alternate_serial_number:x.alternate_serial_number||''};
+  }):[];
+  window.pmHourlyEntryDraft={
+    id:String(id),hourIndex:h,saved:saved,previous:entry,
+    serialPairs:serialPairs
+  };
+
+  var modal=document.getElementById('modal');
+  var options=['IQC Rejection','LQC Rejection'].map(function(x){
+    return '<option value="'+x+'" '+(entry.reason===x?'selected':'')+'>'+x+'</option>';
+  }).join('');
+
+  modal.innerHTML='<div class="modal hourly-entry-modal hourly-entry-wizard">'+
+    '<div class="hourly-modal-heading"><div><h2>'+(saved?'Correct hourly production':'Record hourly production')+'</h2>'+
+      '<div class="sub">'+escapeHtml(p.line)+' · '+escapeHtml(p.product)+' · '+escapeHtml(label)+'</div></div>'+
+      (saved?'<span class="hourly-admin-badge">Admin edit</span>':'')+'</div>'+
+    '<div class="hourly-admin-note">'+(saved?'Admin correction mode. Operators cannot change this saved entry.':'Complete the hourly production details. Once saved, the record is locked for operators.')+'</div>'+
+    '<section id="hourlyInitialStep">'+
+      '<div class="hourly-entry-grid">'+
+        '<div class="field"><label>Planned quantity</label><input value="'+planHourTargets(p)[h]+'" disabled/></div>'+
+        '<div class="field"><label>Actual quantity</label><input id="ha" type="number" min="0" inputmode="numeric" value="'+(entry.actual==null?'':entry.actual)+'" placeholder="Actual produced"/></div>'+
+        '<div class="field"><label>Rejected quantity</label><input id="hr" type="number" min="0" inputmode="numeric" value="'+(entry.rejected==null?0:entry.rejected)+'" placeholder="0"/></div>'+
+        '<div class="field"><label>Rejection category</label><select id="hreason"><option value="">Select IQC / LQC</option>'+options+'</select></div>'+
+        '<div class="field"><label>Starting serial number</label><input id="hs" value="'+escapeHtml(entry.startSerial||'')+'" placeholder="First production serial"/></div>'+
+        '<div class="field"><label>Ending serial number</label><input id="he" value="'+escapeHtml(entry.endSerial||'')+'" placeholder="Last production serial"/></div>'+
+        '<div class="field"><label>Missing sticker quantity</label><input id="hmissqty" type="number" min="0" inputmode="numeric" value="'+(entry.missingSerialQty||0)+'" placeholder="0"/></div>'+
+      '</div>'+
+      '<div class="hourly-flow-hint">Enter the normal serial range first. If any serial stickers are missing or damaged, enter the quantity and continue to record each missing serial and its replacement.</div>'+
+      '<div class="modalactions hourly-step-actions"><button class="btn" type="button" onclick="closePlanModal()">← Back to plan</button>'+
+        '<button class="btn primary" type="button" onclick="continueHourlyEntry()">Continue</button></div>'+
+    '</section>'+
+    '<section id="hourlyFinalStep" hidden>'+
+      '<div class="hourly-serial-summary" id="hourlySerialSummary">No missing serial stickers recorded.</div>'+
+      '<div class="field"><label for="hrm">Remarks <span class="hourly-optional">(Optional)</span></label><textarea id="hrm" rows="3" placeholder="Add any production remarks, or leave blank">'+escapeHtml(entry.remarks||'')+'</textarea></div>'+
+      '<div class="modalactions hourly-step-actions"><button class="btn" type="button" onclick="backToHourlyEntry()">← Back</button>'+
+        '<button class="btn primary" type="button" onclick="submitHour(\''+String(p.id)+'\','+h+')">'+(saved?'Save correction':'Save hourly record')+'</button></div>'+
+    '</section>'+
+    '<div id="hourlySerialPopupHost"></div>'+
+  '</div>';
   modal.classList.remove('hidden');
 }
+
+function continueHourlyEntry(){
+  var draft=window.pmHourlyEntryDraft;if(!draft)return;
+  var p=plans.find(function(x){return String(x.id)===draft.id;});if(!p)return;
+  var q=Number(document.getElementById('ha').value||0);
+  var rejected=Number(document.getElementById('hr').value||0);
+  var serialStart=document.getElementById('hs').value.trim();
+  var serialEnd=document.getElementById('he').value.trim();
+  var reason=document.getElementById('hreason').value;
+  var missingQty=Number(document.getElementById('hmissqty').value||0);
+  if(!Number.isInteger(q)||q<0||!Number.isInteger(rejected)||rejected<0||rejected>q)return toast('Rejected quantity must be a whole number between zero and actual quantity.');
+  if(q>planHourTargets(p)[draft.hourIndex])return toast('Actual quantity cannot exceed the planned quantity for this hour.');
+  if(q>0&&(!serialStart||!serialEnd))return toast('Enter the starting and ending production serial numbers.');
+  if(rejected>0&&!['IQC Rejection','LQC Rejection'].includes(reason))return toast('Choose IQC Rejection or LQC Rejection.');
+  if(rejected===0)document.getElementById('hreason').value='';
+  if(!Number.isInteger(missingQty)||missingQty<0||missingQty>q)return toast('Missing sticker quantity must be a whole number between zero and actual quantity.');
+  draft.actualQty=q;draft.rejectedQty=rejected;draft.serialStart=serialStart;draft.serialEnd=serialEnd;
+  draft.rejectionReason=rejected?reason:null;draft.missingQty=missingQty;
+
+  if(missingQty>0){
+    openHourlySerialPopup(missingQty,draft.serialPairs||[]);
+    return;
+  }
+  draft.serialPairs=[];
+  showHourlyFinalStep();
+}
+
+function openHourlySerialPopup(quantity,existing){
+  var host=document.getElementById('hourlySerialPopupHost');if(!host)return;
+  var rows=Array.from({length:quantity},function(_,i){
+    var pair=existing[i]||{};
+    return '<div class="hourly-serial-pair-row">'+
+      '<div class="hourly-serial-pair-index">Missing sticker '+(i+1)+'</div>'+
+      '<div class="hourly-serial-pair-fields">'+
+        '<div class="field"><label>Missing serial number</label><input class="pm-missing-serial" data-index="'+i+'" value="'+escapeHtml(pair.missing_serial_number||'')+'" placeholder="Enter missing serial"/></div>'+
+        '<div class="field"><label>Replacement serial number</label><input class="pm-alternate-serial" data-index="'+i+'" value="'+escapeHtml(pair.alternate_serial_number||'')+'" placeholder="Enter replacement serial"/></div>'+
+      '</div></div>';
+  }).join('');
+  host.innerHTML='<div class="hourly-serial-popup-overlay"><section class="hourly-serial-popup" role="dialog" aria-modal="true" aria-labelledby="hourlySerialPopupTitle">'+
+    '<div class="hourly-serial-popup-head"><div><h3 id="hourlySerialPopupTitle">Missing & replacement serials</h3><p>Enter one missing sticker number and its replacement for each affected unit.</p></div><span class="hourly-admin-badge">'+quantity+' units</span></div>'+
+    '<div class="hourly-serial-pairs">'+rows+'</div>'+
+    '<div class="modalactions hourly-serial-popup-actions"><button class="btn" type="button" onclick="cancelHourlySerialPopup()">Cancel</button><button class="btn primary" type="button" onclick="saveHourlySerialMappings()">Save serial details</button></div>'+
+    '</section></div>';
+  var first=host.querySelector('.pm-missing-serial');if(first)first.focus({preventScroll:true});
+}
+
+function cancelHourlySerialPopup(){
+  var host=document.getElementById('hourlySerialPopupHost');if(host)host.innerHTML='';
+}
+
+function saveHourlySerialMappings(){
+  var draft=window.pmHourlyEntryDraft;if(!draft)return;
+  var missing=Array.from(document.querySelectorAll('.pm-missing-serial'));
+  var alternate=Array.from(document.querySelectorAll('.pm-alternate-serial'));
+  var pairs=missing.map(function(input,i){
+    return {
+      missing_serial_number:input.value.trim(),
+      alternate_serial_number:alternate[i]?.value.trim()||''
+    };
+  });
+  if(pairs.length!==draft.missingQty)return toast('Enter a serial pair for every missing sticker.');
+  if(pairs.some(function(pair){return !pair.missing_serial_number||!pair.alternate_serial_number;}))return toast('Complete both serial numbers for every missing sticker.');
+  var missingNumbers=pairs.map(function(x){return x.missing_serial_number.toLocaleLowerCase();});
+  var alternateNumbers=pairs.map(function(x){return x.alternate_serial_number.toLocaleLowerCase();});
+  if(new Set(missingNumbers).size!==missingNumbers.length)return toast('A missing serial number cannot be entered more than once.');
+  if(new Set(alternateNumbers).size!==alternateNumbers.length)return toast('A replacement serial number cannot be used more than once.');
+  if(pairs.some(function(x){return missingNumbers.includes(x.alternate_serial_number.toLocaleLowerCase());}))return toast('A replacement serial number cannot duplicate a missing serial number.');
+  draft.serialPairs=pairs;
+  cancelHourlySerialPopup();
+  showHourlyFinalStep();
+}
+
+function showHourlyFinalStep(){
+  var first=document.getElementById('hourlyInitialStep'),final=document.getElementById('hourlyFinalStep');
+  if(first)first.hidden=true;
+  if(final)final.hidden=false;
+  var summary=document.getElementById('hourlySerialSummary'),draft=window.pmHourlyEntryDraft;
+  if(summary){
+    var pairs=draft?.serialPairs||[];
+    summary.innerHTML=pairs.length
+      ?'<strong>'+pairs.length+' serial replacement'+(pairs.length===1?'':'s')+' recorded</strong><div class="hourly-serial-summary-list">'+pairs.map(function(x,i){return '<span><small>#'+(i+1)+'</small>'+escapeHtml(x.missing_serial_number)+' <b>→</b> '+escapeHtml(x.alternate_serial_number)+'</span>';}).join('')+'</div>'
+      :'<strong>No missing serial stickers</strong><span>Normal serial range will be saved.</span>';
+  }
+}
+
+function backToHourlyEntry(){
+  var first=document.getElementById('hourlyInitialStep'),final=document.getElementById('hourlyFinalStep');
+  if(final)final.hidden=true;if(first)first.hidden=false;
+}
+
 async function submitHour(id,h){
   var p=plans.find(function(x){return String(x.id)===String(id);});if(!p)return toast('Production plan not found');
+  var draft=window.pmHourlyEntryDraft;
+  if(!draft||draft.id!==String(id)||draft.hourIndex!==h)return toast('Hourly entry details were lost. Please reopen the hour.');
   var previous=(p.entries&&p.entries[h])||{},alreadySaved=isHourlyEntrySaved(previous),admin=!!window.pmCanEditSavedHours;
   if(alreadySaved&&!admin)return toast('This hourly record is locked. Admin or Super Admin access is required to edit it.');
   if(!alreadySaved&&p.status!=='Published')return toast('Hourly production can only be recorded against a published plan.');
-  var q=Number(document.getElementById('ha').value||0),rejected=Number(document.getElementById('hr').value||0);
-  var serialStart=document.getElementById('hs').value.trim(),serialEnd=document.getElementById('he').value.trim();
-  var reason=document.getElementById('hreason').value,remarks=document.getElementById('hrm').value.trim();
-  var missingQty=Number(document.getElementById('hmissqty').value||0);
-  var missingStart=document.getElementById('hmissstart').value.trim(),missingEnd=document.getElementById('hmissend').value.trim();
-  var altStart=document.getElementById('hmaltstart').value.trim(),altEnd=document.getElementById('hmaltend').value.trim();
-  if(q<0||rejected<0||rejected>q)return toast('Rejected quantity must be between 0 and actual produced quantity');
-  if(missingQty<0||missingQty>q)return toast('Missing serial quantity must be between zero and actual quantity');
+
+  var q=Number(draft.actualQty)||0,rejected=Number(draft.rejectedQty)||0;
+  var serialStart=draft.serialStart||'',serialEnd=draft.serialEnd||'';
+  var reason=draft.rejectionReason||null,missingQty=Number(draft.missingQty)||0;
+  var pairs=Array.isArray(draft.serialPairs)?draft.serialPairs:[];
+  var remarks=document.getElementById('hrm')?.value.trim()||'';
+
+  if(q<0||rejected<0||rejected>q)return toast('Rejected quantity must be between zero and actual produced quantity.');
+  if(missingQty<0||missingQty>q)return toast('Missing sticker quantity must be between zero and actual produced quantity.');
+  if(q>planHourTargets(p)[h])return toast('Actual produced quantity cannot exceed the planned quantity for this hour.');
+  if(q>0&&(!serialStart||!serialEnd))return toast('Enter the normal serial range.');
+  if(rejected>0&&!['IQC Rejection','LQC Rejection'].includes(reason))return toast('Choose IQC Rejection or LQC Rejection.');
+  if(pairs.length!==missingQty)return toast('Enter the missing and replacement serial numbers first.');
+  if(pairs.some(function(x){return !x.missing_serial_number||!x.alternate_serial_number;}))return toast('Complete every missing / replacement serial pair.');
+
   if(alreadySaved){
     var resolved=normalizeReworkItems(previous).filter(function(unit){return unit.status!=='Pending';}).length;
-    if(rejected<resolved)return toast('Rejected quantity cannot be reduced below '+resolved+'; those units already have a saved final disposition');
+    if(rejected<resolved)return toast('Rejected quantity cannot be reduced below '+resolved+'; those units already have a saved final disposition.');
     if(!previous.dbId)return toast('This saved entry has no database ID. Refresh before editing.');
   }
-  if(q>planHourTargets(p)[h])return toast('Actual produced quantity cannot exceed the planned quantity for this interval');
-  if(q>0&&(!serialStart||!serialEnd))return toast('Enter the normal serial start and end range');
-  if(rejected>0&&!['IQC Rejection','LQC Rejection'].includes(reason))return toast('Choose IQC Rejection or LQC Rejection');
-  if(missingQty>0&&(!missingStart||!missingEnd||!altStart||!altEnd))return toast('Enter the missing serial start/end, quantity and alternate serial start/end');
-  if(missingQty===0&&(missingStart||missingEnd||altStart||altEnd))return toast('Enter a missing serial quantity when adding missing / alternate serial details');
-  var button=document.querySelector('#modal .modalactions .btn.primary');
+
+  var button=document.querySelector('#modal .hourly-entry-modal .modalactions .btn.primary');
   if(button){button.disabled=true;button.textContent='Saving…';}
   try{
     var values={
       actual_qty:q,rejected_qty:rejected,
       serial_start:serialStart||null,serial_end:serialEnd||null,
-      rejection_reason:reason||null,remarks:remarks,
+      rejection_reason:reason,remarks:remarks,
       missing_serial_qty:missingQty,
-      missing_serial_start:missingQty?missingStart:null,
-      missing_serial_end:missingQty?missingEnd:null,
-      alternate_serial_start:missingQty?altStart:null,
-      alternate_serial_end:missingQty?altEnd:null
+      missing_serial_start:missingQty?pairs[0].missing_serial_number:null,
+      missing_serial_end:missingQty?pairs[pairs.length-1].missing_serial_number:null,
+      alternate_serial_start:missingQty?pairs[0].alternate_serial_number:null,
+      alternate_serial_end:missingQty?pairs[pairs.length-1].alternate_serial_number:null,
+      serial_exceptions:pairs
     };
     var db=pmRequireDb(),result;
     if(alreadySaved){
@@ -1458,11 +1633,12 @@ async function submitHour(id,h){
       }).select('id').single();
     }
     if(result.error)throw result.error;
-    closePlanModal();await pmReloadProductionData();openExecution(id);
+    closePlanModal();window.pmHourlyEntryDraft=null;
+    await pmReloadProductionData();openExecution(id);
     toast(alreadySaved?'Hourly correction saved to Supabase':'Hourly production saved to Supabase and locked');
   }catch(error){
     toast('Could not save hourly production: '+error.message);
-    if(button){button.disabled=false;button.textContent=alreadySaved?'Save admin correction':'Save hourly record';}
+    if(button){button.disabled=false;button.textContent=alreadySaved?'Save correction':'Save hourly record';}
   }
 }
 
