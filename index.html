@@ -1915,6 +1915,96 @@ html,body{max-width:100%;overflow-x:hidden}
   #overview .overview-filter-controls{grid-template-columns:minmax(0,1fr)}
 }
 
+
+/* V7.8 Final gutter correction: one offset only.
+   The fixed sidebar occupies its own 238px/205px rail. The main column
+   begins immediately after that rail. Remove ALL extra desktop wrapper
+   and page horizontal padding so no tab receives a second inset. */
+@media(min-width:761px){
+  .app{
+    display:block!important;
+    position:relative!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    overflow:visible!important;
+  }
+  .sidebar{
+    position:fixed!important;
+    top:0!important;left:0!important;right:auto!important;bottom:0!important;
+    width:238px!important;min-width:238px!important;max-width:238px!important;
+    height:100vh!important;min-height:100vh!important;
+    margin:0!important;z-index:1200!important;
+  }
+  .main{
+    display:block!important;
+    position:relative!important;
+    width:auto!important;
+    max-width:none!important;
+    min-width:0!important;
+    margin:0 0 0 238px!important;
+    padding:0!important;
+    overflow-x:clip!important;
+  }
+  .main>.content{
+    display:block!important;
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:0!important;
+    box-sizing:border-box!important;
+  }
+  .main>.content>.page,
+  .main>.content>.page.hidden{
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:0!important;
+    box-sizing:border-box!important;
+  }
+}
+@media(min-width:761px) and (max-width:1050px){
+  .sidebar{
+    width:205px!important;min-width:205px!important;max-width:205px!important;
+  }
+  .main{margin-left:205px!important}
+}
+@media(max-width:760px){
+  .app{
+    display:block!important;width:100%!important;
+    min-width:0!important;max-width:100%!important;
+    overflow-x:hidden!important;
+  }
+  .sidebar{
+    position:fixed!important;top:auto!important;right:0!important;
+    bottom:0!important;left:0!important;
+    width:100%!important;min-width:0!important;max-width:none!important;
+    height:calc(66px + env(safe-area-inset-bottom))!important;
+    min-height:0!important;margin:0!important;z-index:1200!important;
+  }
+  .main{
+    display:block!important;position:relative!important;
+    width:100%!important;max-width:100%!important;min-width:0!important;
+    margin:0!important;padding:0!important;overflow-x:hidden!important;
+  }
+  .main>.content{
+    display:block!important;width:100%!important;max-width:none!important;
+    min-width:0!important;margin:0!important;
+    padding:14px 12px calc(96px + env(safe-area-inset-bottom))!important;
+    box-sizing:border-box!important;
+  }
+  .main>.content>.page,
+  .main>.content>.page.hidden{
+    width:100%!important;max-width:none!important;min-width:0!important;
+    margin:0!important;padding:0!important;box-sizing:border-box!important;
+  }
+}
+@media(max-width:390px){
+  .main>.content{padding-left:10px!important;padding-right:10px!important}
+}
+
 </style></head><body>
 <div class="app"><aside class="sidebar"><div class="brand">Production Management<small>OPERATIONS CONTROL</small></div><div class="navlabel">WORKSPACE</div><nav class="nav" aria-label="Main navigation"><button class="active" data-page="overview"><span class="ico">▦</span><span>Overview</span></button><button data-page="plans"><span class="ico">▤</span><span>Production Plans</span></button><button data-page="operator"><span class="ico">◉</span><span>Operator</span></button><button data-page="reports"><span class="ico">▧</span><span>Reports</span></button><button data-page="rework"><span class="ico">↻</span><span>Rework</span></button></nav><div class="sidebottom">Production Control · V6 update</div></aside>
 <main class="main"><header class="topbar"><div class="crumb" id="crumb">Overview</div><div class="user"><div class="avatar">SP</div><div><strong style="color:#263449">Supervisor</strong><br/>Production Control</div></div></header><div class="content">
