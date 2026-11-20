@@ -670,12 +670,67 @@
   }
 }
 
+
+
+
+/* V6.2 signup and super-admin access screen */
+#pmAuthGate .auth-switch{display:block;width:auto!important;margin:14px auto 0!important;padding:4px 8px!important;background:transparent!important;color:#3978f6!important;font-size:12px!important;font-weight:700!important}
+#pmAuthGate .auth-info{font-size:12px;line-height:1.55;color:#256b4b;margin-top:10px;min-height:18px}
+#pmAuthGate .auth-info:empty{display:none}
+.pm-admin-table-wrap{overflow:auto}.pm-admin-table{min-width:940px}
+.pm-admin-table td{vertical-align:top}
+.pm-admin-account{font-weight:700;color:#23344c;min-width:180px}
+.pm-admin-account small{display:block;margin-top:4px;color:#718096;font-weight:400}
+.pm-admin-role{border:1px solid var(--line);border-radius:7px;padding:8px;background:#fff;min-width:125px}
+.pm-admin-status{display:flex;flex-direction:column;gap:6px;font-size:11px;white-space:nowrap}
+.pm-admin-status label,.pm-admin-tabs label{display:flex;align-items:center;gap:6px}
+.pm-admin-status input,.pm-admin-tabs input{accent-color:var(--blue)}
+.pm-admin-tabs{display:grid;grid-template-columns:repeat(3,minmax(90px,1fr));gap:7px;min-width:300px}
+.pm-admin-tabs label{font-size:11px;white-space:nowrap}
+.pm-admin-save{white-space:nowrap}
+.pm-admin-note{padding:12px 14px;border:1px solid #dbe8ff;border-radius:9px;background:#f7faff;color:#47617f;font-size:12px;line-height:1.5;margin-bottom:14px}
+.pm-admin-message{font-size:12px;color:#188455;min-height:18px;margin:10px 0}
+@media(max-width:700px){.pm-admin-tabs{grid-template-columns:repeat(2,minmax(90px,1fr))}}
+
+
+
+/* V6.3 plan status, chart export, recovery and hourly lock layout */
+.plan-status-panel{margin:0 0 16px}
+.plan-status-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.plan-status-card{min-width:0;border:1px solid var(--line);border-radius:11px;background:#fff;padding:14px}
+.plan-status-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.plan-status-heading strong{font-size:13px;line-height:1.35;overflow-wrap:anywhere}
+.plan-status-product{font-size:13px;font-weight:700;color:#23344c;margin-top:8px;line-height:1.35}
+.plan-status-product span{font-weight:500;color:var(--muted)}
+.plan-status-meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;color:var(--muted);font-size:11px}
+.plan-status-pill{flex:0 0 auto;border-radius:20px;padding:5px 9px;background:#edf4ff;color:#285ca9;font-size:10px;font-weight:700;white-space:nowrap}
+.plan-status-pill.in-progress{background:#eaf8f0;color:#16804f}
+.plan-status-pill.completed{background:#e9eef5;color:#526277}
+.plan-status-pill.draft{background:#fff4df;color:#a66b0a}
+.plan-status-numbers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:12px}
+.plan-status-numbers span{min-width:0;display:flex;flex-direction:column;gap:4px}
+.plan-status-numbers small{font-size:9px;color:var(--muted)}
+.plan-status-numbers b{font-size:16px;color:#172438}
+.plan-status-track{height:9px;border-radius:10px;background:#eaf0f6;overflow:hidden;margin-top:12px}
+.plan-status-track i{display:block;height:100%;background:#3978f6;border-radius:10px}
+.plan-status-foot{display:flex;justify-content:space-between;gap:10px;margin-top:6px;color:var(--muted);font-size:10px}
+.plan-status-empty{padding:14px}
+.chart-subtitle{display:block;margin-top:4px;color:var(--muted);font-size:11px}
+.chart-export-trigger{min-height:38px;white-space:nowrap}
+.chart-export-menu{position:fixed;z-index:10002;display:flex;flex-direction:column;gap:4px;min-width:190px;padding:7px;border:1px solid #dce4ef;border-radius:11px;background:#fff;box-shadow:0 12px 32px #0b1d3326}
+.chart-export-menu.hidden{display:none!important}
+.chart-export-menu button{border:0;border-radius:7px;background:#fff;text-align:left;padding:10px 12px;color:#24364d;font-size:12px;font-weight:650;cursor:pointer}
+.chart-export-menu button:hover{background:#edf4ff}
+@media(max-width:760px){.plan-status-grid{grid-template-columns:minmax(0,1fr)}.plan-status-card{padding:12px}.plan-status-numbers b{font-size:15px}.chart-export-trigger{min-height:42px;font-size:11px;padding:8px 10px}}
+@media(max-width:380px){.plan-status-numbers b{font-size:14px}}
+
 </style></head><body>
 <div class="app"><aside class="sidebar"><div class="brand">Production Management<small>OPERATIONS CONTROL</small></div><div class="navlabel">WORKSPACE</div><nav class="nav" aria-label="Main navigation"><button class="active" data-page="overview"><span class="ico">▦</span><span>Overview</span></button><button data-page="plans"><span class="ico">▤</span><span>Production Plans</span></button><button data-page="operator"><span class="ico">◉</span><span>Operator</span></button><button data-page="reports"><span class="ico">▧</span><span>Reports</span></button><button data-page="rework"><span class="ico">↻</span><span>Rework</span></button></nav><div class="sidebottom">Production Control · V6 update</div></aside>
 <main class="main"><header class="topbar"><div class="crumb" id="crumb">Overview</div><div class="user"><div class="avatar">SP</div><div><strong style="color:#263449">Supervisor</strong><br/>Production Control</div></div></header><div class="content">
 <section id="overview" class="page"><div class="pagehead"><div><h1>Production Overview</h1><div class="sub">Live production performance across all lines</div></div><div class="filters"><input class="input" id="overviewDateFilter" type="date" value="2026-11-19" onchange="refreshOverview()"/><select class="select" id="overviewShiftFilter" onchange="refreshOverview()"><option>All shifts</option><option>Shift 1</option><option>Shift 2</option></select><select class="select" id="lineFilter" onchange="refreshOverview()"><option>All lines</option><option>Line 1</option><option>Line 2</option><option>Line 3</option></select><select class="select" id="overviewBrandFilter" onchange="refreshOverview()"><option>All brands</option>${Object.keys(brandProducts).map(b=>`<option>${b}</option>`).join('')}</select><select class="select" id="overviewProductFilter" onchange="refreshOverview()"><option>All products</option></select></div></div>
 <div class="cards"><div class="card"><div class="klabel">Today's Planned</div><div class="kvalue">300</div><div class="kfoot">Units across 3 lines</div></div><div class="card"><div class="klabel">Actual Produced</div><div class="kvalue">242</div><div class="kfoot good">80.7% of daily target</div></div><div class="card"><div class="klabel">Remaining</div><div class="kvalue">58</div><div class="kfoot">Units to plan</div></div><div class="card"><div class="klabel">Rejections</div><div class="kvalue">6</div><div class="kfoot">Recorded at shift close</div></div></div>
-<div class="layout"><div><div class="panel"><div class="paneltitle"><h3>Hourly Plan vs Actual</h3><span>Live · Units per hour</span></div><div class="legend"><span><i class="dot" style="background:#3978f6"></i>Planned</span><span><i class="dot" style="background:#18a66b"></i>Actual</span></div><div id="overviewBarChart" class="chart" role="img" aria-label="Hourly planned versus actual production bar chart"></div></div>
+<div class="panel plan-status-panel"><div class="paneltitle"><h3>Production Plan Status</h3><span id="overviewPlanStatusCount">Loading plans…</span></div><div id="overviewPlanStatusCards" class="plan-status-grid"></div></div>
+<div class="layout"><div><div class="panel"><div class="paneltitle"><div><h3>Hourly Plan vs Actual</h3><span class="chart-subtitle">Live · Units per hour · Right-click or long-press to share</span></div><button class="btn chart-export-trigger" type="button" onclick="shareOverviewReport()">Share / Download</button></div><div class="legend"><span><i class="dot" style="background:#3978f6"></i>Planned</span><span><i class="dot" style="background:#18a66b"></i>Actual</span></div><div id="overviewBarChart" class="chart" role="img" aria-label="Hourly planned versus actual production bar chart" tabindex="0"></div><div id="chartExportMenu" class="chart-export-menu hidden" role="menu"><button type="button" onclick="downloadOverviewReport()">Download WhatsApp PNG</button><button type="button" onclick="shareOverviewReport()">Share report</button></div></div>
 <div class="panel"><div class="paneltitle"><h3>Line Production Summary</h3><span>Click a plan for details</span></div><div class="table-scroll"><table><thead><tr><th>LINE</th><th>PRODUCT</th><th>PLAN</th><th>ACTUAL</th><th>ACHIEVEMENT</th><th>STATUS</th></tr></thead><tbody id="lineSummaryBody"></tbody></table></div></div></div>
 <div><div class="panel"><div class="paneltitle"><h3>Line Status</h3><span>3 lines</span></div><div class="linecards" id="overviewLineCards"></div></div><div class="panel"><div class="paneltitle"><h3>Active Plans</h3><button class="btn" onclick="showPage('plans')">View all</button></div><div id="overviewActivePlans" style="font-size:12px;line-height:2.1"></div></div></div></div></section>
 <section id="plans" class="page hidden"><div class="pagehead"><div><h1>Production Plans</h1><div class="sub">Create, publish and monitor production plans</div></div><div class="filters"><button class="btn primary" onclick="openPlanModal()">＋ Create plan</button></div></div><div class="filters" style="margin-bottom:16px"><select class="select"><option>All plan status</option><option>Draft</option><option>Published</option><option>Completed</option></select><select class="select"><option>All lines</option><option>Line 1</option><option>Line 2</option><option>Line 3</option></select><input class="input" type="date" value="2026-11-19"/></div><div class="planlist" id="planlist"></div></section>
@@ -876,11 +931,177 @@ function saveReworkUnit(id,h,unitIndex){
 }
 function toast(t){let x=document.getElementById('toast');x.textContent=t;x.style.display='block';setTimeout(()=>x.style.display='none',2600);}
 function refreshOverview(){refreshProductOptions();renderOverviewChart();updateOverviewKpis();}
-function getOverviewPlans(){let line=document.getElementById('lineFilter')?.value||'All lines',brand=document.getElementById('overviewBrandFilter')?.value||'All brands',product=document.getElementById('overviewProductFilter')?.value||'All products',date=document.getElementById('overviewDateFilter')?.value||'',shift=document.getElementById('overviewShiftFilter')?.value||'All shifts';return plans.filter(p=>p.status==='Published'&&(!date||p.date===date)&&(shift==='All shifts'||p.shift===shift)&&(line==='All lines'||p.line===line)&&(brand==='All brands'||p.brand===brand)&&(product==='All products'||p.product===product));}
-function updateOverviewKpis(){let f=getOverviewPlans(),planned=f.reduce((a,p)=>a+(Number(p.qty)||0),0),actual=f.reduce((a,p)=>a+(Number(p.actual)||0),0),rej=f.reduce((a,p)=>a+(Number(p.rejection)||0),0),cards=document.querySelectorAll('#overview .cards .card');if(cards.length>=4){cards[0].querySelector('.kvalue').textContent=planned;cards[0].querySelector('.kfoot').textContent=`Units across ${new Set(f.map(p=>p.line)).size} active lines`;cards[1].querySelector('.kvalue').textContent=actual;cards[1].querySelector('.kfoot').textContent=`${planned?Math.round(actual/planned*100):0}% of filtered target`;cards[2].querySelector('.kvalue').textContent=Math.max(0,planned-actual);cards[3].querySelector('.kvalue').textContent=rej;cards[3].querySelector('.kfoot').textContent='Hourly rejection totals';}renderOverviewSummary(f);}
-function renderOverviewSummary(f){let summary=document.getElementById('lineSummaryBody'),cards=document.getElementById('overviewLineCards'),active=document.getElementById('overviewActivePlans');if(summary)summary.innerHTML=f.map(p=>{let pct=p.qty?Math.round(p.actual/p.qty*100):0;return `<tr><td>${p.line}</td><td>${p.product} <small>${p.model||''}</small></td><td>${p.qty}</td><td>${p.actual}</td><td>${pct}%</td><td><span class="pill ${pct<80?'warn':''}">${pct<80?'Behind plan':'Active'}</span></td></tr>`}).join('')||'<tr><td colspan="6">No active published plans match the selected filters.</td></tr>';if(cards)cards.innerHTML=f.map(p=>{let pct=p.qty?Math.min(100,p.actual/p.qty*100):0,remaining=Math.max(0,p.qty-p.actual);return `<div class="linecard"><div class="linehead">${p.line} <span class="pill ${pct<80?'warn':''}">Active</span></div><div class="sub" style="margin-top:7px">${p.brand||'—'} · ${p.product} · ${p.model||'—'} · ${p.actual} / ${p.qty} units</div><div class="progress"><i style="width:${pct}%"></i></div><div class="linemeta"><span>${p.qty?Math.round(p.actual/p.qty*100):0}% complete</span><span>${remaining} remaining</span></div></div>`}).join('')||'<div class="sub">No active plans for the selected filters.</div>';if(active)active.innerHTML=f.map(p=>`<div>${p.line} · ${p.brand||'—'} · ${p.product} / ${p.model||'—'} <span class="pill" style="float:right">Published</span></div>`).join('')||'<span class="sub">No active published plans.</span>';let n=document.querySelector('#overview .layout>div:nth-child(2) .panel .paneltitle span');if(n)n.textContent=`${new Set(f.map(p=>p.line)).size} active lines`;}
-function renderOverviewChart(){let host=document.getElementById('overviewBarChart');if(!host)return;let filtered=getOverviewPlans(),labels=hours,planned=labels.map((_,i)=>filtered.reduce((sum,p)=>sum+(Number(planHourTargets(p)[i])||0),0)),actual=labels.map((_,i)=>filtered.reduce((sum,p)=>sum+getHourlyActual(p,i),0));if(!filtered.length){host.innerHTML='<div class="chart-empty">No active published plans for the selected date and filters.</div>';updateOverviewKpis();return;}const W=900,H=280,L=48,R=18,T=25,B=42,plotW=W-L-R,plotH=H-T-B,max=Math.max(1,...planned,...actual),ceil=Math.ceil(max/5)*5,slot=plotW/labels.length,barW=Math.min(22,slot*.28);let svg=[];svg.push(`<svg viewBox="0 0 ${W} ${H}" width="100%" height="280" role="img" aria-label="Hourly planned and actual production. Blue is planned, green is actual.">`);for(let t=0;t<=4;t++){let val=ceil*t/4,y=T+plotH-(plotH*t/4);svg.push(`<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" stroke="#e8edf4"/><text x="${L-10}" y="${y+4}" text-anchor="end" font-size="11" fill="#8491a3">${Math.round(val)}</text>`);}labels.forEach((label,i)=>{let cx=L+slot*i+slot/2,ph=plotH*planned[i]/ceil,ah=plotH*actual[i]/ceil,px=cx-barW-2,ax=cx+2,py=T+plotH-ph,ay=T+plotH-ah;svg.push(`<rect x="${px}" y="${py}" width="${barW}" height="${ph}" rx="4" fill="#3978f6"/><rect x="${ax}" y="${ay}" width="${barW}" height="${ah}" rx="4" fill="#18a66b"/>`);if(planned[i]>0)svg.push(`<text x="${px+barW/2}" y="${Math.max(14,py-6)}" text-anchor="middle" font-size="11" font-weight="600" fill="#2459b8">${planned[i]}</text>`);if(actual[i]>0)svg.push(`<text x="${ax+barW/2}" y="${Math.max(14,ay-6)}" text-anchor="middle" font-size="11" font-weight="600" fill="#118456">${actual[i]}</text>`);svg.push(`<text x="${cx}" y="${H-13}" text-anchor="middle" font-size="10" fill="#7b8798">${label.split('–')[0]}</text>`);});svg.push('</svg>');host.innerHTML=svg.join('');updateOverviewKpis();}
-function refreshOverview(){refreshProductOptions();renderOverviewChart();}
+
+function getOverviewPlanFilters(){
+  var line=document.getElementById('lineFilter')?.value||'All lines';
+  var brand=document.getElementById('overviewBrandFilter')?.value||'All brands';
+  var product=document.getElementById('overviewProductFilter')?.value||'All products';
+  var date=document.getElementById('overviewDateFilter')?.value||'';
+  var shift=document.getElementById('overviewShiftFilter')?.value||'All shifts';
+  return {line:line,brand:brand,product:product,date:date,shift:shift};
+}
+function overviewPlanMatches(p){
+  var f=getOverviewPlanFilters();
+  return (!f.date||p.date===f.date)&&(f.shift==='All shifts'||p.shift===f.shift)&&
+    (f.line==='All lines'||p.line===f.line)&&(f.brand==='All brands'||p.brand===f.brand)&&
+    (f.product==='All products'||p.product===f.product);
+}
+function getOverviewPlans(){return plans.filter(function(p){return p.status==='Published'&&overviewPlanMatches(p);});}
+function getOverviewStatusPlans(){
+  return plans.filter(function(p){return overviewPlanMatches(p);})
+    .sort(function(a,b){return String(a.date).localeCompare(String(b.date))||String(a.line).localeCompare(String(b.line));});
+}
+function getPlanStatusLabel(p){
+  if(p.status==='Draft')return 'Draft';
+  if(p.status==='Completed')return 'Completed';
+  return Number(p.actual)>0?'In Progress':'Published';
+}
+function updateOverviewKpis(){
+  var f=getOverviewPlans(),planned=f.reduce(function(a,p){return a+(Number(p.qty)||0);},0);
+  var actual=f.reduce(function(a,p){return a+(Number(p.actual)||0);},0);
+  var rej=f.reduce(function(a,p){return a+(Number(p.rejection)||0);},0);
+  var cards=document.querySelectorAll('#overview .cards .card');
+  if(cards.length>=4){
+    cards[0].querySelector('.kvalue').textContent=planned;
+    cards[0].querySelector('.kfoot').textContent='Units across '+new Set(f.map(function(p){return p.line;})).size+' active lines';
+    cards[1].querySelector('.kvalue').textContent=actual;
+    cards[1].querySelector('.kfoot').textContent=(planned?Math.round(actual/planned*100):0)+'% of filtered target';
+    cards[2].querySelector('.kvalue').textContent=Math.max(0,planned-actual);
+    cards[3].querySelector('.kvalue').textContent=rej;
+    cards[3].querySelector('.kfoot').textContent='Hourly rejection totals';
+  }
+  renderOverviewSummary(f);renderOverviewPlanStatusCards();
+}
+function renderOverviewPlanStatusCards(){
+  var host=document.getElementById('overviewPlanStatusCards'),count=document.getElementById('overviewPlanStatusCount');
+  if(!host)return;
+  var rows=getOverviewStatusPlans();
+  if(count)count.textContent=rows.length+' plan'+(rows.length===1?'':'s')+' matching filters';
+  if(!rows.length){host.innerHTML='<div class="sub plan-status-empty">No production plans match the selected date and filters.</div>';return;}
+  host.innerHTML=rows.map(function(p){
+    var qty=Number(p.qty)||0,actual=Number(p.actual)||0,rejected=Number(p.rejection)||0;
+    var pct=qty?Math.max(0,Math.min(100,actual/qty*100)):0,status=getPlanStatusLabel(p);
+    var statusClass=status==='In Progress'?'in-progress':status.toLowerCase();
+    return '<article class="plan-status-card"><div class="plan-status-heading"><strong>'+escapeHtml(p.line)+' · '+escapeHtml(p.brand||'Unbranded')+'</strong><span class="plan-status-pill '+statusClass+'">'+status+'</span></div>'+
+      '<div class="plan-status-product">'+escapeHtml(p.product||'—')+' <span>· Model '+escapeHtml(p.model||'—')+'</span></div>'+
+      '<div class="plan-status-meta"><span>'+escapeHtml(p.date||'—')+'</span><span>'+escapeHtml(p.shift||'—')+'</span></div>'+
+      '<div class="plan-status-numbers"><span><small>Planned</small><b>'+qty+'</b></span><span><small>Produced</small><b>'+actual+'</b></span><span><small>Accepted</small><b>'+Math.max(0,actual-rejected)+'</b></span><span><small>Rejected</small><b>'+rejected+'</b></span></div>'+
+      '<div class="plan-status-track"><i style="width:'+pct.toFixed(1)+'%"></i></div><div class="plan-status-foot"><span>'+Math.round(pct)+'% complete</span><span>'+Math.max(0,qty-actual)+' remaining</span></div></article>';
+  }).join('');
+}
+function renderOverviewSummary(f){
+  var summary=document.getElementById('lineSummaryBody'),cards=document.getElementById('overviewLineCards'),active=document.getElementById('overviewActivePlans');
+  if(summary)summary.innerHTML=f.map(function(p){
+    var pct=p.qty?Math.round(p.actual/p.qty*100):0;
+    return '<tr><td>'+escapeHtml(p.line)+'</td><td>'+escapeHtml(p.product)+' <small>'+escapeHtml(p.model||'')+'</small></td><td>'+p.qty+'</td><td>'+p.actual+'</td><td>'+pct+'%</td><td><span class="pill '+(pct<80?'warn':'')+'">'+(pct<80?'Behind plan':'Active')+'</span></td></tr>';
+  }).join('')||'<tr><td colspan="6">No active published plans match the selected filters.</td></tr>';
+  if(cards)cards.innerHTML=f.map(function(p){
+    var pct=p.qty?Math.min(100,p.actual/p.qty*100):0,remaining=Math.max(0,p.qty-p.actual);
+    return '<div class="linecard"><div class="linehead">'+escapeHtml(p.line)+' <span class="pill '+(pct<80?'warn':'')+'">Active</span></div>'+
+      '<div class="sub" style="margin-top:7px">'+escapeHtml(p.brand||'—')+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model||'—')+' · '+p.actual+' / '+p.qty+' units</div>'+
+      '<div class="progress"><i style="width:'+pct+'%"></i></div><div class="linemeta"><span>'+(p.qty?Math.round(p.actual/p.qty*100):0)+'% complete</span><span>'+remaining+' remaining</span></div></div>';
+  }).join('')||'<div class="sub">No active plans for the selected filters.</div>';
+  if(active)active.innerHTML=f.map(function(p){return '<div>'+escapeHtml(p.line)+' · '+escapeHtml(p.brand||'—')+' · '+escapeHtml(p.product)+' / '+escapeHtml(p.model||'—')+' <span class="pill" style="float:right">Published</span></div>';}).join('')||'<span class="sub">No active published plans.</span>';
+  var n=document.querySelector('#overview .layout>div:nth-child(2) .panel .paneltitle span');
+  if(n)n.textContent=new Set(f.map(function(p){return p.line;})).size+' active lines';
+}
+function renderOverviewChart(){
+  var host=document.getElementById('overviewBarChart');if(!host)return;
+  var filtered=getOverviewPlans(),labels=hours;
+  var planned=labels.map(function(_,i){return filtered.reduce(function(sum,p){return sum+(Number(planHourTargets(p)[i])||0);},0);});
+  var actual=labels.map(function(_,i){return filtered.reduce(function(sum,p){return sum+getHourlyActual(p,i);},0);});
+  if(!filtered.length){host.innerHTML='<div class="chart-empty">No active published plans for the selected date and filters.</div>';updateOverviewKpis();return;}
+  var W=900,H=280,L=48,R=18,T=25,B=42,plotW=W-L-R,plotH=H-T-B;
+  var max=Math.max(1,...planned,...actual),ceil=Math.ceil(max/5)*5,slot=plotW/labels.length,barW=Math.min(22,slot*.28),svg=[];
+  svg.push('<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="280" role="img" aria-label="Hourly planned and actual production. Blue is planned, green is actual.">');
+  for(var t=0;t<=4;t++){var val=ceil*t/4,y=T+plotH-(plotH*t/4);svg.push('<line x1="'+L+'" y1="'+y+'" x2="'+(W-R)+'" y2="'+y+'" stroke="#e8edf4"/><text x="'+(L-10)+'" y="'+(y+4)+'" text-anchor="end" font-size="11" fill="#8491a3">'+Math.round(val)+'</text>');}
+  labels.forEach(function(label,i){
+    var cx=L+slot*i+slot/2,ph=plotH*planned[i]/ceil,ah=plotH*actual[i]/ceil,px=cx-barW-2,ax=cx+2,py=T+plotH-ph,ay=T+plotH-ah;
+    svg.push('<rect x="'+px+'" y="'+py+'" width="'+barW+'" height="'+ph+'" rx="4" fill="#3978f6"/><rect x="'+ax+'" y="'+ay+'" width="'+barW+'" height="'+ah+'" rx="4" fill="#18a66b"/>');
+    if(planned[i]>0)svg.push('<text x="'+(px+barW/2)+'" y="'+Math.max(14,py-6)+'" text-anchor="middle" font-size="11" font-weight="600" fill="#2459b8">'+planned[i]+'</text>');
+    if(actual[i]>0)svg.push('<text x="'+(ax+barW/2)+'" y="'+Math.max(14,ay-6)+'" text-anchor="middle" font-size="11" font-weight="600" fill="#118456">'+actual[i]+'</text>');
+    svg.push('<text x="'+cx+'" y="'+(H-13)+'" text-anchor="middle" font-size="10" fill="#7b8798">'+label.split('–')[0]+'</text>');
+  });
+  svg.push('</svg>');host.innerHTML=svg.join('');updateOverviewKpis();
+}
+function makeOverviewReportCanvas(){
+  var statusPlans=getOverviewStatusPlans(),graphPlans=getOverviewPlans(),W=1200,chartHeight=400,cardHeight=154,gap=18;
+  var cardStart=240+chartHeight+72,rows=Math.max(1,statusPlans.length),H=cardStart+rows*(cardHeight+gap)+90;
+  var canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
+  var ctx=canvas.getContext('2d');
+  ctx.fillStyle='#f4f7fb';ctx.fillRect(0,0,W,H);
+  function rr(x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke();}}
+  function txt(value,x,y,size,color,weight){ctx.fillStyle=color;ctx.font=(weight||'400')+' '+size+'px Arial,sans-serif';ctx.fillText(String(value),x,y);}
+  rr(28,24,W-56,H-48,22,'#fff','#dfe7f1');
+  txt('PRODUCTION MANAGEMENT',66,82,26,'#172438','700');txt('PRODUCTION STATUS REPORT',66,122,19,'#3978f6','700');
+  var filters=getOverviewPlanFilters();
+  txt('Date: '+(filters.date||'All dates')+'    Shift: '+filters.shift+'    Line: '+filters.line,66,164,17,'#526277');
+  txt('Generated: '+new Date().toLocaleString(),66,196,14,'#8793a4');
+  var sums=graphPlans.reduce(function(o,p){o.plan+=Number(p.qty)||0;o.actual+=Number(p.actual)||0;o.reject+=Number(p.rejection)||0;return o;},{plan:0,actual:0,reject:0});
+  var metrics=[['PLANNED',sums.plan,'#3978f6'],['ACTUAL',sums.actual,'#159f6b'],['ACCEPTED',sums.actual-sums.reject,'#159f6b'],['REJECTED',sums.reject,'#d97706']];
+  var mw=(W-132)/4;
+  metrics.forEach(function(m,i){var x=66+i*mw;rr(x,216,mw-14,78,12,'#f7f9fc','#e4eaf2');txt(m[0],x+16,244,13,'#748197','700');txt(m[1],x+16,278,27,m[2],'700');});
+  var chartY=350,chartX=92,chartW=1025,chartH=235;
+  txt('HOURLY PLAN VS ACTUAL',66,326,20,'#172438','700');rr(52,340,W-104,chartHeight-18,16,'#fff','#e4eaf2');
+  var planned=hours.map(function(_,i){return graphPlans.reduce(function(sum,p){return sum+(Number(planHourTargets(p)[i])||0);},0);});
+  var actual=hours.map(function(_,i){return graphPlans.reduce(function(sum,p){return sum+getHourlyActual(p,i);},0);});
+  var max=Math.max(1,...planned,...actual),scale=chartH/max,slot=chartW/hours.length,barW=24;
+  ctx.strokeStyle='#e8edf4';ctx.lineWidth=1;
+  for(var j=0;j<=4;j++){var gy=chartY+chartH-(chartH*j/4);ctx.beginPath();ctx.moveTo(chartX,gy);ctx.lineTo(chartX+chartW,gy);ctx.stroke();txt(Math.round(max*j/4),chartX-40,gy+4,12,'#8793a4');}
+  hours.forEach(function(label,i){var cx=chartX+slot*i+slot/2,ph=planned[i]*scale,ah=actual[i]*scale,px=cx-barW-3,ax=cx+3;rr(px,chartY+chartH-ph,barW,ph,5,'#3978f6');rr(ax,chartY+chartH-ah,barW,ah,5,'#18a66b');txt(planned[i],px-1,chartY+chartH-ph-9,12,'#2459b8','700');txt(actual[i],ax-1,chartY+chartH-ah-9,12,'#118456','700');txt(label.split('–')[0],cx-23,chartY+chartH+25,12,'#64748b');});
+  txt('Blue: Planned      Green: Actual',66,chartY+chartH+57,14,'#526277');
+  var y=cardStart-22;txt('PRODUCTION PLAN DETAILS',66,y,20,'#172438','700');y+=24;
+  if(!statusPlans.length)txt('No production plans match the selected filters.',66,y+26,16,'#718096');
+  else statusPlans.forEach(function(p){
+    var progress=Number(p.qty)?Math.max(0,Math.min(100,Number(p.actual||0)/Number(p.qty)*100)):0;
+    rr(52,y,W-104,cardHeight,14,'#fff','#e4eaf2');
+    txt(p.line+' · '+(p.brand||'Unbranded')+' · '+(p.product||'—')+' · Model '+(p.model||'—'),78,y+34,19,'#172438','700');
+    txt(p.date+' · '+p.shift+' · '+getPlanStatusLabel(p),78,y+64,15,'#526277');
+    txt('Planned '+(Number(p.qty)||0)+'   Produced '+(Number(p.actual)||0)+'   Accepted '+Math.max(0,(Number(p.actual)||0)-(Number(p.rejection)||0))+'   Rejected '+(Number(p.rejection)||0),78,y+96,16,'#334155');
+    rr(78,y+112,W-220,13,7,'#e9eef5');rr(78,y+112,(W-220)*progress/100,13,7,'#3978f6');txt(Math.round(progress)+'% complete',W-220,y+124,13,'#2459b8','700');
+    y+=cardHeight+gap;
+  });
+  txt('Production Management · Generated from current Overview filters',66,H-66,13,'#8793a4');
+  return canvas;
+}
+function downloadOverviewReport(){
+  var canvas=makeOverviewReportCanvas();
+  canvas.toBlob(function(blob){
+    if(!blob){toast('Could not create the production report image');return;}
+    var url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;
+    a.download='production-status-'+(document.getElementById('overviewDateFilter')?.value||'report')+'.png';
+    document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},1500);
+    closeChartExportMenu();toast('Production report PNG downloaded');
+  },'image/png');
+}
+async function shareOverviewReport(){
+  var canvas=makeOverviewReportCanvas();
+  canvas.toBlob(async function(blob){
+    if(!blob){toast('Could not create the production report image');return;}
+    var name='production-status-'+(document.getElementById('overviewDateFilter')?.value||'report')+'.png';
+    try{var file=new File([blob],name,{type:'image/png'});if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Production status report',text:'Production status report'});closeChartExportMenu();return;}}
+    catch(error){if(error&&error.name==='AbortError')return;}
+    downloadOverviewReport();
+  },'image/png');
+}
+function openChartExportMenu(x,y){
+  var menu=document.getElementById('chartExportMenu');if(!menu)return;
+  menu.classList.remove('hidden');
+  menu.style.left=Math.max(10,Math.min((x||20),window.innerWidth-220))+'px';
+  menu.style.top=Math.max(10,Math.min((y||20),window.innerHeight-110))+'px';
+}
+function closeChartExportMenu(){var menu=document.getElementById('chartExportMenu');if(menu)menu.classList.add('hidden');}
+function setupChartExportGestures(){
+  var host=document.getElementById('overviewBarChart');if(!host||host.dataset.exportBound)return;
+  host.dataset.exportBound='1';
+  host.addEventListener('contextmenu',function(event){event.preventDefault();openChartExportMenu(event.clientX,event.clientY);});
+  var timer=null,startX=0,startY=0;
+  host.addEventListener('pointerdown',function(event){if(event.pointerType!=='touch')return;startX=event.clientX;startY=event.clientY;timer=setTimeout(function(){openChartExportMenu(startX,startY);},650);});
+  ['pointerup','pointercancel','pointerleave'].forEach(function(name){host.addEventListener(name,function(){if(timer){clearTimeout(timer);timer=null;}});});
+  host.addEventListener('pointermove',function(event){if(timer&&Math.abs(event.clientX-startX)+Math.abs(event.clientY-startY)>14){clearTimeout(timer);timer=null;}});
+  document.addEventListener('click',function(event){if(!event.target.closest('#chartExportMenu')&&!event.target.closest('#overviewBarChart'))closeChartExportMenu();});
+}
+function refreshOverview(){refreshProductOptions();renderOverviewChart();updateOverviewKpis();}
 function filteredReportPlans(){let from=document.getElementById('reportFrom')?.value||'',to=document.getElementById('reportTo')?.value||'',brand=document.getElementById('reportBrand')?.value||'all',product=document.getElementById('reportProduct')?.value||'all',line=document.getElementById('reportLine')?.value||'all',shift=document.getElementById('reportShift')?.value||'all';return plans.filter(p=>(!from||p.date>=from)&&(!to||p.date<=to)&&(brand==='all'||p.brand===brand)&&(product==='all'||p.product===product)&&(line==='all'||p.line===line)&&(shift==='all'||p.shift===shift));}
 function renderReports(){let brandSel=document.getElementById('reportBrand');if(brandSel){let selected=brandSel.value||'all';brandSel.innerHTML='<option value="all">All brands</option>'+Object.keys(brandProducts).map(b=>`<option value="${b}">${b}</option>`).join('');brandSel.value=Object.keys(brandProducts).includes(selected)?selected:'all';}let filtered=filteredReportPlans(),type=document.getElementById('reportType')?.value||'all',groupFn={all:p=>`${p.line} · ${p.product} · ${p.date}`,day:p=>p.date,product:p=>p.product,brand:p=>p.brand||'Unbranded',month:p=>p.date.slice(0,7),hour:p=>`${p.date} · ${p.line}`}[type]|| (p=>p.date),grouped={};filtered.forEach(p=>{let k=groupFn(p);if(!grouped[k])grouped[k]={key:k,brand:p.brand,product:p.product,model:p.model||'—',line:p.line,plan:0,actual:0,rejection:0,rework:0,finalRejected:0,plans:[]};let r=grouped[k];r.plan+=p.qty;r.actual+=p.actual;r.rejection+=p.rejection;r.rework+=sumRework(p,'Completed');r.finalRejected+=sumRework(p,'Finally Rejected');r.plans.push(p);});renderReportRows(Object.values(grouped),({all:'Overall Production Report',day:'Day-wise Production Report',product:'Product-wise Production Report',brand:'Brand-wise Production Report',month:'Month-wise Production Report',hour:'Production Report by Plan'})[type]||'Production Report',({all:'Plan',day:'Date',product:'Product',brand:'Brand',month:'Month',hour:'Date / Line'})[type]||'Plan');}
 function renderReportRows(rows,title,firstCol){let filtered=filteredReportPlans(),plan=filtered.reduce((a,p)=>a+p.qty,0),actual=filtered.reduce((a,p)=>a+p.actual,0),rejected=filtered.reduce((a,p)=>a+p.rejection,0),rework=filtered.reduce((a,p)=>a+sumRework(p,'Completed'),0),historyEnabled=!!document.getElementById('reportHistoryToggle')?.checked;document.getElementById('reportKpis').innerHTML=`<div class="card"><div class="klabel">Planned Qty</div><div class="kvalue">${plan}</div></div><div class="card"><div class="klabel">Actual Produced</div><div class="kvalue">${actual}</div></div><div class="card"><div class="klabel">Rejected Qty</div><div class="kvalue">${rejected}</div><div class="kfoot">${historyEnabled?'Click a rejected quantity to view history':'Enable rejection history above to view details'}</div></div><div class="card"><div class="klabel">Accepted Qty</div><div class="kvalue">${actual-rejected}</div></div><div class="card"><div class="klabel">Rework completed</div><div class="kvalue">${rework}</div></div>`;document.getElementById('reportTableTitle').textContent=title;document.getElementById('reportRowCount').textContent=`${rows.length} report rows`;let table=document.getElementById('reportTable');table.querySelector('thead').innerHTML=`<tr><th>${firstCol.toUpperCase()}</th><th>BRAND</th><th>PRODUCT / MODEL</th><th>LINE</th><th>PLANNED</th><th>ACTUAL</th><th>REJECTED</th><th>ACCEPTED</th><th>REWORK COMPLETED</th><th>FINAL REJECTED</th><th>ACHIEVEMENT</th></tr>`;table.querySelector('tbody').innerHTML=rows.map((r,i)=>`<tr><td>${r.key}</td><td>${r.brand||'—'}</td><td>${r.product||'—'}<br><small>${r.model}</small></td><td>${r.line||'—'}</td><td>${r.plan}</td><td>${r.actual}</td><td>${historyEnabled&&r.rejection?`<button class="btn" onclick="showReportHistory(${i})" title="View rejection history">${r.rejection}</button>`:r.rejection}</td><td>${r.actual-r.rejection}</td><td>${r.rework}</td><td>${r.finalRejected}</td><td>${r.plan?Math.round(r.actual/r.plan*100):0}%</td></tr>`).join('')||'<tr><td colspan="11">No production records match these filters.</td></tr>';window.currentReportRows=rows;}
@@ -900,27 +1121,6 @@ function syncAll(){persistAppData();refreshProductOptions();try{renderPlans()}ca
 window.addEventListener('resize',()=>requestAnimationFrame(renderOverviewChart));window.addEventListener('pageshow',()=>requestAnimationFrame(renderOverviewChart));document.getElementById('reportType')?.addEventListener('change',renderReports);
 syncAll();requestAnimationFrame(()=>{renderOverviewChart();setTimeout(renderOverviewChart,100);});
 </script>
-
-/* V6.2 signup and super-admin access screen */
-#pmAuthGate .auth-switch{display:block;width:auto!important;margin:14px auto 0!important;padding:4px 8px!important;background:transparent!important;color:#3978f6!important;font-size:12px!important;font-weight:700!important}
-#pmAuthGate .auth-info{font-size:12px;line-height:1.55;color:#256b4b;margin-top:10px;min-height:18px}
-#pmAuthGate .auth-info:empty{display:none}
-.pm-admin-table-wrap{overflow:auto}.pm-admin-table{min-width:940px}
-.pm-admin-table td{vertical-align:top}
-.pm-admin-account{font-weight:700;color:#23344c;min-width:180px}
-.pm-admin-account small{display:block;margin-top:4px;color:#718096;font-weight:400}
-.pm-admin-role{border:1px solid var(--line);border-radius:7px;padding:8px;background:#fff;min-width:125px}
-.pm-admin-status{display:flex;flex-direction:column;gap:6px;font-size:11px;white-space:nowrap}
-.pm-admin-status label,.pm-admin-tabs label{display:flex;align-items:center;gap:6px}
-.pm-admin-status input,.pm-admin-tabs input{accent-color:var(--blue)}
-.pm-admin-tabs{display:grid;grid-template-columns:repeat(3,minmax(90px,1fr));gap:7px;min-width:300px}
-.pm-admin-tabs label{font-size:11px;white-space:nowrap}
-.pm-admin-save{white-space:nowrap}
-.pm-admin-note{padding:12px 14px;border:1px solid #dbe8ff;border-radius:9px;background:#f7faff;color:#47617f;font-size:12px;line-height:1.5;margin-bottom:14px}
-.pm-admin-message{font-size:12px;color:#188455;min-height:18px;margin:10px 0}
-@media(max-width:700px){.pm-admin-tabs{grid-template-columns:repeat(2,minmax(90px,1fr))}}
-
-</style>
 
 <!-- Production Management V6.2: signup, approval and super-admin tab permissions -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
