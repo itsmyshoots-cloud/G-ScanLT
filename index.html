@@ -835,13 +835,106 @@
   @supports(height:100dvh){#modal.modalback .modal{max-height:calc(100dvh - 16px)!important;}}
 }
 
+
+/* V6.7 live-first Overview, searchable catalog and fixed-footer plan form */
+.overview-filter-details{margin:0 0 16px;border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
+.overview-filter-details summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 15px;cursor:pointer;list-style:none;font-weight:700;color:#23344c}
+.overview-filter-details summary::-webkit-details-marker{display:none}
+.overview-filter-details summary:after{content:'＋';font-weight:700;color:var(--blue);font-size:18px}
+.overview-filter-details[open] summary:after{content:'−'}
+.overview-filter-details summary small{font-weight:400;color:var(--muted);font-size:11px;margin-left:auto;text-align:right}
+.overview-filter-controls{padding:0 14px 14px;display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:10px}
+.overview-filter-field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.overview-filter-field>span{font-size:11px;color:var(--muted)}
+.overview-filter-field .input,.overview-filter-field .select{width:100%;min-width:0}
+.overview-chart-plan-details{margin-top:14px}
+.chart-plans-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;color:#23344c;font-size:13px}
+.chart-plans-heading span{font-size:11px;color:var(--muted);font-weight:400}
+.chart-plan-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.chart-plan-item{min-width:0;border:1px solid var(--line);border-radius:10px;padding:12px;background:#fff}
+.chart-plan-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;font-size:12px}
+.chart-plan-status{flex:0 0 auto;padding:4px 8px;border-radius:20px;background:#eef2f7;color:#536275;font-size:10px;font-weight:700}
+.chart-plan-status.in-progress{background:#eaf8f0;color:#16804f}
+.chart-plan-status.draft{background:#fff4df;color:#a66b0a}
+.chart-plan-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 8px}
+.chart-plan-meta span{display:flex;flex-direction:column;gap:3px;min-width:0}
+.chart-plan-meta small{font-size:9px;color:var(--muted)}
+.chart-plan-meta b{font-size:12px;color:#172438;overflow-wrap:anywhere}
+.chart-plans-empty{padding:12px;border:1px dashed var(--line);border-radius:9px;color:var(--muted);font-size:12px}
+.select-action-wrap input.catalog-autocomplete{flex:1;min-width:0;width:100%}
+.plan-form-modal{display:flex!important;flex-direction:column;width:min(960px,calc(100vw - 28px))!important;max-width:960px!important;height:min(900px,90vh);height:min(900px,90dvh);max-height:90vh!important;max-height:90dvh!important;min-height:0;overflow:hidden!important;padding:58px 0 0!important}
+.plan-form-scroll{min-height:0;flex:1 1 auto;overflow-y:auto;overflow-x:hidden;padding:12px 20px 18px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.plan-form-scroll>h2{margin:0 0 16px;font-size:22px}
+.plan-main-fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px}
+.plan-main-fields .field{min-width:0;margin:0}
+.plan-main-fields .field input,.plan-main-fields .field select{width:100%;min-width:0;min-height:44px}
+.plan-main-fields .select-action-wrap{display:flex;min-width:0}
+.plan-main-fields .select-action-wrap .select-add{flex:0 0 46px}
+.plan-hour-panel{margin-top:14px;padding:13px}
+.plan-hour-panel>.paneltitle{margin-bottom:10px}
+.plan-hour-panel>.paneltitle span{font-size:11px}
+.plan-default-qty{margin-bottom:10px}
+.plan-default-qty small{display:block;line-height:1.4;margin-top:5px;color:var(--muted);font-size:11px}
+.hourly-target-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px 10px}
+.hourly-target-grid .field{min-width:0;margin:0}
+.hourly-target-grid .field label{display:block;font-size:11px;line-height:1.25;margin-bottom:5px}
+.hourly-target-grid .field input{width:100%;min-width:0;min-height:42px;padding:8px 10px}
+.plan-total-row{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-weight:700;font-size:13px}
+.plan-form-footer{flex:0 0 auto;display:flex;justify-content:flex-end;gap:10px;padding:11px 16px calc(11px + env(safe-area-inset-bottom));border-top:1px solid #e8edf4;background:#fff}
+.plan-form-footer .btn{min-width:112px;min-height:44px}
+@media(max-width:760px){
+  .overview-heading{margin-bottom:12px}
+  .overview-heading h1{font-size:22px}
+  .overview-filter-details{margin-top:12px}
+  .overview-filter-controls{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .overview-filter-controls .overview-filter-field:first-child{grid-column:1/-1}
+  .chart-plan-list{grid-template-columns:minmax(0,1fr)}
+  .chart-plan-meta{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .plan-form-modal{width:calc(100vw - 16px)!important;max-width:calc(100vw - 16px)!important;height:calc(100vh - 16px);height:calc(100dvh - 16px);max-height:calc(100dvh - 16px)!important;border-radius:15px}
+  .plan-form-scroll{padding:10px 13px 14px}
+  .plan-form-scroll>h2{font-size:19px;margin-bottom:12px}
+  .plan-main-fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 10px}
+  .plan-main-fields .field label{font-size:11px;line-height:1.3;margin-bottom:4px}
+  .plan-main-fields .field input,.plan-main-fields .field select{min-height:43px;padding:8px;font-size:16px}
+  .plan-main-fields .select-action-wrap .select-add{flex-basis:42px}
+  .plan-hour-panel{margin-top:11px;padding:10px}
+  .plan-hour-panel>.paneltitle{align-items:flex-start;gap:6px}
+  .plan-hour-panel>.paneltitle h3{font-size:13px}
+  .plan-hour-panel>.paneltitle span{font-size:10px;text-align:right}
+  .plan-default-qty{margin-bottom:8px}
+  .hourly-target-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 9px}
+  .hourly-target-grid .field label{font-size:10px}
+  .hourly-target-grid .field input{min-height:42px;font-size:16px}
+  .plan-form-footer{position:relative;z-index:8;gap:9px;padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
+  .plan-form-footer .btn{flex:1;min-width:0;min-height:46px}
+}
+@media(max-width:380px){
+  .plan-main-fields{grid-template-columns:minmax(0,1fr)}
+  .plan-main-fields .field label{font-size:12px}
+  .hourly-target-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-height:620px){
+  .plan-form-modal{height:calc(100dvh - 12px);max-height:calc(100dvh - 12px)!important}
+  .plan-form-scroll{padding-top:8px}
+}
+
 </style></head><body>
 <div class="app"><aside class="sidebar"><div class="brand">Production Management<small>OPERATIONS CONTROL</small></div><div class="navlabel">WORKSPACE</div><nav class="nav" aria-label="Main navigation"><button class="active" data-page="overview"><span class="ico">▦</span><span>Overview</span></button><button data-page="plans"><span class="ico">▤</span><span>Production Plans</span></button><button data-page="operator"><span class="ico">◉</span><span>Operator</span></button><button data-page="reports"><span class="ico">▧</span><span>Reports</span></button><button data-page="rework"><span class="ico">↻</span><span>Rework</span></button></nav><div class="sidebottom">Production Control · V6 update</div></aside>
 <main class="main"><header class="topbar"><div class="crumb" id="crumb">Overview</div><div class="user"><div class="avatar">SP</div><div><strong style="color:#263449">Supervisor</strong><br/>Production Control</div></div></header><div class="content">
-<section id="overview" class="page"><div class="pagehead"><div><h1>Production Overview</h1><div class="sub">Live production performance across all lines</div></div><div class="filters"><input class="input" id="overviewDateFilter" type="date" value="" onchange="refreshOverview()"/><select class="select" id="overviewShiftFilter" onchange="refreshOverview()"><option>All shifts</option><option>Shift 1</option><option>Shift 2</option></select><select class="select" id="lineFilter" onchange="refreshOverview()"><option>All lines</option><option>Line 1</option><option>Line 2</option><option>Line 3</option></select><select class="select" id="overviewBrandFilter" onchange="refreshOverview()"><option>All brands</option>${Object.keys(brandProducts).map(b=>`<option>${b}</option>`).join('')}</select><select class="select" id="overviewProductFilter" onchange="refreshOverview()"><option>All products</option></select></div></div>
+<section id="overview" class="page"><div class="pagehead overview-heading"><div><h1>Production Overview</h1><div class="sub">Live production performance across all lines</div></div></div>
 <div class="cards"><div class="card"><div class="klabel">Today's Planned</div><div class="kvalue">300</div><div class="kfoot">Units across 3 lines</div></div><div class="card"><div class="klabel">Actual Produced</div><div class="kvalue">242</div><div class="kfoot good">80.7% of daily target</div></div><div class="card"><div class="klabel">Remaining</div><div class="kvalue">58</div><div class="kfoot">Units to plan</div></div><div class="card"><div class="klabel">Rejections</div><div class="kvalue">6</div><div class="kfoot">Recorded at shift close</div></div></div>
 <div class="panel plan-status-panel"><div class="paneltitle"><h3>Production Plan Status</h3><span id="overviewPlanStatusCount">Loading plans…</span></div><div id="overviewPlanStatusCards" class="plan-status-grid"></div></div>
-<div class="layout"><div><div class="panel"><div class="paneltitle"><div><h3>Hourly Plan vs Actual</h3><span class="chart-subtitle">Live · Units per hour · Right-click or long-press to share</span></div><button class="btn chart-export-trigger" type="button" onclick="shareOverviewReport()">Share / Download</button></div><div class="legend"><span><i class="dot" style="background:#3978f6"></i>Planned</span><span><i class="dot" style="background:#18a66b"></i>Actual</span></div><div id="overviewBarChart" class="chart" role="img" aria-label="Hourly planned versus actual production bar chart" tabindex="0"></div><div id="chartExportMenu" class="chart-export-menu hidden" role="menu"><button type="button" onclick="downloadOverviewReport()">Download WhatsApp PNG</button><button type="button" onclick="shareOverviewReport()">Share report</button></div></div>
+<div class="layout"><div><div class="panel"><div class="paneltitle"><div><h3>Hourly Plan vs Actual</h3><span class="chart-subtitle">Live · Units per hour · Right-click or long-press to share</span></div><button class="btn chart-export-trigger" type="button" onclick="shareOverviewReport()">Share / Download</button></div><div class="legend"><span><i class="dot" style="background:#3978f6"></i>Planned</span><span><i class="dot" style="background:#18a66b"></i>Actual</span></div><div id="overviewBarChart" class="chart" role="img" aria-label="Hourly planned versus actual production bar chart" tabindex="0"></div><div id="overviewChartPlanDetails" class="overview-chart-plan-details"></div><div id="chartExportMenu" class="chart-export-menu hidden" role="menu"><button type="button" onclick="downloadOverviewReport()">Download WhatsApp PNG</button><button type="button" onclick="shareOverviewReport()">Share report</button></div></div>
+<details class="overview-filter-details">
+  <summary><span>Set date & filters</span><small>Choose production date, shift, line, brand or product</small></summary>
+  <div class="filters overview-filter-controls">
+    <label class="overview-filter-field"><span>Production date</span><input class="input" id="overviewDateFilter" type="date" value="" onchange="refreshOverview()"/></label>
+    <label class="overview-filter-field"><span>Shift</span><select class="select" id="overviewShiftFilter" onchange="refreshOverview()"><option>All shifts</option><option>Shift 1</option><option>Shift 2</option><option>Shift 3</option></select></label>
+    <label class="overview-filter-field"><span>Line</span><select class="select" id="lineFilter" onchange="refreshOverview()"><option>All lines</option><option>Line 1</option><option>Line 2</option><option>Line 3</option></select></label>
+    <label class="overview-filter-field"><span>Brand</span><select class="select" id="overviewBrandFilter" onchange="refreshOverview()"><option>All brands</option></select></label>
+    <label class="overview-filter-field"><span>Product</span><select class="select" id="overviewProductFilter" onchange="refreshOverview()"><option>All products</option></select></label>
+  </div>
+</details>
 <div class="panel"><div class="paneltitle"><h3>Line Production Summary</h3><span>Click a plan for details</span></div><div class="table-scroll"><table><thead><tr><th>LINE</th><th>PRODUCT</th><th>PLAN</th><th>ACTUAL</th><th>ACHIEVEMENT</th><th>STATUS</th></tr></thead><tbody id="lineSummaryBody"></tbody></table></div></div></div>
 <div><div class="panel"><div class="paneltitle"><h3>Active Plans</h3><button class="btn" onclick="showPage('plans')">View all</button></div><div id="overviewActivePlans" style="font-size:12px;line-height:2.1"></div></div></div></div></section>
 <section id="plans" class="page hidden"><div class="pagehead"><div><h1>Production Plans</h1><div class="sub">Create, publish and monitor production plans</div></div><div class="filters"><button class="btn primary" onclick="openPlanModal()">＋ Create plan</button></div></div><div class="filters" style="margin-bottom:16px"><select class="select"><option>All plan status</option><option>Draft</option><option>Published</option><option>Completed</option></select><select class="select"><option>All lines</option><option>Line 1</option><option>Line 2</option><option>Line 3</option></select><input class="input" type="date" value="2026-11-19"/></div><div class="planlist" id="planlist"></div></section>
@@ -1188,7 +1281,7 @@ async function submitHour(id,h){
   if(q>planHourTargets(p)[h])return toast('Actual produced quantity cannot exceed the planned quantity for this hour');
   if(q>0&&(!serialStart||!serialEnd))return toast('Enter the serial number range');
   if(rejected>0&&!reason)return toast('Please select rejection reason');
-  var button=document.querySelector('#modal .modalactions .btn.primary');
+  var button=document.querySelector('#modal .plan-form-footer .btn.primary');
   if(button){button.disabled=true;button.textContent='Saving…';}
   try{
     var db=pmRequireDb();
@@ -1257,7 +1350,39 @@ function initializeTodayDateFilters(){
   if(reportFrom&&!reportFrom.value)reportFrom.value=today.slice(0,7)+'-01';
   if(reportTo&&!reportTo.value)reportTo.value=today;
 }
-function planForm(p=null){editingPlanId=p?.id??null;let slots=timeSlots(p?.start||'09:00',p?.end||'17:00'),targets=p?.hourTargets||slots.map(()=>0);document.getElementById('modal').innerHTML=`<div class="modal" style="width:min(780px,100%);max-height:90vh;overflow:auto"><h2>${p?'Edit Production Plan':'Create Production Plan'}</h2><div class="formgrid"><div class="field"><label>Production date</label><input id="pdate" type="date" value="${p?.date||todayLocalDate()}"/></div><div class="field"><label>Shift</label><select id="pshift">${['Shift 1','Shift 2','Shift 3'].map(x=>`<option ${p?.shift===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>Production line</label><select id="pline">${['Line 1','Line 2','Line 3'].map(x=>`<option ${p?.line===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>Brand</label><div class="select-action-wrap"><select id="pbrand" class="select" required><option value="">Select brand</option>${pmBrandNames.map(b=>`<option value="${escapeHtml(b)}" ${p?.brand===b?'selected':''}>${escapeHtml(b)}</option>`).join('')}</select><button class="select-add" type="button" title="Add brand" aria-label="Add brand" onclick="addBrandInline()">＋</button></div></div><div class="field"><label>Product</label><div class="select-action-wrap"><select id="pproduct" class="select" required><option value="">Select product</option></select><button class="select-add" type="button" title="Add product" aria-label="Add product" onclick="addProductInline()">＋</button></div></div><div class="field"><label>Model number</label><div class="select-action-wrap"><select id="pmodel" class="select" required><option value="">Select model</option></select><button class="select-add" type="button" title="Add model number" aria-label="Add model number" onclick="addModelInline()">＋</button></div></div><div class="field"><label>Start time</label><input id="pstart" type="time" value="${p?.start||'09:00'}" onchange="rebuildHourlyPlan()"/></div><div class="field"><label>End time</label><input id="pend" type="time" value="${p?.end||'17:00'}" onchange="rebuildHourlyPlan()"/></div><div class="field"><label>Supervisor</label><input id="psuper" value="${p?.supervisor||''}" placeholder="Supervisor name"/></div></div><div class="panel" style="margin-top:15px"><div class="paneltitle"><h3>Hourly planned quantity</h3><span>Total shift quantity calculates automatically</span></div><div class="field" style="margin-bottom:12px"><label>Default planned quantity for every hour</label><input id="defaultHourlyQty" type="number" min="0" value="${targets.length?targets[0]:0}" placeholder="Enter hourly target" oninput="fillAllHourlyTargets(this.value)"/><small style="color:var(--muted)">Entering a quantity here applies it to every scheduled hour. You can still adjust individual hours below.</small></div><div id="hourtargetfields" class="formgrid">${slots.map((slot,i)=>`<div class="field"><label>${slot}</label><input class="targetqty" type="number" min="0" value="${targets[i]||0}"/></div>`).join('')}</div><div style="margin-top:12px;font-weight:700">Total Shift Plan: <span id="planTotal">${targets.reduce((a,b)=>a+Number(b),0)}</span> units</div></div><div class="modalactions"><button class="btn" onclick="closePlanModal()">Cancel</button><button class="btn primary" onclick="savePlan()">${p?'Save changes':'Save plan'}</button></div></div>`;let b=document.getElementById('pbrand');updatePlanProducts(p?.product);updatePlanModels(p?.model);document.querySelectorAll('.targetqty').forEach(x=>x.addEventListener('input',updatePlanTotal));modal.classList.remove('hidden');}
+function planForm(p=null){
+  editingPlanId=p?.id??null;
+  var modal=document.getElementById('modal');
+  var slots=timeSlots(p?.start||'09:00',p?.end||'17:00');
+  var targets=p?.hourTargets||slots.map(function(){return 0;});
+  modal.classList.remove('modalback-rework');
+  modal.innerHTML='<div class="modal plan-form-modal">'+
+    '<div class="plan-form-scroll"><h2>'+(p?'Edit Production Plan':'Create Production Plan')+'</h2>'+
+      '<div class="formgrid plan-main-fields">'+
+        '<div class="field"><label for="pdate">Production date</label><input id="pdate" type="date" value="'+escapeHtml(p?.date||todayLocalDate())+'" required/></div>'+
+        '<div class="field"><label for="pshift">Shift</label><select id="pshift" required>'+['Shift 1','Shift 2','Shift 3'].map(function(x){return '<option '+(p?.shift===x?'selected':'')+'>'+x+'</option>';}).join('')+'</select></div>'+
+        '<div class="field"><label for="pline">Production line</label><select id="pline" required>'+['Line 1','Line 2','Line 3'].map(function(x){return '<option '+(p?.line===x?'selected':'')+'>'+x+'</option>';}).join('')+'</select></div>'+
+        '<div class="field"><label for="pbrand">Brand</label><div class="select-action-wrap"><input id="pbrand" class="select catalog-autocomplete" list="pmBrandOptions" placeholder="Type or select brand" autocomplete="off" value="'+escapeHtml(p?.brand||'')+'" required/><datalist id="pmBrandOptions">'+pmBrandNames.map(function(x){return '<option value="'+escapeHtml(x)+'"></option>';}).join('')+'</datalist><button class="select-add" type="button" title="Add brand" aria-label="Add brand" onclick="addBrandInline()">＋</button></div></div>'+
+        '<div class="field"><label for="pproduct">Product</label><div class="select-action-wrap"><input id="pproduct" class="select catalog-autocomplete" list="pmProductOptions" placeholder="Type or select product" autocomplete="off" value="'+escapeHtml(p?.product||'')+'" required/><datalist id="pmProductOptions">'+pmProductNames.map(function(x){return '<option value="'+escapeHtml(x)+'"></option>';}).join('')+'</datalist><button class="select-add" type="button" title="Add product" aria-label="Add product" onclick="addProductInline()">＋</button></div></div>'+
+        '<div class="field"><label for="pmodel">Model number</label><div class="select-action-wrap"><input id="pmodel" class="select catalog-autocomplete" list="pmModelOptions" placeholder="Type or select model number" autocomplete="off" value="'+escapeHtml(p?.model||'')+'" required/><datalist id="pmModelOptions">'+pmModelNumbers.map(function(x){return '<option value="'+escapeHtml(x)+'"></option>';}).join('')+'</datalist><button class="select-add" type="button" title="Add model number" aria-label="Add model number" onclick="addModelInline()">＋</button></div></div>'+
+        '<div class="field"><label for="pstart">Start time</label><input id="pstart" type="time" value="'+escapeHtml(p?.start||'09:00')+'" onchange="rebuildHourlyPlan()"/></div>'+
+        '<div class="field"><label for="pend">End time</label><input id="pend" type="time" value="'+escapeHtml(p?.end||'17:00')+'" onchange="rebuildHourlyPlan()"/></div>'+
+        '<div class="field"><label for="psuper">Supervisor</label><input id="psuper" value="'+escapeHtml(p?.supervisor||'')+'" placeholder="Supervisor name"/></div>'+
+      '</div>'+
+      '<div class="panel plan-hour-panel"><div class="paneltitle"><h3>Hourly planned quantity</h3><span>Total shift quantity calculates automatically</span></div>'+
+        '<div class="field plan-default-qty"><label for="defaultHourlyQty">Default planned quantity for every hour</label>'+
+        '<input id="defaultHourlyQty" type="number" min="0" inputmode="numeric" value="'+(targets.length?Number(targets[0])||0:0)+'" placeholder="Enter hourly target" oninput="fillAllHourlyTargets(this.value)"/>'+
+        '<small>Entering a quantity here applies it to every scheduled hour. You can still adjust individual hours below.</small></div>'+
+        '<div id="hourtargetfields" class="hourly-target-grid">'+slots.map(function(slot,i){return '<div class="field"><label>'+escapeHtml(slot)+'</label><input class="targetqty" type="number" min="0" inputmode="numeric" value="'+(Number(targets[i])||0)+'"/></div>';}).join('')+'</div>'+
+        '<div class="plan-total-row">Total shift plan: <strong id="planTotal">'+targets.reduce(function(a,b){return a+(Number(b)||0);},0)+'</strong> units</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="plan-form-footer"><button class="btn" type="button" onclick="closePlanModal()">Cancel</button><button class="btn primary" type="button" onclick="savePlan()">'+(p?'Save changes':'Save plan')+'</button></div>'+
+  '</div>';
+  updatePlanProducts(p?.product||'');updatePlanModels(p?.model||'');
+  document.querySelectorAll('.targetqty').forEach(function(x){x.addEventListener('input',updatePlanTotal);});
+  updatePlanTotal();modal.classList.remove('hidden');
+}
 function pModelLookup(b,x){return productModels[b+'|'+x]||'';}function openPlanModal(){planForm();}function editPlan(id){planForm(plans.find(function(x){return String(x.id)===String(id);}));}function updatePlanProducts(selected){
   var product=document.getElementById('pproduct');if(!product)return;
   var current=selected||product.value;
@@ -1270,7 +1395,16 @@ function pModelLookup(b,x){return productModels[b+'|'+x]||'';}function openPlanM
   model.value=pmModelNumbers.includes(current)?current:'';
 }
 function updatePlanTotal(){let total=[...document.querySelectorAll('.targetqty')].reduce((sum,x)=>sum+Math.max(0,Number(x.value)||0),0);let el=document.getElementById('planTotal');if(el)el.textContent=total;}function fillAllHourlyTargets(value){let qty=Math.max(0,Number(value)||0);document.querySelectorAll('.targetqty').forEach(x=>x.value=qty);updatePlanTotal();}
-function rebuildHourlyPlan(){let start=document.getElementById('pstart').value,end=document.getElementById('pend').value,slots=timeSlots(start,end),container=document.getElementById('hourtargetfields'),defaultQty=Math.max(0,Number(document.getElementById('defaultHourlyQty')?.value)||0);if(!container)return;container.innerHTML=slots.map(slot=>`<div class="field"><label>${slot}</label><input class="targetqty" type="number" min="0" value="${defaultQty}"/></div>`).join('');container.querySelectorAll('.targetqty').forEach(x=>x.addEventListener('input',updatePlanTotal));updatePlanTotal();}
+function rebuildHourlyPlan(){
+  var start=document.getElementById('pstart').value,end=document.getElementById('pend').value;
+  var slots=timeSlots(start,end),container=document.getElementById('hourtargetfields');
+  var defaultQty=Math.max(0,Number(document.getElementById('defaultHourlyQty')?.value)||0);
+  if(!container)return;
+  container.className='hourly-target-grid';
+  container.innerHTML=slots.map(function(slot){return '<div class="field"><label>'+escapeHtml(slot)+'</label><input class="targetqty" type="number" min="0" inputmode="numeric" value="'+defaultQty+'"/></div>';}).join('');
+  container.querySelectorAll('.targetqty').forEach(function(x){x.addEventListener('input',updatePlanTotal);});
+  updatePlanTotal();
+}
 
 async function savePlan(){
   const button=document.querySelector('#modal .modalactions .btn.primary');
@@ -1288,6 +1422,11 @@ async function savePlan(){
     const targets=Array.from(document.querySelectorAll('.targetqty')).map(x=>Math.max(0,Number(x.value)||0));
     const slots=timeSlots(start,end);
     const qty=targets.reduce((a,b)=>a+b,0);
+    const catalogHas=function(value,list){return list.some(function(item){return String(item).trim().toLocaleLowerCase()===String(value).trim().toLocaleLowerCase();});};
+    if(!catalogHas(brand,pmBrandNames)||!catalogHas(product,pmProductNames)||!catalogHas(model,pmModelNumbers)){
+      toast('Choose an available Brand, Product and Model Number, or add it using the + button.');
+      return;
+    }
     if(!date||!brand||!product||!model||qty<=0){
       toast('Select production date, brand, product, model and hourly quantities');
       return;
@@ -1360,62 +1499,47 @@ function viewPlan(id){
 function closePlanModal(){let modal=document.getElementById('modal');modal.classList.add('hidden');modal.classList.remove('modalback-rework');editingPlanId=null;}
 
 async function addBrandInline(){
-  var input=prompt('Enter new brand name');if(!input)return;
+  var input=window.prompt('Enter new brand name');if(!input)return;
   var name=input.trim();if(!name)return;
   try{
     var db=pmRequireDb();
     var existing=await db.from('pm_brands').select('id,name').ilike('name',name).maybeSingle();
     if(existing.error)throw existing.error;
-    if(existing.data){
-      await pmReloadProductionData();
-      var current=document.getElementById('pbrand');if(current)current.value=existing.data.name;
-      toast('Brand already exists. Selected it in the plan.');return;
-    }
-    var result=await db.from('pm_brands').insert({name:name,created_by:window.pmCurrentUserId||null}).select('id,name').single();
-    if(result.error)throw result.error;
+    var record=existing.data;
+    if(!record){var result=await db.from('pm_brands').insert({name:name,created_by:window.pmCurrentUserId||null}).select('id,name').single();if(result.error)throw result.error;record=result.data;}
     await pmReloadProductionData();
-    var select=document.getElementById('pbrand');if(select)select.value=result.data.name;
-    toast('Brand added and available immediately');
+    var field=document.getElementById('pbrand');if(field){field.value=record.name;field.focus();}
+    toast(existing.data?'Brand already exists. Selected it.':'Brand added and selected.');
   }catch(error){toast('Could not add brand: '+error.message);}
 }
 
 async function addProductInline(){
-  var input=prompt('Enter product name');if(!input)return;
+  var input=window.prompt('Enter product name');if(!input)return;
   var name=input.trim();if(!name)return;
   try{
     var db=pmRequireDb();
     var existing=await db.from('pm_products').select('id,name').ilike('name',name).maybeSingle();
     if(existing.error)throw existing.error;
-    if(existing.data){
-      await pmReloadProductionData();updatePlanProducts(existing.data.name);
-      toast('Product already exists. Selected it in the plan.');return;
-    }
-    var result=await db.from('pm_products')
-      .insert({brand_id:null,name:name,created_by:window.pmCurrentUserId||null})
-      .select('id,name').single();
-    if(result.error)throw result.error;
-    await pmReloadProductionData();updatePlanProducts(result.data.name);
-    toast('Product added. Select or add its model number separately.');
+    var record=existing.data;
+    if(!record){var result=await db.from('pm_products').insert({brand_id:null,name:name,created_by:window.pmCurrentUserId||null}).select('id,name').single();if(result.error)throw result.error;record=result.data;}
+    await pmReloadProductionData();
+    var field=document.getElementById('pproduct');if(field){field.value=record.name;field.focus();}
+    toast(existing.data?'Product already exists. Selected it.':'Product added and selected. Add a model separately.');
   }catch(error){toast('Could not add product: '+error.message);}
 }
 
 async function addModelInline(){
-  var input=prompt('Enter model number');if(!input)return;
-  var modelNumber=input.trim();if(!modelNumber)return;
+  var input=window.prompt('Enter model number');if(!input)return;
+  var name=input.trim();if(!name)return;
   try{
     var db=pmRequireDb();
-    var existing=await db.from('pm_models').select('id,model_number').ilike('model_number',modelNumber).maybeSingle();
+    var existing=await db.from('pm_models').select('id,model_number').ilike('model_number',name).maybeSingle();
     if(existing.error)throw existing.error;
-    if(existing.data){
-      await pmReloadProductionData();updatePlanModels(existing.data.model_number);
-      toast('Model number already exists. Selected it in the plan.');return;
-    }
-    var result=await db.from('pm_models')
-      .insert({product_id:null,model_number:modelNumber,created_by:window.pmCurrentUserId||null})
-      .select('id,model_number').single();
-    if(result.error)throw result.error;
-    await pmReloadProductionData();updatePlanModels(result.data.model_number);
-    toast('Model number added and available immediately');
+    var record=existing.data;
+    if(!record){var result=await db.from('pm_models').insert({product_id:null,model_number:name,created_by:window.pmCurrentUserId||null}).select('id,model_number').single();if(result.error)throw result.error;record=result.data;}
+    await pmReloadProductionData();
+    var field=document.getElementById('pmodel');if(field){field.value=record.model_number;field.focus();}
+    toast(existing.data?'Model number already exists. Selected it.':'Model number added and selected.');
   }catch(error){toast('Could not add model number: '+error.message);}
 }
 
@@ -1659,6 +1783,7 @@ function renderOverviewSummary(f){
 function renderOverviewChart(){
   var host=document.getElementById('overviewBarChart');if(!host)return;
   var filtered=getOverviewPlans(),labels=hours;
+  renderOverviewChartPlanDetails(filtered);
   var planned=labels.map(function(_,i){return filtered.reduce(function(sum,p){return sum+(Number(planHourTargets(p)[i])||0);},0);});
   var actual=labels.map(function(_,i){return filtered.reduce(function(sum,p){return sum+getHourlyActual(p,i);},0);});
   if(!filtered.length){host.innerHTML='<div class="chart-empty">No active published plans for the selected date and filters.</div>';updateOverviewKpis();return;}
@@ -1674,6 +1799,28 @@ function renderOverviewChart(){
     svg.push('<text x="'+cx+'" y="'+(H-13)+'" text-anchor="middle" font-size="10" fill="#7b8798">'+label.split('–')[0]+'</text>');
   });
   svg.push('</svg>');host.innerHTML=svg.join('');updateOverviewKpis();
+}
+function renderOverviewChartPlanDetails(filtered){
+  var host=document.getElementById('overviewChartPlanDetails');
+  if(!host)return;
+  if(!filtered||!filtered.length){
+    host.innerHTML='<div class="chart-plans-empty">No plan details match the selected filters.</div>';
+    return;
+  }
+  host.innerHTML='<div class="chart-plans-heading"><strong>Plans included in this graph</strong><span>'+filtered.length+' plan'+(filtered.length===1?'':'s')+'</span></div>'+
+    '<div class="chart-plan-list">'+filtered.map(function(p){
+      var qty=Number(p.qty)||0,actual=Number(p.actual)||0,status=getPlanStatusLabel(p);
+      var state=status.toLowerCase().replace(/\s+/g,'-');
+      return '<article class="chart-plan-item"><div class="chart-plan-title"><strong>'+escapeHtml(p.line||'—')+'</strong><span class="chart-plan-status '+state+'">'+escapeHtml(status)+'</span></div>'+
+        '<div class="chart-plan-meta">'+
+          '<span><small>Brand</small><b>'+escapeHtml(p.brand||'—')+'</b></span>'+
+          '<span><small>Product</small><b>'+escapeHtml(p.product||'—')+'</b></span>'+
+          '<span><small>Model</small><b>'+escapeHtml(p.model||'—')+'</b></span>'+
+          '<span><small>Planned</small><b>'+qty+'</b></span>'+
+          '<span><small>Actual</small><b>'+actual+'</b></span>'+
+          '<span><small>Status</small><b>'+escapeHtml(status)+'</b></span>'+
+        '</div></article>';
+    }).join('')+'</div>';
 }
 function makeOverviewReportCanvas(){
   var statusPlans=getOverviewStatusPlans(),graphPlans=getOverviewPlans(),W=1200,chartHeight=400,cardHeight=154,gap=18;
@@ -1768,18 +1915,23 @@ function printReportPDF(){window.print();}
 function exportReportCSV(){let rows=[...document.querySelectorAll('#reportTable tr')].map(tr=>[...tr.querySelectorAll('th,td')].map(c=>'"'+c.innerText.replaceAll('"','""')+'"').join(','));let blob=new Blob([rows.join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='production-report.csv';a.click();URL.revokeObjectURL(url);toast('CSV exported');}
 function refreshProductOptions(){
   var brands=pmBrandNames.slice(),products=pmProductNames.slice(),models=pmModelNumbers.slice();
-  var a=document.getElementById('overviewProductFilter'),b=document.getElementById('reportProduct');
-  var ob=document.getElementById('overviewBrandFilter'),rb=document.getElementById('reportBrand');
-  if(a){var keepA=a.value;a.innerHTML='<option>All products</option>'+products.map(x=>'<option>'+escapeHtml(x)+'</option>').join('');if(products.includes(keepA))a.value=keepA;}
-  if(b){var keepB=b.value;b.innerHTML='<option value="all">All products</option>'+products.map(x=>'<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>').join('');if(products.includes(keepB))b.value=keepB;}
-  if(ob){var keepOB=ob.value;ob.innerHTML='<option>All brands</option>'+brands.map(x=>'<option>'+escapeHtml(x)+'</option>').join('');if(brands.includes(keepOB))ob.value=keepOB;}
-  if(rb){var keepRB=rb.value;rb.innerHTML='<option value="all">All brands</option>'+brands.map(x=>'<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>').join('');if(brands.includes(keepRB))rb.value=keepRB;}
-  var brandSelect=document.getElementById('pbrand');
-  if(brandSelect){var selectedBrand=brandSelect.value;brandSelect.innerHTML='<option value="">Select brand</option>'+brands.map(x=>'<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>').join('');brandSelect.value=brands.includes(selectedBrand)?selectedBrand:'';}
-  var productSelect=document.getElementById('pproduct');
-  if(productSelect){var selectedProduct=productSelect.value;productSelect.innerHTML='<option value="">Select product</option>'+products.map(x=>'<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>').join('');productSelect.value=products.includes(selectedProduct)?selectedProduct:'';}
-  var modelSelect=document.getElementById('pmodel');
-  if(modelSelect){var selectedModel=modelSelect.value;modelSelect.innerHTML='<option value="">Select model number</option>'+models.map(x=>'<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>').join('');modelSelect.value=models.includes(selectedModel)?selectedModel:'';}
+  function fillSelect(id,values,label){
+    var el=document.getElementById(id);if(!el)return;
+    var keep=el.value;
+    el.innerHTML='<option value="'+(label==='All brands'||label==='All products'?'':'all')+'">'+label+'</option>'+
+      values.map(function(x){return '<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>';}).join('');
+    if(values.includes(keep))el.value=keep;
+  }
+  fillSelect('overviewBrandFilter',brands,'All brands');
+  fillSelect('overviewProductFilter',products,'All products');
+  fillSelect('reportBrand',brands,'All brands');
+  fillSelect('reportProduct',products,'All products');
+  [
+    ['pmBrandOptions',brands],['pmProductOptions',products],['pmModelOptions',models]
+  ].forEach(function(pair){
+    var list=document.getElementById(pair[0]);
+    if(list)list.innerHTML=pair[1].map(function(x){return '<option value="'+escapeHtml(x)+'"></option>';}).join('');
+  });
 }
 function persistAppData(){
   // Business data is written directly to Supabase by each save operation.
