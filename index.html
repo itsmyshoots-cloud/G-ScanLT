@@ -1476,7 +1476,7 @@ function hourEntry(id,h){
         '<div class="field"><label>Rejection category</label><select id="hreason"><option value="">Select IQC / LQC</option>'+options+'</select></div>'+
         '<div class="field"><label>Starting serial number</label><input id="hs" value="'+escapeHtml(entry.startSerial||'')+'" placeholder="First production serial"/></div>'+
         '<div class="field"><label>Ending serial number</label><input id="he" value="'+escapeHtml(entry.endSerial||'')+'" placeholder="Last production serial"/></div>'+
-        '<div class="field"><label>Missing sticker quantity</label><input id="hmissqty" type="number" min="0" inputmode="numeric" value="'+(entry.missingSerialQty||0)+'" placeholder="0"/></div>'+
+        '<div class="field"><label>Missing / damaged sticker quantity</label><input id="hmissqty" type="number" min="0" inputmode="numeric" value="'+(entry.missingSerialQty||0)+'" placeholder="0"/></div>'+
       '</div>'+
       '<div class="hourly-flow-hint">Enter the normal serial range first. If any serial stickers are missing or damaged, enter the quantity and continue to record each missing serial and its replacement.</div>'+
       '<div class="modalactions hourly-step-actions"><button class="btn" type="button" onclick="closePlanModal()">← Back to plan</button>'+
