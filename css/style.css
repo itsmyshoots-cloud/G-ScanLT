@@ -2162,3 +2162,36 @@ html,body{max-width:100%;overflow-x:hidden}
 #rework .rw-count-pill.final{background:#f2efff;color:#6741b8}
 #rework #reworkTable td:last-child,#rework #reworkTable th:last-child{text-align:right}
 @media(max-width:760px){#rework #reworkTable{min-width:760px}#rework #reworkTable th,#rework #reworkTable td{padding:10px 8px}}
+
+/* Rework resolution modal: focused queue with separate locked history */
+#rework .rework-modal{width:min(1220px,100%);padding:20px 22px}
+#rework .rw-modal-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+#rework .rw-modal-header h2{margin:0 0 5px;font-size:20px}
+#rework .rw-modal-close{font-size:20px;min-width:36px;padding:6px 10px}
+#rework .rw-plan-context{display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;margin-top:12px;padding:10px 12px;border-radius:9px;background:#f5f8fc;color:#64748b;font-size:12px}
+#rework .rw-plan-context span{margin-left:auto}
+#rework .rw-plan-context b{color:var(--ink)}
+#rework .rw-summary-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0 20px!important}
+#rework .rw-summary-cards span{display:flex;flex-direction:column;gap:4px;border-radius:10px;padding:12px 14px;background:#f8fafc;border:1px solid var(--line)}
+#rework .rw-summary-cards b{font-size:20px;color:var(--ink)}
+#rework .rw-summary-cards small{font-size:11px;color:var(--muted)}
+#rework .rw-summary-pending{background:#fff9ed!important}
+#rework .rw-summary-completed{background:#f0faf5!important}
+#rework .rw-summary-final{background:#fff2f2!important}
+#rework .rw-pending-section{margin-bottom:18px}
+#rework .rw-section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px}
+#rework .rw-section-title h3{margin:0;font-size:15px}
+#rework .rw-section-title p{margin:4px 0 0;color:var(--muted);font-size:11px}
+#rework .rw-pending-badge{white-space:nowrap;padding:5px 9px;border-radius:20px;background:#fff4df;color:#9a5b00;font-size:11px;font-weight:650}
+#rework .rw-unit-table{min-width:1000px}
+#rework .rw-unit-table th{font-size:10px;letter-spacing:.03em}
+#rework .rw-unit-table td{font-size:12px}
+#rework .rw-history-section{border:1px solid var(--line);border-radius:10px;background:#fbfcfe;overflow:hidden}
+#rework .rw-history-section>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 15px;font-weight:650;font-size:13px}
+#rework .rw-history-section>summary::-webkit-details-marker{display:none}
+#rework .rw-history-section>summary:after{content:"+";font-size:17px;color:var(--blue);margin-left:auto}
+#rework .rw-history-section[open]>summary:after{content:"−"}
+#rework .rw-history-meta{font-size:11px;color:var(--muted);font-weight:500}
+#rework .rw-history-section .report-table-scroll{padding:0 10px 10px}
+#rework .rw-history-remark{display:block;max-width:260px;white-space:normal;line-height:1.4}
+@media(max-width:700px){#rework .rework-modal{padding:14px}#rework .rw-summary-cards{grid-template-columns:repeat(2,minmax(0,1fr))}#rework .rw-modal-header h2{font-size:18px}#rework .rw-plan-context span{margin-left:0}}
