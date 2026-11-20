@@ -869,6 +869,9 @@
 
 let brandProducts={};
 const productModels={};
+let pmBrandNames=[];
+let pmProductNames=[];
+let pmModelNumbers=[];
 const hours=['09:00–10:00','10:00–11:00','11:00–12:00','12:00–13:00','13:00–14:00','14:00–15:00','15:00–16:00','16:00–17:00'];
 let plans=[];
 let editingPlanId=null;
@@ -918,28 +921,12 @@ async function pmLoadProductionData(client){
   const brandById=new Map(brands.map(b=>[b.id,b]));
   const productById=new Map(products.map(p=>[p.id,p]));
   const modelById=new Map(models.map(m=>[m.id,m]));
+
+  pmBrandNames=brands.map(b=>b.name).filter(Boolean).sort((a,b)=>a.localeCompare(b));
+  pmProductNames=products.map(p=>p.name).filter(Boolean).sort((a,b)=>a.localeCompare(b));
+  pmModelNumbers=models.map(m=>m.model_number).filter(Boolean).sort((a,b)=>a.localeCompare(b));
   brandProducts={};
-  brands.forEach(b=>{brandProducts[b.name]={};});
-  products.forEach(p=>{
-    const brand=brandById.get(p.brand_id);
-    if(!brand)return;
-    if(!brandProducts[brand.name])brandProducts[brand.name]={};
-    brandProducts[brand.name][p.name]=[];
-  });
-  models.forEach(m=>{
-    const product=productById.get(m.product_id);
-    const brand=product&&brandById.get(product.brand_id);
-    if(brand&&product){
-      if(!brandProducts[brand.name])brandProducts[brand.name]={};
-      if(!brandProducts[brand.name][product.name])brandProducts[brand.name][product.name]=[];
-      brandProducts[brand.name][product.name].push(m.model_number);
-    }
-  });
-  Object.keys(brandProducts).forEach(brand=>{
-    Object.keys(brandProducts[brand]).forEach(product=>{
-      brandProducts[brand][product].sort((a,b)=>String(a).localeCompare(String(b)));
-    });
-  });
+  pmBrandNames.forEach(name=>{brandProducts[name]={};});
 
   const targetsByPlan=new Map();
   targets.forEach(t=>{
@@ -1270,8 +1257,18 @@ function initializeTodayDateFilters(){
   if(reportFrom&&!reportFrom.value)reportFrom.value=today.slice(0,7)+'-01';
   if(reportTo&&!reportTo.value)reportTo.value=today;
 }
-function planForm(p=null){editingPlanId=p?.id??null;let slots=timeSlots(p?.start||'09:00',p?.end||'17:00'),targets=p?.hourTargets||slots.map(()=>0);document.getElementById('modal').innerHTML=`<div class="modal" style="width:min(780px,100%);max-height:90vh;overflow:auto"><h2>${p?'Edit Production Plan':'Create Production Plan'}</h2><div class="formgrid"><div class="field"><label>Production date</label><input id="pdate" type="date" value="${p?.date||todayLocalDate()}"/></div><div class="field"><label>Shift</label><select id="pshift">${['Shift 1','Shift 2','Shift 3'].map(x=>`<option ${p?.shift===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>Production line</label><select id="pline">${['Line 1','Line 2','Line 3'].map(x=>`<option ${p?.line===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>Brand</label><div class="select-action-wrap"><select id="pbrand" class="select" onchange="updatePlanProducts()"><option value="">Select brand</option>${Object.keys(brandProducts).map(b=>`<option value="${b}" ${p?.brand===b?'selected':''}>${b}</option>`).join('')}</select><button class="select-add" type="button" title="Add brand" aria-label="Add brand" onclick="addBrandInline()">＋</button></div></div><div class="field"><label>Product</label><div class="select-action-wrap"><select id="pproduct" class="select" onchange="updatePlanModels()"><option value="">Select product</option></select><button class="select-add" type="button" title="Add product" aria-label="Add product" onclick="addProductInline()">＋</button></div></div><div class="field"><label>Model number</label><div class="select-action-wrap"><select id="pmodel" class="select"><option value="">Select model</option></select><button class="select-add" type="button" title="Add model number" aria-label="Add model number" onclick="addModelInline()">＋</button></div></div><div class="field"><label>Start time</label><input id="pstart" type="time" value="${p?.start||'09:00'}" onchange="rebuildHourlyPlan()"/></div><div class="field"><label>End time</label><input id="pend" type="time" value="${p?.end||'17:00'}" onchange="rebuildHourlyPlan()"/></div><div class="field"><label>Supervisor</label><input id="psuper" value="${p?.supervisor||''}" placeholder="Supervisor name"/></div></div><div class="panel" style="margin-top:15px"><div class="paneltitle"><h3>Hourly planned quantity</h3><span>Total shift quantity calculates automatically</span></div><div class="field" style="margin-bottom:12px"><label>Default planned quantity for every hour</label><input id="defaultHourlyQty" type="number" min="0" value="${targets.length?targets[0]:0}" placeholder="Enter hourly target" oninput="fillAllHourlyTargets(this.value)"/><small style="color:var(--muted)">Entering a quantity here applies it to every scheduled hour. You can still adjust individual hours below.</small></div><div id="hourtargetfields" class="formgrid">${slots.map((slot,i)=>`<div class="field"><label>${slot}</label><input class="targetqty" type="number" min="0" value="${targets[i]||0}"/></div>`).join('')}</div><div style="margin-top:12px;font-weight:700">Total Shift Plan: <span id="planTotal">${targets.reduce((a,b)=>a+Number(b),0)}</span> units</div></div><div class="modalactions"><button class="btn" onclick="closePlanModal()">Cancel</button><button class="btn primary" onclick="savePlan()">${p?'Save changes':'Save plan'}</button></div></div>`;let b=document.getElementById('pbrand');updatePlanProducts(p?.product);updatePlanModels(p?.model);document.querySelectorAll('.targetqty').forEach(x=>x.addEventListener('input',updatePlanTotal));modal.classList.remove('hidden');}
-function pModelLookup(b,x){return productModels[b+'|'+x]||'';}function openPlanModal(){planForm();}function editPlan(id){planForm(plans.find(function(x){return String(x.id)===String(id);}));}function updatePlanProducts(selected=''){let brand=document.getElementById('pbrand'),prod=document.getElementById('pproduct');if(!brand||!prod)return;let list=Object.keys(brandProducts[brand.value]||{});prod.innerHTML='<option value="">Select product</option>'+list.map(x=>`<option value="${x}" ${x===selected?'selected':''}>${x}</option>`).join('');prod.onchange=()=>updatePlanModels();if(selected&&list.includes(selected))prod.value=selected;updatePlanModels();}function updatePlanModels(selected=''){let brand=document.getElementById('pbrand')?.value,product=document.getElementById('pproduct')?.value,model=document.getElementById('pmodel');if(!model)return;let raw=brandProducts[brand]?.[product]||[];let list=Array.isArray(raw)?raw:(raw?[String(raw)]:[]);model.innerHTML='<option value="">Select model number</option>'+list.map(x=>`<option value="${x}" ${x===selected?'selected':''}>${x}</option>`).join('');if(!selected&&list.length===1)model.value=list[0];}
+function planForm(p=null){editingPlanId=p?.id??null;let slots=timeSlots(p?.start||'09:00',p?.end||'17:00'),targets=p?.hourTargets||slots.map(()=>0);document.getElementById('modal').innerHTML=`<div class="modal" style="width:min(780px,100%);max-height:90vh;overflow:auto"><h2>${p?'Edit Production Plan':'Create Production Plan'}</h2><div class="formgrid"><div class="field"><label>Production date</label><input id="pdate" type="date" value="${p?.date||todayLocalDate()}"/></div><div class="field"><label>Shift</label><select id="pshift">${['Shift 1','Shift 2','Shift 3'].map(x=>`<option ${p?.shift===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>Production line</label><select id="pline">${['Line 1','Line 2','Line 3'].map(x=>`<option ${p?.line===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>Brand</label><div class="select-action-wrap"><select id="pbrand" class="select" required><option value="">Select brand</option>${pmBrandNames.map(b=>`<option value="${escapeHtml(b)}" ${p?.brand===b?'selected':''}>${escapeHtml(b)}</option>`).join('')}</select><button class="select-add" type="button" title="Add brand" aria-label="Add brand" onclick="addBrandInline()">＋</button></div></div><div class="field"><label>Product</label><div class="select-action-wrap"><select id="pproduct" class="select" required><option value="">Select product</option></select><button class="select-add" type="button" title="Add product" aria-label="Add product" onclick="addProductInline()">＋</button></div></div><div class="field"><label>Model number</label><div class="select-action-wrap"><select id="pmodel" class="select" required><option value="">Select model</option></select><button class="select-add" type="button" title="Add model number" aria-label="Add model number" onclick="addModelInline()">＋</button></div></div><div class="field"><label>Start time</label><input id="pstart" type="time" value="${p?.start||'09:00'}" onchange="rebuildHourlyPlan()"/></div><div class="field"><label>End time</label><input id="pend" type="time" value="${p?.end||'17:00'}" onchange="rebuildHourlyPlan()"/></div><div class="field"><label>Supervisor</label><input id="psuper" value="${p?.supervisor||''}" placeholder="Supervisor name"/></div></div><div class="panel" style="margin-top:15px"><div class="paneltitle"><h3>Hourly planned quantity</h3><span>Total shift quantity calculates automatically</span></div><div class="field" style="margin-bottom:12px"><label>Default planned quantity for every hour</label><input id="defaultHourlyQty" type="number" min="0" value="${targets.length?targets[0]:0}" placeholder="Enter hourly target" oninput="fillAllHourlyTargets(this.value)"/><small style="color:var(--muted)">Entering a quantity here applies it to every scheduled hour. You can still adjust individual hours below.</small></div><div id="hourtargetfields" class="formgrid">${slots.map((slot,i)=>`<div class="field"><label>${slot}</label><input class="targetqty" type="number" min="0" value="${targets[i]||0}"/></div>`).join('')}</div><div style="margin-top:12px;font-weight:700">Total Shift Plan: <span id="planTotal">${targets.reduce((a,b)=>a+Number(b),0)}</span> units</div></div><div class="modalactions"><button class="btn" onclick="closePlanModal()">Cancel</button><button class="btn primary" onclick="savePlan()">${p?'Save changes':'Save plan'}</button></div></div>`;let b=document.getElementById('pbrand');updatePlanProducts(p?.product);updatePlanModels(p?.model);document.querySelectorAll('.targetqty').forEach(x=>x.addEventListener('input',updatePlanTotal));modal.classList.remove('hidden');}
+function pModelLookup(b,x){return productModels[b+'|'+x]||'';}function openPlanModal(){planForm();}function editPlan(id){planForm(plans.find(function(x){return String(x.id)===String(id);}));}function updatePlanProducts(selected){
+  var product=document.getElementById('pproduct');if(!product)return;
+  var current=selected||product.value;
+  product.innerHTML='<option value="">Select product</option>'+pmProductNames.map(x=>'<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>').join('');
+  product.value=pmProductNames.includes(current)?current:'';
+}function updatePlanModels(selected){
+  var model=document.getElementById('pmodel');if(!model)return;
+  var current=selected||model.value;
+  model.innerHTML='<option value="">Select model number</option>'+pmModelNumbers.map(x=>'<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>').join('');
+  model.value=pmModelNumbers.includes(current)?current:'';
+}
 function updatePlanTotal(){let total=[...document.querySelectorAll('.targetqty')].reduce((sum,x)=>sum+Math.max(0,Number(x.value)||0),0);let el=document.getElementById('planTotal');if(el)el.textContent=total;}function fillAllHourlyTargets(value){let qty=Math.max(0,Number(value)||0);document.querySelectorAll('.targetqty').forEach(x=>x.value=qty);updatePlanTotal();}
 function rebuildHourlyPlan(){let start=document.getElementById('pstart').value,end=document.getElementById('pend').value,slots=timeSlots(start,end),container=document.getElementById('hourtargetfields'),defaultQty=Math.max(0,Number(document.getElementById('defaultHourlyQty')?.value)||0);if(!container)return;container.innerHTML=slots.map(slot=>`<div class="field"><label>${slot}</label><input class="targetqty" type="number" min="0" value="${defaultQty}"/></div>`).join('');container.querySelectorAll('.targetqty').forEach(x=>x.addEventListener('input',updatePlanTotal));updatePlanTotal();}
 
@@ -1363,73 +1360,63 @@ function viewPlan(id){
 function closePlanModal(){let modal=document.getElementById('modal');modal.classList.add('hidden');modal.classList.remove('modalback-rework');editingPlanId=null;}
 
 async function addBrandInline(){
-  let name=prompt('Enter new brand name');
-  if(!name)return;
-  name=name.trim();if(!name)return;
-  if(brandProducts[name])return toast('Brand already exists');
+  var input=prompt('Enter new brand name');if(!input)return;
+  var name=input.trim();if(!name)return;
   try{
-    const result=await pmRequireDb().from('pm_brands')
-      .insert({name:name,created_by:window.pmCurrentUserId||null})
-      .select('id,name').single();
+    var db=pmRequireDb();
+    var existing=await db.from('pm_brands').select('id,name').ilike('name',name).maybeSingle();
+    if(existing.error)throw existing.error;
+    if(existing.data){
+      await pmReloadProductionData();
+      var current=document.getElementById('pbrand');if(current)current.value=existing.data.name;
+      toast('Brand already exists. Selected it in the plan.');return;
+    }
+    var result=await db.from('pm_brands').insert({name:name,created_by:window.pmCurrentUserId||null}).select('id,name').single();
     if(result.error)throw result.error;
     await pmReloadProductionData();
-    const select=document.getElementById('pbrand');
-    if(select){select.value=name;updatePlanProducts();}
-    toast('Brand saved to Supabase');
+    var select=document.getElementById('pbrand');if(select)select.value=result.data.name;
+    toast('Brand added and available immediately');
   }catch(error){toast('Could not add brand: '+error.message);}
 }
 
 async function addProductInline(){
-  const brandName=document.getElementById('pbrand')?.value;
-  if(!brandName)return toast('Select a brand first');
-  let productName=prompt('Enter product name for '+brandName);
-  if(!productName)return;
-  productName=productName.trim();if(!productName)return;
-  let modelNumber=prompt('Enter model number for '+productName);
-  if(!modelNumber)return;
-  modelNumber=modelNumber.trim();if(!modelNumber)return;
+  var input=prompt('Enter product name');if(!input)return;
+  var name=input.trim();if(!name)return;
   try{
-    const db=pmRequireDb();
-    const brandResult=await db.from('pm_brands').select('id').eq('name',brandName).single();
-    if(brandResult.error)throw brandResult.error;
-    const productResult=await db.from('pm_products')
-      .insert({brand_id:brandResult.data.id,name:productName,created_by:window.pmCurrentUserId||null})
+    var db=pmRequireDb();
+    var existing=await db.from('pm_products').select('id,name').ilike('name',name).maybeSingle();
+    if(existing.error)throw existing.error;
+    if(existing.data){
+      await pmReloadProductionData();updatePlanProducts(existing.data.name);
+      toast('Product already exists. Selected it in the plan.');return;
+    }
+    var result=await db.from('pm_products')
+      .insert({brand_id:null,name:name,created_by:window.pmCurrentUserId||null})
       .select('id,name').single();
-    if(productResult.error)throw productResult.error;
-    const modelResult=await db.from('pm_models')
-      .insert({product_id:productResult.data.id,model_number:modelNumber,created_by:window.pmCurrentUserId||null})
-      .select('id,model_number').single();
-    if(modelResult.error)throw modelResult.error;
-    await pmReloadProductionData();
-    const brandSelect=document.getElementById('pbrand');if(brandSelect)brandSelect.value=brandName;
-    updatePlanProducts(productName);updatePlanModels(modelNumber);
-    toast('Product and model saved to Supabase');
-  }catch(error){toast('Could not add product/model: '+error.message);}
+    if(result.error)throw result.error;
+    await pmReloadProductionData();updatePlanProducts(result.data.name);
+    toast('Product added. Select or add its model number separately.');
+  }catch(error){toast('Could not add product: '+error.message);}
 }
 
 async function addModelInline(){
-  const brandName=document.getElementById('pbrand')?.value;
-  const productName=document.getElementById('pproduct')?.value;
-  if(!brandName||!productName)return toast('Select brand and product first');
-  let modelNumber=prompt('Enter model number for '+productName);
-  if(!modelNumber)return;
-  modelNumber=modelNumber.trim();if(!modelNumber)return;
+  var input=prompt('Enter model number');if(!input)return;
+  var modelNumber=input.trim();if(!modelNumber)return;
   try{
-    const db=pmRequireDb();
-    const brandResult=await db.from('pm_brands').select('id').eq('name',brandName).single();
-    if(brandResult.error)throw brandResult.error;
-    const productResult=await db.from('pm_products').select('id')
-      .eq('brand_id',brandResult.data.id).eq('name',productName).single();
-    if(productResult.error)throw productResult.error;
-    const result=await db.from('pm_models')
-      .insert({product_id:productResult.data.id,model_number:modelNumber,created_by:window.pmCurrentUserId||null})
+    var db=pmRequireDb();
+    var existing=await db.from('pm_models').select('id,model_number').ilike('model_number',modelNumber).maybeSingle();
+    if(existing.error)throw existing.error;
+    if(existing.data){
+      await pmReloadProductionData();updatePlanModels(existing.data.model_number);
+      toast('Model number already exists. Selected it in the plan.');return;
+    }
+    var result=await db.from('pm_models')
+      .insert({product_id:null,model_number:modelNumber,created_by:window.pmCurrentUserId||null})
       .select('id,model_number').single();
     if(result.error)throw result.error;
-    await pmReloadProductionData();
-    const b=document.getElementById('pbrand');if(b)b.value=brandName;
-    updatePlanProducts(productName);updatePlanModels(modelNumber);
-    toast('Model saved to Supabase');
-  }catch(error){toast('Could not add model: '+error.message);}
+    await pmReloadProductionData();updatePlanModels(result.data.model_number);
+    toast('Model number added and available immediately');
+  }catch(error){toast('Could not add model number: '+error.message);}
 }
 
 async function closeShift(id){
@@ -1779,7 +1766,21 @@ function showReportHistory(i){
 }
 function printReportPDF(){window.print();}
 function exportReportCSV(){let rows=[...document.querySelectorAll('#reportTable tr')].map(tr=>[...tr.querySelectorAll('th,td')].map(c=>'"'+c.innerText.replaceAll('"','""')+'"').join(','));let blob=new Blob([rows.join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='production-report.csv';a.click();URL.revokeObjectURL(url);toast('CSV exported');}
-function refreshProductOptions(){let products=[...new Set(plans.map(p=>p.product))],brands=[...new Set([...Object.keys(brandProducts),...plans.map(p=>p.brand).filter(Boolean)])],a=document.getElementById('overviewProductFilter'),b=document.getElementById('reportProduct'),ob=document.getElementById('overviewBrandFilter'),rb=document.getElementById('reportBrand');if(a){let keep=a.value;a.innerHTML='<option>All products</option>'+products.map(x=>`<option>${x}</option>`).join('');if(products.includes(keep))a.value=keep;}if(b){let keep=b.value;b.innerHTML='<option value="all">All products</option>'+products.map(x=>`<option>${x}</option>`).join('');if(products.includes(keep))b.value=keep;}if(ob){let keep=ob.value;ob.innerHTML='<option>All brands</option>'+brands.map(x=>`<option>${x}</option>`).join('');if(brands.includes(keep))ob.value=keep;}if(rb){let keep=rb.value;rb.innerHTML='<option value="all">All brands</option>'+brands.map(x=>`<option value="${x}">${x}</option>`).join('');if(brands.includes(keep))rb.value=keep;}}
+function refreshProductOptions(){
+  var brands=pmBrandNames.slice(),products=pmProductNames.slice(),models=pmModelNumbers.slice();
+  var a=document.getElementById('overviewProductFilter'),b=document.getElementById('reportProduct');
+  var ob=document.getElementById('overviewBrandFilter'),rb=document.getElementById('reportBrand');
+  if(a){var keepA=a.value;a.innerHTML='<option>All products</option>'+products.map(x=>'<option>'+escapeHtml(x)+'</option>').join('');if(products.includes(keepA))a.value=keepA;}
+  if(b){var keepB=b.value;b.innerHTML='<option value="all">All products</option>'+products.map(x=>'<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>').join('');if(products.includes(keepB))b.value=keepB;}
+  if(ob){var keepOB=ob.value;ob.innerHTML='<option>All brands</option>'+brands.map(x=>'<option>'+escapeHtml(x)+'</option>').join('');if(brands.includes(keepOB))ob.value=keepOB;}
+  if(rb){var keepRB=rb.value;rb.innerHTML='<option value="all">All brands</option>'+brands.map(x=>'<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>').join('');if(brands.includes(keepRB))rb.value=keepRB;}
+  var brandSelect=document.getElementById('pbrand');
+  if(brandSelect){var selectedBrand=brandSelect.value;brandSelect.innerHTML='<option value="">Select brand</option>'+brands.map(x=>'<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>').join('');brandSelect.value=brands.includes(selectedBrand)?selectedBrand:'';}
+  var productSelect=document.getElementById('pproduct');
+  if(productSelect){var selectedProduct=productSelect.value;productSelect.innerHTML='<option value="">Select product</option>'+products.map(x=>'<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>').join('');productSelect.value=products.includes(selectedProduct)?selectedProduct:'';}
+  var modelSelect=document.getElementById('pmodel');
+  if(modelSelect){var selectedModel=modelSelect.value;modelSelect.innerHTML='<option value="">Select model number</option>'+models.map(x=>'<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>').join('');modelSelect.value=models.includes(selectedModel)?selectedModel:'';}
+}
 function persistAppData(){
   // Business data is written directly to Supabase by each save operation.
   // This function intentionally never stores production records in browser storage.
