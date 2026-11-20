@@ -1031,38 +1031,46 @@ function openReworkPlan(id){
   var p=plans.find(function(x){return String(x.id)===String(id);});
   if(!p)return;
   var rows=planReworkUnits(p);
-  var pending=rows.filter(function(x){return (x.unit.status||'Pending')==='Pending';}).length;
-  var completed=rows.filter(function(x){return x.unit.status==='Completed';}).length;
-  var finalRejected=rows.filter(function(x){return x.unit.status==='Finally Rejected';}).length;
-  var body=rows.map(function(row){
-    var h=row.hourIndex,u=row.unitIndex,entry=row.entry,unit=row.unit;
-    var label='Rejected unit #'+(unit.unitNumber||u+1);
-    var reason=escapeHtml(unit.reason||entry.reason||'—');
-    var remark=escapeHtml(unit.remark||'');
-    var status=unit.status||'Pending';
-    var canEdit=status==='Pending';
-    var inputId='rw-'+p.id+'-'+h+'-'+u;
-    var statusCell=canEdit
-      ?'<select class="rw-status-select" id="'+inputId+'-status"><option value="Pending" selected>Pending</option><option value="Completed">Reworked / Completed</option><option value="Finally Rejected">Finally Rejected</option></select>'
-      :'<span class="rw-status-locked '+(status==='Completed'?'completed':status==='Finally Rejected'?'rejected':'')+'">'+reworkStatusLabel(status)+'</span><span class="rw-locked-note">Locked after save</span>';
-    var remarkCell=canEdit
-      ?'<input class="rw-remark-input" id="'+inputId+'-remark" value="'+remark+'" placeholder="Add resolution remark">'
-      :'<span>'+(remark||'—')+'</span>';
-    var action=canEdit
-      ?'<button class="btn primary rw-save" onclick="saveReworkUnit(\''+p.id+'\','+h+','+u+')">Save</button>'
-      :'<span class="rw-locked-note">No further edits</span>';
-    return '<tr><td>'+escapeHtml(row.hour)+'</td><td>'+escapeHtml(unit.serial||label)+'</td><td>'+reason+'</td><td>'+statusCell+'</td><td>'+remarkCell+'</td><td>'+action+'</td></tr>';
-  }).join('');
+  var pendingRows=rows.filter(function(x){return (x.unit.status||'Pending')==='Pending';});
+  var resolvedRows=rows.filter(function(x){return (x.unit.status||'Pending')!=='Pending';});
+  var completed=resolvedRows.filter(function(x){return x.unit.status==='Completed';}).length;
+  var finalRejected=resolvedRows.filter(function(x){return x.unit.status==='Finally Rejected';}).length;
+  function renderRows(list,editable){
+    return list.map(function(row){
+      var h=row.hourIndex,u=row.unitIndex,entry=row.entry,unit=row.unit;
+      var label='Rejected unit #'+(unit.unitNumber||u+1);
+      var reason=escapeHtml(unit.reason||entry.reason||'—');
+      var remark=escapeHtml(unit.remark||'');
+      var status=unit.status||'Pending';
+      var inputId='rw-'+p.id+'-'+h+'-'+u;
+      var statusCell=editable
+        ?'<select class="rw-status-select" id="'+inputId+'-status"><option value="Pending" selected>Pending</option><option value="Completed">Reworked / Completed</option><option value="Finally Rejected">Finally Rejected</option></select>'
+        :'<span class="rw-status-locked '+(status==='Completed'?'completed':'rejected')+'">'+reworkStatusLabel(status)+'</span>';
+      var remarkCell=editable
+        ?'<input class="rw-remark-input" id="'+inputId+'-remark" value="'+remark+'" placeholder="Add resolution remark">'
+        :'<span class="rw-history-remark">'+(remark||'—')+'</span>';
+      var action=editable
+        ?'<button class="btn primary rw-save" onclick="saveReworkUnit(\''+p.id+'\','+h+','+u+')">Save</button>'
+        :'<span class="rw-locked-note">Saved</span>';
+      return '<tr><td>'+escapeHtml(row.hour)+'</td><td><strong>'+escapeHtml(unit.serial||label)+'</strong></td><td>'+reason+'</td><td>'+statusCell+'</td><td>'+remarkCell+'</td><td>'+action+'</td></tr>';
+    }).join('');
+  }
+  var pendingBody=renderRows(pendingRows,true);
+  var resolvedBody=renderRows(resolvedRows,false);
   var modal=document.getElementById('modal');
   modal.classList.add('modalback-rework');
-  modal.innerHTML='<div class="modal rework-modal"><h2>Rework · '+escapeHtml(p.line)+' · '+escapeHtml(p.brand)+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model||'—')+'</h2>'+
-    '<div class="sub">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+' · Planned '+Number(p.qty||0)+' · Actual '+Number(p.actual||0)+' · Rejected '+rows.length+' · Accepted '+(Number(p.actual||0)-Number(p.rejection||0))+'</div>'+
-    '<div class="rework-summary"><span><b>'+rows.length+'</b> rejected units</span><span><b>'+pending+'</b> pending</span><span><b>'+completed+'</b> reworked / completed</span><span><b>'+finalRejected+'</b> finally rejected</span></div>'+
-    '<div class="report-table-scroll"><table><thead><tr><th>Hour</th><th>Unit / serial reference</th><th>Original rejection reason</th><th>Final status</th><th>Resolution remark</th><th>Action</th></tr></thead><tbody>'+
-    (body||'<tr><td colspan="6" class="rework-empty">No rejected units on this plan.</td></tr>')+
-    '</tbody></table></div><div class="modalactions"><button class="btn" onclick="closePlanModal()">Close</button></div></div>';
+  modal.innerHTML='<div class="modal rework-modal"><div class="rw-modal-header"><div><h2>Rework Resolution</h2><div class="sub">'+escapeHtml(p.line)+' · '+escapeHtml(p.brand)+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model||'—')+'</div></div><button class="btn rw-modal-close" onclick="closePlanModal()" aria-label="Close">×</button></div>'+
+    '<div class="rw-plan-context">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+' · '+escapeHtml(p.status||'—')+' <span>Planned <b>'+Number(p.qty||0)+'</b></span><span>Actual <b>'+Number(p.actual||0)+'</b></span></div>'+
+    '<div class="rework-summary rw-summary-cards"><span class="rw-summary-total"><b>'+rows.length+'</b><small>Total rejected</small></span><span class="rw-summary-pending"><b>'+pendingRows.length+'</b><small>Pending</small></span><span class="rw-summary-completed"><b>'+completed+'</b><small>Reworked</small></span><span class="rw-summary-final"><b>'+finalRejected+'</b><small>Final rejected</small></span></div>'+
+    '<section class="rw-pending-section"><div class="rw-section-title"><div><h3>Pending resolution</h3><p>Choose a final disposition and enter a remark for each unit.</p></div><span class="rw-pending-badge">'+pendingRows.length+' remaining</span></div>'+
+    '<div class="report-table-scroll"><table class="rw-unit-table"><thead><tr><th>Hour</th><th>Unit / serial</th><th>Original reason</th><th>Disposition</th><th>Resolution remark</th><th>Save</th></tr></thead><tbody>'+
+    (pendingBody||'<tr><td colspan="6" class="rework-empty">No pending rejected units. All units have been resolved.</td></tr>')+'</tbody></table></div></section>'+
+    '<details class="rw-history-section"><summary><span>Resolution history</span><span class="rw-history-meta">'+resolvedRows.length+' saved · View history</span></summary><div class="report-table-scroll"><table class="rw-unit-table"><thead><tr><th>Hour</th><th>Unit / serial</th><th>Original reason</th><th>Final status</th><th>Remark</th><th></th></tr></thead><tbody>'+
+    (resolvedBody||'<tr><td colspan="6" class="rework-empty">No resolved units yet.</td></tr>')+'</tbody></table></div></details>'+
+    '<div class="modalactions"><button class="btn" onclick="closePlanModal()">Close</button></div></div>';
   modal.classList.remove('hidden');
 }
+
 async function saveReworkUnit(id,h,unitIndex){
   var p=plans.find(function(x){return String(x.id)===String(id);});
   var entry=p&&p.entries&&p.entries[h];
