@@ -790,6 +790,51 @@
   #modal.modalback-rework .rework-modal{width:calc(100vw - 24px);max-width:calc(100vw - 24px);max-height:84vh;max-height:84dvh;margin:auto;padding:14px;border-radius:15px;overflow:auto}
 }
 
+
+/* V6.6 mobile-safe dialogs and universal popup navigation */
+#modal.modalback:not(.hidden){
+  position:fixed;inset:0;z-index:10020;display:flex;align-items:center;justify-content:center;
+  padding:12px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+}
+#modal.modalback .modal{
+  position:relative;width:min(780px,calc(100vw - 24px))!important;
+  max-width:calc(100vw - 24px);max-height:calc(100vh - 24px)!important;
+  margin:auto;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;padding:18px!important;padding-top:58px!important;
+}
+#modal .pm-popup-back{
+  position:absolute;top:10px;left:14px;z-index:5;min-height:38px;padding:7px 12px;
+  border:1px solid #dbe4ef;border-radius:9px;background:#fff;color:#26364d;
+  font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 2px 6px #1522380a;
+}
+#modal .modalactions{
+  position:sticky;bottom:-18px;z-index:4;background:#fff;padding:12px 0 3px;
+  margin-top:16px;border-top:1px solid #edf1f6;
+}
+#modal input,#modal select,#modal textarea{font-size:16px;min-width:0;}
+#modal .formgrid{grid-template-columns:repeat(2,minmax(0,1fr));}
+@supports(height:100dvh){
+  #modal.modalback .modal{max-height:calc(100dvh - 24px)!important;}
+}
+@media(max-width:760px){
+  #modal.modalback:not(.hidden){align-items:center;justify-content:center;padding:10px;padding-bottom:10px;}
+  #modal.modalback .modal{
+    width:calc(100vw - 20px)!important;max-width:calc(100vw - 20px);
+    max-height:calc(100vh - 20px)!important;margin:auto;border-radius:15px;
+    padding:14px!important;padding-top:58px!important;
+  }
+  #modal .formgrid{grid-template-columns:minmax(0,1fr);gap:9px;}
+  #modal .field input,#modal .field select,#modal .field textarea{width:100%;min-height:44px;}
+  #modal .modalactions{display:flex;flex-wrap:wrap;gap:8px;bottom:-14px;padding:10px 0 3px;}
+  #modal .modalactions .btn{flex:1 1 130px;min-height:44px;}
+  #modal .rework-modal{width:calc(100vw - 20px)!important;max-width:calc(100vw - 20px);max-height:calc(100dvh - 20px)!important;}
+}
+@media(max-height:620px){
+  #modal.modalback:not(.hidden){align-items:flex-start;padding-top:8px;padding-bottom:8px;}
+  #modal.modalback .modal{max-height:calc(100vh - 16px)!important;margin-top:0;margin-bottom:0;}
+  @supports(height:100dvh){#modal.modalback .modal{max-height:calc(100dvh - 16px)!important;}}
+}
+
 </style></head><body>
 <div class="app"><aside class="sidebar"><div class="brand">Production Management<small>OPERATIONS CONTROL</small></div><div class="navlabel">WORKSPACE</div><nav class="nav" aria-label="Main navigation"><button class="active" data-page="overview"><span class="ico">▦</span><span>Overview</span></button><button data-page="plans"><span class="ico">▤</span><span>Production Plans</span></button><button data-page="operator"><span class="ico">◉</span><span>Operator</span></button><button data-page="reports"><span class="ico">▧</span><span>Reports</span></button><button data-page="rework"><span class="ico">↻</span><span>Rework</span></button></nav><div class="sidebottom">Production Control · V6 update</div></aside>
 <main class="main"><header class="topbar"><div class="crumb" id="crumb">Overview</div><div class="user"><div class="avatar">SP</div><div><strong style="color:#263449">Supervisor</strong><br/>Production Control</div></div></header><div class="content">
@@ -821,7 +866,7 @@
 <script>
 
 /* Production and catalog data are sourced exclusively from Supabase. */
-try{window.localStorage&&window.localStorage.removeItem('productionManagementV4');}catch(_oldLocalDataError){}
+
 let brandProducts={};
 const productModels={};
 const hours=['09:00–10:00','10:00–11:00','11:00–12:00','12:00–13:00','13:00–14:00','14:00–15:00','15:00–16:00','16:00–17:00'];
@@ -982,8 +1027,52 @@ function getHourlyActual(p,h){return Number(p.entries?.[h]?.actual)||0}
 function getHourlyRejected(p,h){return Number(p.entries?.[h]?.rejected)||0}
 function planHourTargets(p){return p.hourTargets||Array.from({length:8},(_,i)=>Math.floor(p.qty/8)+(i<p.qty%8?1:0));}
 function recalcPlan(p){p.actual=sumEntries(p,'actual');p.rejection=sumEntries(p,'rejected');}
-function showPage(page){document.querySelectorAll('.page').forEach(x=>x.classList.add('hidden'));document.getElementById(page).classList.remove('hidden');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));document.getElementById('crumb').textContent={overview:'Overview',plans:'Production Plans',operator:'Operator Workspace',reports:'Production Reports',rework:'Rework Workspace'}[page]||page;if(page==='plans')renderPlans();if(page==='operator')renderOperator();if(page==='rework')renderRework();if(page==='overview'){requestAnimationFrame(renderOverviewChart);setTimeout(renderOverviewChart,80);}}
+function showPage(page){
+  var modal=document.getElementById('modal');
+  if(modal&&!modal.classList.contains('hidden'))closePlanModal();
+  document.querySelectorAll('.page').forEach(function(x){x.classList.add('hidden');});
+  var target=document.getElementById(page);
+  if(!target)return;
+  target.classList.remove('hidden');
+  document.querySelectorAll('.nav button').forEach(function(b){b.classList.toggle('active',b.dataset.page===page);});
+  var labels={overview:'Overview',plans:'Production Plans',operator:'Operator Workspace',reports:'Production Reports',rework:'Rework Workspace'};
+  var crumb=document.getElementById('crumb');if(crumb)crumb.textContent=labels[page]||page;
+  if(page==='plans')renderPlans();
+  if(page==='operator')renderOperator();
+  if(page==='rework')renderRework();
+  if(page==='overview'){requestAnimationFrame(renderOverviewChart);setTimeout(renderOverviewChart,80);}
+  if(window.pmProductionDataLoaded&&window.pmReloadProductionData){
+    window.pmReloadProductionData().catch(function(error){toast('Could not refresh shared data: '+error.message);});
+  }
+}
 let pageHistory=['overview'];if(!history.state)history.replaceState({pmPage:'overview'},'',location.pathname+'#overview');function navigatePage(page,fromPop=false){if(!fromPop&&pageHistory[pageHistory.length-1]!==page){pageHistory.push(page);history.pushState({pmPage:page},'',`#${page}`);}showPage(page); }document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>navigatePage(b.dataset.page)));window.addEventListener('popstate',e=>{let page=e.state?.pmPage||'overview';let idx=pageHistory.lastIndexOf(page);pageHistory=idx>=0?pageHistory.slice(0,idx+1):[page];showPage(page);});window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('modal').classList.contains('hidden'))closePlanModal();});document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closePlanModal();});
+
+function installUniversalPopupControls(){
+  var host=document.getElementById('modal');
+  if(!host||host.dataset.pmPopupControls)return;
+  host.dataset.pmPopupControls='1';
+  var observer=new MutationObserver(function(){
+    host.querySelectorAll('.modal').forEach(function(panel){
+      if(panel.querySelector(':scope > .pm-popup-back'))return;
+      var back=document.createElement('button');
+      back.type='button';
+      back.className='pm-popup-back';
+      back.textContent='← Back / Close';
+      back.addEventListener('click',function(){closePlanModal();});
+      panel.insertBefore(back,panel.firstChild);
+    });
+  });
+  observer.observe(host,{childList:true,subtree:true});
+  host.addEventListener('focusin',function(event){
+    var el=event.target;
+    if(!el||!el.matches('input,select,textarea'))return;
+    if(window.matchMedia&&window.matchMedia('(max-width: 760px)').matches){
+      setTimeout(function(){el.scrollIntoView({block:'center',behavior:'smooth'});},220);
+    }
+  });
+}
+installUniversalPopupControls();
+
 function renderPlans(){
   const el=document.getElementById('planlist');
   if(!el)return;
@@ -996,16 +1085,18 @@ function renderPlans(){
     '</div></div></div>').join('')||'<div class="panel"><div class="sub">No production plans have been created yet.</div></div>';
 }
 function renderOperator(){
-  const el=document.getElementById('operatorplans');
+  var el=document.getElementById('operatorplans');
   if(!el)return;
-  const visible=plans.filter(p=>p.status!=='Completed');
-  el.innerHTML=visible.map(p=>'<div class="plan"><h3>'+escapeHtml(p.line)+' · '+escapeHtml(p.brand||'Unbranded')+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model||p.product)+'</h3>'+
-    '<div class="planmeta">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+'<br>Target: '+p.qty+' units · '+escapeHtml(p.start)+'–'+escapeHtml(p.end)+'</div>'+
-    '<div class="progress"><i style="width:'+Math.min(100,p.qty?p.actual/p.qty*100:0)+'%"></i></div>'+
-    '<div class="linemeta"><span>'+p.actual+' / '+p.qty+' units · Rejected '+p.rejection+'</span><span>'+Math.round(p.qty?p.actual/p.qty*100:0)+'%</span></div>'+
-    '<div class="planbottom"><span class="pill '+(p.status==='Draft'?'warn':'')+'">'+escapeHtml(p.status)+'</span>'+
-    '<button class="btn primary" '+(p.status==='Published'?'':'disabled')+' onclick="openExecution(\''+p.id+'\')">Open plan</button></div></div>').join('')||
-    '<div class="panel"><div class="sub">No active production plans are available.</div></div>';
+  var today=todayLocalDate();
+  var visible=plans.filter(function(p){return p.status==='Published'&&p.date===today;});
+  el.innerHTML=visible.map(function(p){
+    var percentage=Math.round(p.qty?p.actual/p.qty*100:0);
+    return '<div class="plan"><h3>'+escapeHtml(p.line)+' · '+escapeHtml(p.brand||'Unbranded')+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model||p.product)+'</h3>'+
+      '<div class="planmeta">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+'<br>Target: '+p.qty+' units · '+escapeHtml(p.start)+'–'+escapeHtml(p.end)+'</div>'+
+      '<div class="progress"><i style="width:'+Math.min(100,percentage)+'%"></i></div>'+
+      '<div class="linemeta"><span>'+p.actual+' / '+p.qty+' units · Rejected '+p.rejection+'</span><span>'+percentage+'%</span></div>'+
+      '<div class="planbottom"><span class="pill">Published</span><button class="btn primary" onclick="openExecution(\''+p.id+'\')">Open plan</button></div></div>';
+  }).join('')||'<div class="panel"><div class="sub">No published production plans are scheduled for today ('+today+').</div></div>';
 }
 
 function isHourlyEntrySaved(entry){
@@ -1344,7 +1435,14 @@ function planReworkUnits(plan){
     var entry=plan.entries[hourIndex];
     if(!entry||!(Number(entry.rejected)>0))return;
     normalizeReworkItems(entry).forEach(function(unit,unitIndex){
-      result.push({planId:plan.id,hourIndex:hourIndex,hour:(plan.hourLabels||hours)[hourIndex]||hours[hourIndex]||('Hour '+(hourIndex+1)),entry:entry,unit:unit,unitIndex:unitIndex});
+      result.push({
+        planId:plan.id,
+        hourIndex:hourIndex,
+        hour:(plan.hourLabels||hours)[hourIndex]||hours[hourIndex]||('Hour '+(hourIndex+1)),
+        entry:entry,
+        unit:unit,
+        unitIndex:unitIndex
+      });
     });
   });
   return result;
@@ -1404,50 +1502,73 @@ function renderRework(){
     const units=planReworkUnits(p),rej=units.length,pend=units.filter(x=>(x.unit.status||'Pending')==='Pending').length,done=units.filter(x=>x.unit.status==='Completed').length,final=units.filter(x=>x.unit.status==='Finally Rejected').length;
     return `<tr><td>${escapeHtml(p.date||'—')}</td><td>${escapeHtml(p.status||'—')}</td><td>${escapeHtml(p.line||'—')}</td><td>${escapeHtml(p.brand||'—')}</td><td>${escapeHtml(p.product||'—')} / ${escapeHtml(p.model||'—')}</td><td>${Number(p.qty)||0}</td><td>${Number(p.actual)||0}</td><td>${rej}</td><td>${pend}</td><td>${done}</td><td>${final}</td><td><button class="btn primary" onclick="openReworkPlan(${Number(p.id)})">Rework</button></td></tr>`;
   }).join('')||'<tr><td colspan="12" class="rework-empty">No rejected production matches these filters.</td></tr>';
-  persistAppData();
+  
 }
 function reworkStatusLabel(status){return status==='Completed'?'Reworked / Completed':status==='Finally Rejected'?'Finally Rejected':'Pending';}
 function openReworkPlan(id){
-  const p=plans.find(x=>Number(x.id)===Number(id));if(!p)return;
-  const rows=planReworkUnits(p);
-  const pending=rows.filter(x=>(x.unit.status||'Pending')==='Pending').length;
-  const completed=rows.filter(x=>x.unit.status==='Completed').length;
-  const finalRejected=rows.filter(x=>x.unit.status==='Finally Rejected').length;
-  const body=rows.map(row=>{
-    const {hourIndex,unitIndex,entry,unit}=row;
-    const label=`Rejected unit #${unit.unitNumber||unitIndex+1}`;
-    const reason=escapeHtml(unit.reason||entry.reason||'—');
-    const remark=escapeHtml(unit.remark||'');
-    const status=unit.status||'Pending';
-    const canEdit=status==='Pending';
-    const inputId=`rw-${p.id}-${hourIndex}-${unitIndex}`;
-    const referenceCell=canEdit?`<input class="rw-serial-input" id="${inputId}-serial" value="${escapeHtml(unit.serial||'')}" placeholder="Optional barcode / serial">`:`<span>${escapeHtml(unit.serial||label)}</span>`;
-    const statusCell=canEdit?`<select class="rw-status-select" id="${inputId}-status"><option value="Pending" selected>Pending</option><option value="Completed">Reworked / Completed</option><option value="Finally Rejected">Finally Rejected</option></select>`:`<span class="rw-status-locked ${status==='Completed'?'completed':status==='Finally Rejected'?'rejected':''}">${reworkStatusLabel(status)}</span><span class="rw-locked-note">Locked after save</span>`;
-    const remarkCell=canEdit?`<input class="rw-remark-input" id="${inputId}-remark" value="${remark}" placeholder="Add resolution remark">`:`<span>${remark||'—'}</span>`;
-    const action=canEdit?`<button class="btn primary rw-save" onclick="saveReworkUnit(${Number(p.id)},${hourIndex},${unitIndex})">Save</button>`:'<span class="rw-locked-note">No further edits</span>';
-    return `<tr><td>${escapeHtml(row.hour)}</td><td>${referenceCell}<span class="rw-locked-note">${canEdit?label:''}</span></td><td>${reason}</td><td>${statusCell}</td><td>${remarkCell}</td><td>${action}</td></tr>`;
+  var p=plans.find(function(x){return String(x.id)===String(id);});
+  if(!p)return;
+  var rows=planReworkUnits(p);
+  var pending=rows.filter(function(x){return (x.unit.status||'Pending')==='Pending';}).length;
+  var completed=rows.filter(function(x){return x.unit.status==='Completed';}).length;
+  var finalRejected=rows.filter(function(x){return x.unit.status==='Finally Rejected';}).length;
+  var body=rows.map(function(row){
+    var h=row.hourIndex,u=row.unitIndex,entry=row.entry,unit=row.unit;
+    var label='Rejected unit #'+(unit.unitNumber||u+1);
+    var reason=escapeHtml(unit.reason||entry.reason||'—');
+    var remark=escapeHtml(unit.remark||'');
+    var status=unit.status||'Pending';
+    var canEdit=status==='Pending';
+    var inputId='rw-'+p.id+'-'+h+'-'+u;
+    var statusCell=canEdit
+      ?'<select class="rw-status-select" id="'+inputId+'-status"><option value="Pending" selected>Pending</option><option value="Completed">Reworked / Completed</option><option value="Finally Rejected">Finally Rejected</option></select>'
+      :'<span class="rw-status-locked '+(status==='Completed'?'completed':status==='Finally Rejected'?'rejected':'')+'">'+reworkStatusLabel(status)+'</span><span class="rw-locked-note">Locked after save</span>';
+    var remarkCell=canEdit
+      ?'<input class="rw-remark-input" id="'+inputId+'-remark" value="'+remark+'" placeholder="Add resolution remark">'
+      :'<span>'+(remark||'—')+'</span>';
+    var action=canEdit
+      ?'<button class="btn primary rw-save" onclick="saveReworkUnit(\''+p.id+'\','+h+','+u+')">Save</button>'
+      :'<span class="rw-locked-note">No further edits</span>';
+    return '<tr><td>'+escapeHtml(row.hour)+'</td><td>'+escapeHtml(unit.serial||label)+'</td><td>'+reason+'</td><td>'+statusCell+'</td><td>'+remarkCell+'</td><td>'+action+'</td></tr>';
   }).join('');
-  const modal=window.document.querySelector('#modal');
+  var modal=document.getElementById('modal');
   modal.classList.add('modalback-rework');
-  modal.innerHTML=`<div class="modal rework-modal"><h2>Rework · ${escapeHtml(p.line)} · ${escapeHtml(p.brand)} · ${escapeHtml(p.product)} · ${escapeHtml(p.model||'—')}</h2><div class="sub">${escapeHtml(p.date)} · ${escapeHtml(p.shift)} · Planned ${Number(p.qty)||0} · Actual ${Number(p.actual)||0} · Rejected ${rows.length} · Accepted ${(Number(p.actual)||0)-(Number(p.rejection)||0)}</div><div class="rework-summary"><span><b>${rows.length}</b> rejected units</span><span><b>${pending}</b> pending</span><span><b>${completed}</b> reworked / completed</span><span><b>${finalRejected}</b> finally rejected</span></div><div class="report-table-scroll"><table><thead><tr><th>Hour</th><th>Unit / serial reference</th><th>Original rejection reason</th><th>Final status</th><th>Resolution remark</th><th>Action</th></tr></thead><tbody>${body||'<tr><td colspan="6" class="rework-empty">No rejected units on this plan.</td></tr>'}</tbody></table></div><div class="modalactions"><button class="btn" onclick="closePlanModal()">Close</button></div></div>`;
+  modal.innerHTML='<div class="modal rework-modal"><h2>Rework · '+escapeHtml(p.line)+' · '+escapeHtml(p.brand)+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model||'—')+'</h2>'+
+    '<div class="sub">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+' · Planned '+Number(p.qty||0)+' · Actual '+Number(p.actual||0)+' · Rejected '+rows.length+' · Accepted '+(Number(p.actual||0)-Number(p.rejection||0))+'</div>'+
+    '<div class="rework-summary"><span><b>'+rows.length+'</b> rejected units</span><span><b>'+pending+'</b> pending</span><span><b>'+completed+'</b> reworked / completed</span><span><b>'+finalRejected+'</b> finally rejected</span></div>'+
+    '<div class="report-table-scroll"><table><thead><tr><th>Hour</th><th>Unit / serial reference</th><th>Original rejection reason</th><th>Final status</th><th>Resolution remark</th><th>Action</th></tr></thead><tbody>'+
+    (body||'<tr><td colspan="6" class="rework-empty">No rejected units on this plan.</td></tr>')+
+    '</tbody></table></div><div class="modalactions"><button class="btn" onclick="closePlanModal()">Close</button></div></div>';
   modal.classList.remove('hidden');
 }
-function saveReworkUnit(id,h,unitIndex){
-  const p=plans.find(x=>Number(x.id)===Number(id)),entry=p?.entries?.[h];if(!p||!entry)return;
-  const items=normalizeReworkItems(entry),unit=items[unitIndex];if(!unit)return;
-  if((unit.status||'Pending')!=='Pending'){toast('This rejection is already resolved and locked');return;}
-  const prefix=`#rw-${p.id}-${h}-${unitIndex}`;
-  const status=window.document.querySelector(`${prefix}-status`)?.value||'Pending';
-  const remark=window.document.querySelector(`${prefix}-remark`)?.value.trim()||'';
-  const serial=window.document.querySelector(`${prefix}-serial`)?.value.trim()||'';
-  if(!['Pending','Completed','Finally Rejected'].includes(status)){toast('Select a valid final status');return;}
-  if(status!=='Pending'&&!remark){toast('Enter a resolution remark before resolving this rejected unit');return;}
-  unit.status=status;unit.remark=remark;unit.serial=serial;unit.updatedAt=new Date().toISOString();
-  // Lock resolved items. Pending items intentionally remain editable.
-  persistAppData();
-  renderRework();renderReports();
-  openReworkPlan(id);
-  toast(status==='Pending'?'Pending rejection updated':status==='Completed'?'Rejected unit marked as reworked / completed':'Rejected unit marked as finally rejected');
+async function saveReworkUnit(id,h,unitIndex){
+  var p=plans.find(function(x){return String(x.id)===String(id);});
+  var entry=p&&p.entries&&p.entries[h];
+  if(!p||!entry)return toast('Production plan or hourly entry not found');
+  var items=normalizeReworkItems(entry),unit=items[unitIndex];
+  if(!unit)return toast('Rejected unit not found');
+  if((unit.status||'Pending')!=='Pending')return toast('This rejection is already resolved and locked');
+  var prefix='#rw-'+p.id+'-'+h+'-'+unitIndex;
+  var status=document.querySelector(prefix+'-status')?.value||'Pending';
+  var remark=document.querySelector(prefix+'-remark')?.value.trim()||'';
+  if(status==='Pending')return toast('Choose Reworked / Completed or Finally Rejected to resolve this unit');
+  if(status!=='Completed'&&status!=='Finally Rejected')return toast('Select a valid final status');
+  if(!remark)return toast('Enter a resolution remark before resolving this rejected unit');
+  if(!unit.dbId)return toast('This rejected unit has no database ID. Refresh the page before editing.');
+  try{
+    var dbStatus=status==='Completed'?'completed':'finally_rejected';
+    var result=await pmRequireDb().from('pm_rework_units')
+      .update({status:dbStatus,resolution_remark:remark})
+      .eq('id',unit.dbId).eq('status','pending')
+      .select('id').single();
+    if(result.error)throw result.error;
+    await pmReloadProductionData();
+    renderReports();
+    openReworkPlan(id);
+    toast(status==='Completed'?'Rejected unit marked reworked in Supabase':'Rejected unit marked finally rejected in Supabase');
+  }catch(error){
+    toast('Could not save rework resolution: '+error.message);
+  }
 }
 function toast(t){let x=document.getElementById('toast');x.textContent=t;x.style.display='block';setTimeout(()=>x.style.display='none',2600);}
 function refreshOverview(){refreshProductOptions();renderOverviewChart();updateOverviewKpis();}
@@ -1739,6 +1860,7 @@ initializeTodayDateFilters();syncAll();requestAnimationFrame(()=>{renderOverview
   }
   const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
   window.pmSupabaseAuthClient=sb;
+  window.pmSupabaseClient=sb;
   const baseShowPage=window.showPage;
 
   function ensureAdminPage(){
@@ -1941,6 +2063,9 @@ initializeTodayDateFilters();syncAll();requestAnimationFrame(()=>{renderOverview
         return;
       }
       const newAllowed=profile.is_super_admin?TABS.map(function(t){return t.id;}):(profile.allowed_tabs||[]).filter(function(t){return TABS.some(function(d){return d.id===t;});});
+      if(typeof window.pmLoadProductionData!=='function')throw new Error('Supabase production data loader is unavailable. Please refresh the page.');
+      await window.pmLoadProductionData(sb);
+
       if(!newAllowed.length){
         await sb.auth.signOut();
         root.hidden=false;
