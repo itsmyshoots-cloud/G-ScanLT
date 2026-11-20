@@ -1112,7 +1112,7 @@ const productModels={};
 let pmBrandNames=[];
 let pmProductNames=[];
 let pmModelNumbers=[];
-const hours=['09:00–10:00','10:00–11:00','11:00–12:00','12:00–13:00','13:00–14:00','14:00–15:00','15:00–16:00','16:00–17:00'];
+const hours=['09:00 AM–10:00 AM','10:00 AM–11:00 AM','11:00 AM–12:00 PM','12:00 PM–01:00 PM','01:00 PM–02:00 PM','02:00 PM–03:00 PM','03:00 PM–04:00 PM','04:00 PM–05:00 PM'];
 let plans=[];
 let editingPlanId=null;
 let pmProductionDataLoaded=false;
@@ -1723,7 +1723,7 @@ async function closeShift(id){
   const p=plans.find(x=>String(x.id)===String(id));
   if(!p)return toast('Production plan not found');
   if(!planHourTargets(p).every((_,i)=>!!p.entries?.[i])){
-    toast('Record all eight hourly entries before closing shift');return;
+    toast('Record all scheduled hourly intervals before closing shift');return;
   }
   try{
     const result=await pmRequireDb().rpc('pm_close_plan',{p_plan_id:id});
