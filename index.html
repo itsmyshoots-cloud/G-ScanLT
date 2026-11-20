@@ -1340,6 +1340,213 @@ select option,optgroup{
  @page{size:landscape;margin:10mm}
 }
 
+
+/* V7.3 Responsive layout correction across all workspace tabs */
+html,body{max-width:100%;overflow-x:hidden}
+.app{width:100%;max-width:100%;min-width:0}
+.main{
+  min-width:0!important;
+  max-width:none!important;
+  overflow-x:clip;
+}
+.main>.content{
+  width:100%!important;
+  max-width:1680px!important;
+  margin:0 auto!important;
+  padding:26px clamp(22px,2.1vw,36px) 42px!important;
+  min-width:0!important;
+}
+.main>.content>.page{width:100%;max-width:none;min-width:0}
+.pagehead{
+  width:100%;min-width:0;
+  display:flex;align-items:flex-end;justify-content:space-between;
+  gap:16px;margin:0 0 18px;
+}
+.pagehead>div{min-width:0}
+.pagehead h1{line-height:1.2;overflow-wrap:anywhere}
+.pagehead>.filters,.pagehead>.report-actions{flex:0 0 auto;max-width:100%}
+.page .panel,.page .card,.page .plan{min-width:0}
+.page .paneltitle{min-width:0;gap:12px}
+.page .paneltitle>div{min-width:0}
+.page .filters{min-width:0}
+.page select,.page input,.page button{max-width:100%}
+
+/* Plans and Operator cards use the same responsive card grid. */
+#plans .planlist,#operator .planlist{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,350px),1fr));
+  gap:14px;
+  align-items:stretch;
+}
+#plans .plan,#operator .plan{
+  display:flex;flex-direction:column;min-width:0;height:100%;
+  padding:16px;border-radius:13px;
+}
+#plans .plan h3,#operator .plan h3{
+  line-height:1.45;overflow-wrap:anywhere;
+}
+#plans .plan .planmeta,#operator .plan .planmeta{
+  line-height:1.65;overflow-wrap:anywhere;
+}
+#plans .plan .planbottom,#operator .plan .planbottom{
+  margin-top:auto;padding-top:13px;gap:10px;align-items:center;
+}
+#plans .plan .planbottom .filters{display:flex;flex-wrap:wrap;gap:7px}
+#plans .plan .planbottom .btn,#operator .plan .planbottom .btn{min-height:40px}
+
+/* Overview: chart host must grow with every plan card. Do not give it a
+   single-chart aspect ratio or fixed height; that clipped later plans on phones. */
+#overview .overview-main{width:100%;max-width:none;min-width:0;display:block}
+#overview .overview-chart-panel{width:100%;max-width:none;min-width:0}
+#overview #overviewBarChart,
+#overview #overviewBarChart.chart,
+#overview .overview-chart-panel #overviewBarChart,
+#overview .overview-chart-panel .chart{
+  display:block!important;width:100%!important;max-width:100%!important;
+  height:auto!important;min-height:0!important;max-height:none!important;
+  aspect-ratio:auto!important;overflow:visible!important;
+}
+#overview #overviewBarChart .plan-hour-chart-list{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  align-items:stretch;gap:12px;width:100%;height:auto;overflow:visible;
+}
+#overview #overviewBarChart .plan-hour-chart-card{
+  width:100%;min-width:0;height:auto;margin:0!important;
+  overflow:hidden;border-radius:12px;
+}
+#overview #overviewBarChart .plan-hour-chart-svg{width:100%;overflow:hidden}
+#overview #overviewBarChart .plan-hour-chart-svg svg{display:block;width:100%;height:auto;max-width:100%}
+#overview .plan-status-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;align-items:stretch;
+}
+#overview .plan-status-card{height:100%;min-width:0}
+#overview .overview-filter-details,#overview .overview-filter-details>summary{min-width:0}
+#overview .overview-main>.panel{width:100%;min-width:0}
+
+/* Reports and Rework share the same content width, header rhythm and filter alignment. */
+#reports .report-filter-grid{
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  align-items:end;
+}
+#reports .report-filter-field{min-width:0}
+#reports .report-filter-field>span{line-height:1.3}
+#reports .report-filter-field input,#reports .report-filter-field select{width:100%;min-width:0}
+#reports .report-actions{display:flex;gap:8px;flex-wrap:wrap}
+#reports .report-performance-panel,#reports .report-register-panel{width:100%;min-width:0}
+#reports .report-visuals{align-items:start}
+#reports .report-table-scroll{width:100%;max-width:100%;overflow:auto}
+#reports #reportTable{width:100%;min-width:1180px}
+#reports .report-mobile-cards{min-width:0}
+
+#rework .reworkfilters{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  align-items:end;gap:10px;
+}
+#rework .reworkfilters>.sub{align-self:center;min-width:0}
+#rework .reworkfilters>.input,
+#rework .reworkfilters>.select,
+#rework .reworkfilters>.btn{
+  width:100%;min-width:0;max-width:100%;
+}
+#rework #reworkKpis{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;
+}
+#rework #reworkKpis>.card{height:100%;min-width:0}
+#rework .panel{width:100%;min-width:0}
+#rework .table-scroll{width:100%;max-width:100%;overflow-x:auto}
+#rework #reworkTable{min-width:1100px}
+
+/* Use the same moderate spacing and responsive grid thresholds on mid-size
+   laptop/tablet widths rather than squeezing 3 columns into narrow content. */
+@media (min-width:761px) and (max-width:1250px){
+  .main>.content{padding:22px 22px 36px!important}
+  #plans .planlist,#operator .planlist{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #overview .plan-status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #overview #overviewBarChart .plan-hour-chart-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #reports .report-filter-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #reports .report-mode-field{grid-column:span 2}
+  #rework .reworkfilters{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #rework #reworkKpis{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media (max-width:760px){
+  .main>.content{
+    width:100%!important;max-width:none!important;margin:0!important;
+    padding:14px 12px calc(96px + env(safe-area-inset-bottom))!important;
+  }
+  .pagehead{
+    align-items:stretch;flex-direction:column;gap:8px;
+    margin-bottom:13px;
+  }
+  .pagehead h1{font-size:21px;margin-bottom:5px}
+  .pagehead>.filters,.pagehead>.report-actions{width:100%}
+  .page .panel{margin-bottom:11px;padding:13px;border-radius:13px}
+  .page .paneltitle{align-items:flex-start;flex-wrap:wrap;margin-bottom:11px}
+  .page .paneltitle>span{max-width:100%;line-height:1.35}
+  #plans .planlist,#operator .planlist{
+    grid-template-columns:minmax(0,1fr);gap:10px;
+  }
+  #plans .plan,#operator .plan{padding:13px}
+  #plans .plan .planbottom,#operator .plan .planbottom{flex-wrap:wrap}
+  #plans .plan .planbottom>.filters{width:100%}
+  #plans .plan .planbottom>.filters .btn{flex:1 1 100px}
+  #overview .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  #overview .card{min-width:0;padding:11px}
+  #overview .plan-status-grid{grid-template-columns:minmax(0,1fr);gap:9px}
+  #overview .plan-status-card{padding:12px}
+  #overview #overviewBarChart,
+  #overview #overviewBarChart.chart,
+  #overview .overview-chart-panel #overviewBarChart,
+  #overview .overview-chart-panel .chart{
+    height:auto!important;min-height:0!important;max-height:none!important;
+    aspect-ratio:auto!important;overflow:visible!important;
+  }
+  #overview #overviewBarChart .plan-hour-chart-list{
+    display:grid;grid-template-columns:minmax(0,1fr);gap:10px;
+    height:auto!important;overflow:visible!important;
+  }
+  #overview #overviewBarChart .plan-hour-chart-card{
+    display:block;width:100%;height:auto;min-height:0;overflow:hidden;
+    margin:0!important;padding:11px;
+  }
+  #overview #overviewBarChart .plan-hour-chart-svg svg{width:100%;height:auto}
+  #overview .overview-chart-panel{padding:12px}
+  #overview .overview-chart-panel>.paneltitle{align-items:flex-start}
+  #overview .overview-chart-panel .chart-export-trigger{width:auto}
+  #reports .report-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  #reports .report-mode-field{grid-column:span 2}
+  #reports .report-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  #reports .report-actions .btn{width:100%;min-width:0}
+  #reports .report-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  #reports .report-visuals{grid-template-columns:minmax(0,1fr)}
+  #reports .report-table-scroll{display:none}
+  #reports .report-mobile-cards{display:grid;width:100%;grid-template-columns:minmax(0,1fr);gap:10px}
+  #reports .report-mobile-card{width:100%;min-width:0}
+  #rework .reworkfilters{
+    grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;
+  }
+  #rework .reworkfilters>.sub{grid-column:1/-1;align-self:end}
+  #rework .reworkfilters>.input{grid-column:1}
+  #rework .reworkfilters>.btn{grid-column:2}
+  #rework .reworkfilters>.select{grid-column:span 1}
+  #rework #reworkKpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  #rework #reworkKpis>.card{padding:11px}
+  #rework .report-table-scroll,#rework .table-scroll{width:100%;overflow-x:auto}
+  #rework #reworkTable{min-width:1050px}
+}
+@media(max-width:390px){
+  .main>.content{padding-left:10px!important;padding-right:10px!important}
+  #overview #overviewBarChart .plan-hour-chart-card{padding:10px}
+  #reports .report-filter-grid{grid-template-columns:minmax(0,1fr)}
+  #reports .report-mode-field{grid-column:auto}
+  #reports .report-actions{grid-template-columns:minmax(0,1fr)}
+  #reports .report-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #rework .reworkfilters{grid-template-columns:minmax(0,1fr)}
+  #rework .reworkfilters>.sub,#rework .reworkfilters>.input,#rework .reworkfilters>.btn,#rework .reworkfilters>.select{grid-column:auto}
+  #rework #reworkKpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
 </style></head><body>
 <div class="app"><aside class="sidebar"><div class="brand">Production Management<small>OPERATIONS CONTROL</small></div><div class="navlabel">WORKSPACE</div><nav class="nav" aria-label="Main navigation"><button class="active" data-page="overview"><span class="ico">▦</span><span>Overview</span></button><button data-page="plans"><span class="ico">▤</span><span>Production Plans</span></button><button data-page="operator"><span class="ico">◉</span><span>Operator</span></button><button data-page="reports"><span class="ico">▧</span><span>Reports</span></button><button data-page="rework"><span class="ico">↻</span><span>Rework</span></button></nav><div class="sidebottom">Production Control · V6 update</div></aside>
 <main class="main"><header class="topbar"><div class="crumb" id="crumb">Overview</div><div class="user"><div class="avatar">SP</div><div><strong style="color:#263449">Supervisor</strong><br/>Production Control</div></div></header><div class="content">
