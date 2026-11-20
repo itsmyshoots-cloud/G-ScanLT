@@ -1057,6 +1057,14 @@
   .sidebar{position:fixed!important;left:0;right:0;bottom:0;top:auto;height:calc(66px + env(safe-area-inset-bottom));}
 }
 
+
+@media(min-width:761px){
+  .main{width:calc(100% - 238px);max-width:calc(100% - 238px);flex:0 0 calc(100% - 238px);margin-left:238px}
+}
+@media(max-width:760px){
+  .main{width:100%;max-width:100%;flex:1 1 auto;margin:0}
+}
+
 </style></head><body>
 <div class="app"><aside class="sidebar"><div class="brand">Production Management<small>OPERATIONS CONTROL</small></div><div class="navlabel">WORKSPACE</div><nav class="nav" aria-label="Main navigation"><button class="active" data-page="overview"><span class="ico">▦</span><span>Overview</span></button><button data-page="plans"><span class="ico">▤</span><span>Production Plans</span></button><button data-page="operator"><span class="ico">◉</span><span>Operator</span></button><button data-page="reports"><span class="ico">▧</span><span>Reports</span></button><button data-page="rework"><span class="ico">↻</span><span>Rework</span></button></nav><div class="sidebottom">Production Control · V6 update</div></aside>
 <main class="main"><header class="topbar"><div class="crumb" id="crumb">Overview</div><div class="user"><div class="avatar">SP</div><div><strong style="color:#263449">Supervisor</strong><br/>Production Control</div></div></header><div class="content">
@@ -1385,25 +1393,24 @@ function hourEntry(id,h){
     ?'<div class="hourly-admin-note">Admin correction mode. The corrected record remains locked for operators.</div>'
     :'<div class="hourly-admin-note">After saving, this hourly entry is locked. Admin or Super Admin can make a correction.</div>';
   var options=['IQC Rejection','LQC Rejection'].map(function(x){return '<option value="'+x+'" '+(entry.reason===x?'selected':'')+'>'+x+'</option>';}).join('');
-  modal.innerHTML='<div class="modal hourly-entry-modal"><div class="hourly-modal-heading"><div>'+
-    '<h2>'+(saved?'Edit saved hourly record':'Record hourly production')+'</h2>'+
+  modal.innerHTML='<div class="modal hourly-entry-modal"><div class="hourly-modal-heading"><div><h2>'+(saved?'Edit saved hourly record':'Record hourly production')+'</h2>'+
     '<div class="sub">'+escapeHtml(p.line)+' · '+escapeHtml(p.product)+' · '+escapeHtml(label||'')+'</div></div>'+
     (saved?'<span class="hourly-admin-badge">Admin edit</span>':'')+'</div>'+note+
     '<div class="formgrid">'+
       '<div class="field"><label>Planned quantity</label><input value="'+planHourTargets(p)[h]+'" disabled/></div>'+
       '<div class="field"><label>Actual quantity</label><input id="ha" type="number" min="0" inputmode="numeric" value="'+(entry.actual==null?'':entry.actual)+'" placeholder="Actual produced"/></div>'+
       '<div class="field"><label>Rejected quantity</label><input id="hr" type="number" min="0" inputmode="numeric" value="'+(entry.rejected==null?0:entry.rejected)+'" placeholder="Rejected units"/></div>'+
-      '<div class="field"><label>Rejection category</label><select id="hreason"><option value="">Select IQC / LQC</option>'+options+'</select></div>'+
+      '<div class="field"><label>Rejection category</label><select id="hreason"><option value="">Select reason</option>'+options+'</select></div>'+
       '<div class="field"><label>Start serial number</label><input id="hs" value="'+escapeHtml(entry.startSerial||'')+'" placeholder="First normal serial"/></div>'+
       '<div class="field"><label>End serial number</label><input id="he" value="'+escapeHtml(entry.endSerial||'')+'" placeholder="Last normal serial"/></div>'+
-      '<div class="field"><label>Missing serial number / range</label><input id="hmissrange" value="'+escapeHtml(entry.missingSerialStart||'')+'" placeholder="Missing sticker serial or range"/></div>'+
+      '<div class="field"><label>Missing serial start</label><input id="hmissstart" value="'+escapeHtml(entry.missingSerialStart||'')+'" placeholder="Missing sticker serial / range start"/></div>'+
+      '<div class="field"><label>Missing serial end</label><input id="hmissend" value="'+escapeHtml(entry.missingSerialEnd||'')+'" placeholder="Same as start for one missing serial"/></div>'+
       '<div class="field"><label>Missing serial quantity</label><input id="hmissqty" type="number" min="0" inputmode="numeric" value="'+(entry.missingSerialQty||0)+'" placeholder="0"/></div>'+
       '<div class="field"><label>Alternate serial start</label><input id="hmaltstart" value="'+escapeHtml(entry.alternateSerialStart||'')+'" placeholder="First replacement serial"/></div>'+
       '<div class="field"><label>Alternate serial end</label><input id="hmaltend" value="'+escapeHtml(entry.alternateSerialEnd||'')+'" placeholder="Last replacement serial"/></div>'+
       '<div class="field hourly-remarks-field"><label>Remarks</label><input id="hrm" value="'+escapeHtml(entry.remarks||'')+'" placeholder="Optional"/></div>'+
-    '</div><div class="sub hourly-serial-note">Use the missing serial range and quantity when original stickers are damaged or absent. Enter the alternate serial range applied to those units.</div>'+
-    '<div class="modalactions"><button class="btn" type="button" onclick="closePlanModal()">← Back to plan</button>'+
-    '<button class="btn primary" type="button" onclick="submitHour(\''+String(p.id)+'\','+h+')">'+(saved?'Save admin correction':'Save hourly record')+'</button></div></div>';
+    '</div><div class="sub hourly-serial-note">Use the missing serial start/end and quantity when original stickers are damaged or absent. Enter the alternate serial range applied to those units. For one missing serial, enter the same value in both missing fields.</div>'+
+    '<div class="modalactions"><button class="btn" type="button" onclick="closePlanModal()">← Back to plan</button><button class="btn primary" type="button" onclick="submitHour(\''+String(p.id)+'\','+h+')">'+(saved?'Save admin correction':'Save hourly record')+'</button></div></div>';
   modal.classList.remove('hidden');
 }
 async function submitHour(id,h){
@@ -1415,7 +1422,7 @@ async function submitHour(id,h){
   var serialStart=document.getElementById('hs').value.trim(),serialEnd=document.getElementById('he').value.trim();
   var reason=document.getElementById('hreason').value,remarks=document.getElementById('hrm').value.trim();
   var missingQty=Number(document.getElementById('hmissqty').value||0);
-  var missingRange=document.getElementById('hmissrange').value.trim();
+  var missingStart=document.getElementById('hmissstart').value.trim(),missingEnd=document.getElementById('hmissend').value.trim();
   var altStart=document.getElementById('hmaltstart').value.trim(),altEnd=document.getElementById('hmaltend').value.trim();
   if(q<0||rejected<0||rejected>q)return toast('Rejected quantity must be between 0 and actual produced quantity');
   if(missingQty<0||missingQty>q)return toast('Missing serial quantity must be between zero and actual quantity');
@@ -1427,8 +1434,8 @@ async function submitHour(id,h){
   if(q>planHourTargets(p)[h])return toast('Actual produced quantity cannot exceed the planned quantity for this interval');
   if(q>0&&(!serialStart||!serialEnd))return toast('Enter the normal serial start and end range');
   if(rejected>0&&!['IQC Rejection','LQC Rejection'].includes(reason))return toast('Choose IQC Rejection or LQC Rejection');
-  if(missingQty>0&&(!missingRange||!altStart||!altEnd))return toast('Enter the missing serial range, quantity and alternate serial start/end');
-  if(missingQty===0&&(missingRange||altStart||altEnd))return toast('Enter a missing serial quantity when adding missing / alternate serial details');
+  if(missingQty>0&&(!missingStart||!missingEnd||!altStart||!altEnd))return toast('Enter the missing serial start/end, quantity and alternate serial start/end');
+  if(missingQty===0&&(missingStart||missingEnd||altStart||altEnd))return toast('Enter a missing serial quantity when adding missing / alternate serial details');
   var button=document.querySelector('#modal .modalactions .btn.primary');
   if(button){button.disabled=true;button.textContent='Saving…';}
   try{
@@ -1437,8 +1444,8 @@ async function submitHour(id,h){
       serial_start:serialStart||null,serial_end:serialEnd||null,
       rejection_reason:reason||null,remarks:remarks,
       missing_serial_qty:missingQty,
-      missing_serial_start:missingQty?missingRange:null,
-      missing_serial_end:missingQty?missingRange:null,
+      missing_serial_start:missingQty?missingStart:null,
+      missing_serial_end:missingQty?missingEnd:null,
       alternate_serial_start:missingQty?altStart:null,
       alternate_serial_end:missingQty?altEnd:null
     };
@@ -1463,7 +1470,7 @@ async function closeShift(id){
   const p=plans.find(x=>String(x.id)===String(id));
   if(!p)return toast('Production plan not found');
   if(!planHourTargets(p).every((_,i)=>!!p.entries?.[i])){
-    toast('Record all eight hourly entries before closing shift');return;
+    toast('Record all scheduled hourly intervals before closing shift');return;
   }
   try{
     const result=await pmRequireDb().rpc('pm_close_plan',{p_plan_id:id});
@@ -1543,35 +1550,28 @@ function initializeTodayDateFilters(){
 function planForm(p=null){
   editingPlanId=p?.id??null;
   var modal=document.getElementById('modal');
-  var start24=parseTime24(p?.start||'09:00')||'09:00';
-  var end24=parseTime24(p?.end||'17:00')||'17:00';
-  var slots=timeSlots(start24,end24);
-  var targets=Array.isArray(p?.hourTargets)?p.hourTargets:slots.map(function(){return 0;});
+  var start24=parseTime24(p?.start||'09:00')||'09:00',end24=parseTime24(p?.end||'17:00')||'17:00';
+  var slots=timeSlots(start24,end24),targets=Array.isArray(p?.hourTargets)?p.hourTargets:slots.map(function(){return 0;});
   if(!slots.length)return toast('Choose a valid start and end time.');
   modal.classList.remove('modalback-rework');
-  modal.innerHTML='<div class="modal plan-form-modal">'+
-    '<div class="plan-form-scroll"><h2>'+(p?'Edit Production Plan':'Create Production Plan')+'</h2>'+
-      '<div class="formgrid plan-main-fields">'+
-        '<div class="field"><label for="pdate">Production date</label><input id="pdate" type="date" value="'+escapeHtml(p?.date||todayLocalDate())+'" required/></div>'+
-        '<div class="field"><label for="pshift">Shift</label><select id="pshift" required>'+['Shift 1','Shift 2','Shift 3'].map(function(x){return '<option '+(p?.shift===x?'selected':'')+'>'+x+'</option>';}).join('')+'</select></div>'+
-        '<div class="field"><label for="pline">Production line</label><select id="pline" required>'+['Line 1','Line 2','Line 3'].map(function(x){return '<option '+(p?.line===x?'selected':'')+'>'+x+'</option>';}).join('')+'</select></div>'+
-        '<div class="field"><label for="pbrand">Brand</label><div class="select-action-wrap"><input id="pbrand" class="select catalog-autocomplete" list="pmBrandOptions" placeholder="Type or select brand" autocomplete="off" value="'+escapeHtml(p?.brand||'')+'" required/><datalist id="pmBrandOptions">'+pmBrandNames.map(function(x){return '<option value="'+escapeHtml(x)+'"></option>';}).join('')+'</datalist><button class="select-add" type="button" title="Add brand" aria-label="Add brand" onclick="addBrandInline()">＋</button></div></div>'+
-        '<div class="field"><label for="pproduct">Product</label><div class="select-action-wrap"><input id="pproduct" class="select catalog-autocomplete" list="pmProductOptions" placeholder="Type or select product" autocomplete="off" value="'+escapeHtml(p?.product||'')+'" required/><datalist id="pmProductOptions">'+pmProductNames.map(function(x){return '<option value="'+escapeHtml(x)+'"></option>';}).join('')+'</datalist><button class="select-add" type="button" title="Add product" aria-label="Add product" onclick="addProductInline()">＋</button></div></div>'+
-        '<div class="field"><label for="pmodel">Model number</label><div class="select-action-wrap"><input id="pmodel" class="select catalog-autocomplete" list="pmModelOptions" placeholder="Type or select model number" autocomplete="off" value="'+escapeHtml(p?.model||'')+'" required/><datalist id="pmModelOptions">'+pmModelNumbers.map(function(x){return '<option value="'+escapeHtml(x)+'"></option>';}).join('')+'</datalist><button class="select-add" type="button" title="Add model number" aria-label="Add model number" onclick="addModelInline()">＋</button></div></div>'+
-        '<div class="field"><label for="pstart">Start time (12-hour)</label><input id="pstart" type="text" inputmode="text" autocomplete="off" placeholder="09:00 AM" value="'+escapeHtml(formatTime12(start24))+'" onblur="normalizePlanTimeInput(this)" required/></div>'+
-        '<div class="field"><label for="pend">End time (12-hour)</label><input id="pend" type="text" inputmode="text" autocomplete="off" placeholder="05:00 PM" value="'+escapeHtml(formatTime12(end24))+'" onblur="normalizePlanTimeInput(this)" required/></div>'+
-        '<div class="field"><label for="psuper">Supervisor</label><input id="psuper" value="'+escapeHtml(p?.supervisor||'')+'" placeholder="Supervisor name"/></div>'+
-      '</div>'+
-      '<div class="panel plan-hour-panel"><div class="paneltitle"><h3>Hourly planned quantity</h3><span>'+slots.length+' hourly / partial-hour interval'+(slots.length===1?'':'s')+'</span></div>'+
-        '<div class="field plan-default-qty"><label for="defaultHourlyQty">Default planned quantity for every interval</label>'+
-        '<input id="defaultHourlyQty" type="number" min="0" inputmode="numeric" value="'+(targets.length?Number(targets[0])||0:0)+'" placeholder="Enter hourly target" oninput="fillAllHourlyTargets(this.value)"/>'+
-        '<small>Entering a quantity here applies it to every interval. You can still adjust individual intervals below.</small></div>'+
-        '<div id="hourtargetfields" class="hourly-target-grid">'+slots.map(function(slot,i){return '<div class="field"><label>'+escapeHtml(slot)+'</label><input class="targetqty" type="number" min="0" inputmode="numeric" value="'+(Number(targets[i])||0)+'"/></div>';}).join('')+'</div>'+
-        '<div class="plan-total-row">Total shift plan: <strong id="planTotal">'+targets.reduce(function(a,b){return a+(Number(b)||0);},0)+'</strong> units</div>'+
-      '</div>'+
+  modal.innerHTML='<div class="modal plan-form-modal"><div class="plan-form-scroll"><h2>'+(p?'Edit Production Plan':'Create Production Plan')+'</h2>'+
+    '<div class="formgrid plan-main-fields">'+
+      '<div class="field"><label for="pdate">Production date</label><input id="pdate" type="date" value="'+escapeHtml(p?.date||todayLocalDate())+'" required/></div>'+
+      '<div class="field"><label for="pshift">Shift</label><select id="pshift" required>'+['Shift 1','Shift 2','Shift 3'].map(function(x){return '<option '+(p?.shift===x?'selected':'')+'>'+x+'</option>';}).join('')+'</select></div>'+
+      '<div class="field"><label for="pline">Production line</label><select id="pline" required>'+['Line 1','Line 2','Line 3'].map(function(x){return '<option '+(p?.line===x?'selected':'')+'>'+x+'</option>';}).join('')+'</select></div>'+
+      '<div class="field"><label for="pbrand">Brand</label><div class="select-action-wrap"><input id="pbrand" class="select catalog-autocomplete" list="pmBrandOptions" placeholder="Type or select brand" autocomplete="off" value="'+escapeHtml(p?.brand||'')+'" required/><datalist id="pmBrandOptions">'+pmBrandNames.map(function(x){return '<option value="'+escapeHtml(x)+'"></option>';}).join('')+'</datalist><button class="select-add" type="button" title="Add brand" aria-label="Add brand" onclick="addBrandInline()">＋</button></div></div>'+
+      '<div class="field"><label for="pproduct">Product</label><div class="select-action-wrap"><input id="pproduct" class="select catalog-autocomplete" list="pmProductOptions" placeholder="Type or select product" autocomplete="off" value="'+escapeHtml(p?.product||'')+'" required/><datalist id="pmProductOptions">'+pmProductNames.map(function(x){return '<option value="'+escapeHtml(x)+'"></option>';}).join('')+'</datalist><button class="select-add" type="button" title="Add product" aria-label="Add product" onclick="addProductInline()">＋</button></div></div>'+
+      '<div class="field"><label for="pmodel">Model number</label><div class="select-action-wrap"><input id="pmodel" class="select catalog-autocomplete" list="pmModelOptions" placeholder="Type or select model number" autocomplete="off" value="'+escapeHtml(p?.model||'')+'" required/><datalist id="pmModelOptions">'+pmModelNumbers.map(function(x){return '<option value="'+escapeHtml(x)+'"></option>';}).join('')+'</datalist><button class="select-add" type="button" title="Add model number" aria-label="Add model number" onclick="addModelInline()">＋</button></div></div>'+
+      '<div class="field"><label for="pstart">Start time (12-hour)</label><input id="pstart" type="text" inputmode="text" autocomplete="off" placeholder="09:00 AM" value="'+escapeHtml(formatTime12(start24))+'" onblur="normalizePlanTimeInput(this);rebuildHourlyPlan()" required/></div>'+
+      '<div class="field"><label for="pend">End time (12-hour)</label><input id="pend" type="text" inputmode="text" autocomplete="off" placeholder="05:00 PM" value="'+escapeHtml(formatTime12(end24))+'" onblur="normalizePlanTimeInput(this);rebuildHourlyPlan()" required/></div>'+
+      '<div class="field"><label for="psuper">Supervisor</label><input id="psuper" value="'+escapeHtml(p?.supervisor||'')+'" placeholder="Supervisor name"/></div>'+
     '</div>'+
-    '<div class="plan-form-footer"><button class="btn" type="button" onclick="closePlanModal()">Cancel</button><button class="btn primary" type="button" onclick="savePlan()">'+(p?'Save changes':'Save plan')+'</button></div>'+
-  '</div>';
+    '<div class="panel plan-hour-panel"><div class="paneltitle"><h3>Hourly planned quantity</h3><span>'+slots.length+' hourly / partial-hour intervals</span></div>'+
+      '<div class="field plan-default-qty"><label for="defaultHourlyQty">Default planned quantity for every interval</label><input id="defaultHourlyQty" type="number" min="0" inputmode="numeric" value="'+(targets.length?Number(targets[0])||0:0)+'" placeholder="Enter hourly target" oninput="fillAllHourlyTargets(this.value)"/>'+
+      '<small>Entering a quantity here applies it to every interval. You can still adjust individual intervals below.</small></div>'+
+      '<div id="hourtargetfields" class="hourly-target-grid">'+slots.map(function(slot,i){return '<div class="field"><label>'+escapeHtml(slot)+'</label><input class="targetqty" type="number" min="0" inputmode="numeric" value="'+(Number(targets[i])||0)+'"/></div>';}).join('')+'</div>'+
+      '<div class="plan-total-row">Total shift plan: <strong id="planTotal">'+targets.reduce(function(a,b){return a+(Number(b)||0);},0)+'</strong> units</div></div>'+
+    '</div><div class="plan-form-footer"><button class="btn" type="button" onclick="closePlanModal()">Cancel</button><button class="btn primary" type="button" onclick="savePlan()">'+(p?'Save changes':'Save plan')+'</button></div></div>';
   updatePlanProducts(p?.product||'');updatePlanModels(p?.model||'');
   document.querySelectorAll('.targetqty').forEach(function(x){x.addEventListener('input',updatePlanTotal);});
   updatePlanTotal();modal.classList.remove('hidden');
