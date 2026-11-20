@@ -1701,6 +1701,80 @@ html,body{max-width:100%;overflow-x:hidden}
   .main>.content{padding-left:10px!important;padding-right:10px!important}
 }
 
+
+/* V7.6 Page gutter alignment.
+   The previous shell rule set every .page section to padding:0!important.
+   Give each workspace section its own explicit inset and keep the parent
+   wrapper neutral, so every tab aligns consistently with the top bar. */
+.main>.content{
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+}
+#overview.page,
+#plans.page,
+#operator.page,
+#reports.page,
+#rework.page,
+#pmAdmin.page{
+  display:block;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:26px clamp(24px,2vw,32px) 40px!important;
+  box-sizing:border-box!important;
+}
+#overview.page.hidden,
+#plans.page.hidden,
+#operator.page.hidden,
+#reports.page.hidden,
+#rework.page.hidden,
+#pmAdmin.page.hidden{
+  display:none!important;
+}
+@media(min-width:761px) and (max-width:1250px){
+  #overview.page,
+  #plans.page,
+  #operator.page,
+  #reports.page,
+  #rework.page,
+  #pmAdmin.page{
+    padding:22px 22px 36px!important;
+  }
+}
+@media(max-width:760px){
+  .main>.content{
+    padding:0!important;
+  }
+  #overview.page,
+  #plans.page,
+  #operator.page,
+  #reports.page,
+  #rework.page,
+  #pmAdmin.page{
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:14px 12px calc(96px + env(safe-area-inset-bottom))!important;
+  }
+}
+@media(max-width:390px){
+  #overview.page,
+  #plans.page,
+  #operator.page,
+  #reports.page,
+  #rework.page,
+  #pmAdmin.page{
+    padding-left:10px!important;
+    padding-right:10px!important;
+  }
+}
+
 </style></head><body>
 <div class="app"><aside class="sidebar"><div class="brand">Production Management<small>OPERATIONS CONTROL</small></div><div class="navlabel">WORKSPACE</div><nav class="nav" aria-label="Main navigation"><button class="active" data-page="overview"><span class="ico">▦</span><span>Overview</span></button><button data-page="plans"><span class="ico">▤</span><span>Production Plans</span></button><button data-page="operator"><span class="ico">◉</span><span>Operator</span></button><button data-page="reports"><span class="ico">▧</span><span>Reports</span></button><button data-page="rework"><span class="ico">↻</span><span>Rework</span></button></nav><div class="sidebottom">Production Control · V6 update</div></aside>
 <main class="main"><header class="topbar"><div class="crumb" id="crumb">Overview</div><div class="user"><div class="avatar">SP</div><div><strong style="color:#263449">Supervisor</strong><br/>Production Control</div></div></header><div class="content">
