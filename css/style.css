@@ -2145,3 +2145,20 @@ html,body{max-width:100%;overflow-x:hidden}
 @media(max-width:1100px){#rework .rework-primary-filters{grid-template-columns:repeat(2,minmax(0,1fr))}#rework .rework-advanced-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){#rework .rework-filter-panel{padding:14px!important}#rework .rework-filter-heading{align-items:flex-start;flex-wrap:wrap}#rework .rework-primary-filters,#rework .rework-advanced-filters{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}#rework .rework-filter-field .input,#rework .rework-filter-field .select{height:42px;font-size:13px}}
 @media(max-width:390px){#rework .rework-primary-filters,#rework .rework-advanced-filters{grid-template-columns:minmax(0,1fr)}}
+
+/* Rework table: compact production context and clear disposition counts */
+#rework #reworkTable{min-width:820px;table-layout:auto}
+#rework #reworkTable th{white-space:nowrap;padding:12px 10px;font-size:10px;letter-spacing:.035em}
+#rework #reworkTable td{padding:13px 10px;vertical-align:middle}
+#rework #reworkTable td:nth-child(3),#rework #reworkTable td:nth-child(4),#rework #reworkTable td:nth-child(5),#rework #reworkTable td:nth-child(6),#rework #reworkTable td:nth-child(7){text-align:center}
+#rework .rw-production-cell,#rework .rw-product-cell,#rework .rw-output-cell{display:flex;flex-direction:column;gap:3px;min-width:0}
+#rework .rw-production-cell strong,#rework .rw-product-cell strong,#rework .rw-output-cell strong{font-size:13px;color:var(--ink);font-weight:650}
+#rework .rw-production-cell span,#rework .rw-product-cell span,#rework .rw-output-cell span{font-size:11px;color:var(--muted);white-space:nowrap}
+#rework .rw-production-cell small{font-size:10px;color:var(--muted)}
+#rework .rw-count-pill{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:26px;padding:0 7px;border-radius:8px;font-size:12px;font-weight:650}
+#rework .rw-count-pill.rejected{background:#fff1f0;color:#b42318}
+#rework .rw-count-pill.pending{background:#fff7e8;color:#a45b00}
+#rework .rw-count-pill.completed{background:#eaf8f0;color:#16804a}
+#rework .rw-count-pill.final{background:#f2efff;color:#6741b8}
+#rework #reworkTable td:last-child,#rework #reworkTable th:last-child{text-align:right}
+@media(max-width:760px){#rework #reworkTable{min-width:760px}#rework #reworkTable th,#rework #reworkTable td{padding:10px 8px}}
