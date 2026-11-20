@@ -1063,59 +1063,90 @@ function openExecution(id){
   host.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function hourEntry(id,h){
-  var p=plans.find(function(x){return x.id===id;});
+  var p=plans.find(function(x){return String(x.id)===String(id);});
   if(!p)return toast('Production plan not found');
   var entry=(p.entries&&p.entries[h])||{},saved=isHourlyEntrySaved(entry),admin=!!window.pmIsSuperAdmin;
   if(saved&&!admin)return toast('This hourly record is locked. Only the super administrator can edit it.');
-  if(!saved&&p.status==='Completed')return toast('This plan is completed. New hourly records cannot be added.');
+  if(!saved&&p.status!=='Published')return toast('Hourly production can only be recorded against a published plan.');
   var modal=document.getElementById('modal');
+  var label=(p.hourLabels||hours)[h]||hours[h];
   var note=saved
     ?'<div class="hourly-admin-note">Super administrator correction mode. Saving this correction keeps the record locked for all other users.</div>'
     :'<div class="hourly-admin-note">After saving, this hourly entry is locked. Only the super administrator can make a correction.</div>';
   var options=['Electrical failure','Assembly defect','Appearance defect','Component defect','Testing failure','Packaging defect','Other']
     .map(function(x){return '<option '+(entry.reason===x?'selected':'')+'>'+x+'</option>';}).join('');
   modal.innerHTML='<div class="modal hourly-entry-modal"><div class="hourly-modal-heading"><div>'+
-    '<h2>'+(saved?'Edit saved hourly record':'Record hourly production')+'</h2><div class="sub">'+p.line+' · '+p.product+' · '+hours[h]+'</div></div>'+
+    '<h2>'+(saved?'Edit saved hourly record':'Record hourly production')+'</h2><div class="sub">'+escapeHtml(p.line)+' · '+escapeHtml(p.product)+' · '+escapeHtml(label)+'</div></div>'+
     (saved?'<span class="hourly-admin-badge">Admin edit</span>':'')+'</div>'+note+
     '<div class="formgrid"><div class="field"><label>Planned quantity</label><input value="'+planHourTargets(p)[h]+'" disabled/></div>'+
     '<div class="field"><label>Actual quantity</label><input id="ha" type="number" min="0" value="'+(entry.actual==null?'':entry.actual)+'" placeholder="Actual produced"/></div>'+
     '<div class="field"><label>Rejected quantity</label><input id="hr" type="number" min="0" value="'+(entry.rejected==null?0:entry.rejected)+'" placeholder="Rejected units"/></div>'+
     '<div class="field"><label>Rejection reason</label><select id="hreason"><option value="">Select reason</option>'+options+'</select></div>'+
-    '<div class="field"><label>Start serial number</label><input id="hs" value="'+(entry.startSerial||'')+'" placeholder="First barcode serial"/></div>'+
-    '<div class="field"><label>End serial number</label><input id="he" value="'+(entry.endSerial||'')+'" placeholder="Last barcode serial"/></div>'+
-    '<div class="field hourly-remarks-field"><label>Remarks</label><input id="hrm" value="'+(entry.remarks||'')+'" placeholder="Optional"/></div></div>'+
+    '<div class="field"><label>Start serial number</label><input id="hs" value="'+escapeHtml(entry.startSerial||'')+'" placeholder="First barcode serial"/></div>'+
+    '<div class="field"><label>End serial number</label><input id="he" value="'+escapeHtml(entry.endSerial||'')+'" placeholder="Last barcode serial"/></div>'+
+    '<div class="field hourly-remarks-field"><label>Remarks</label><input id="hrm" value="'+escapeHtml(entry.remarks||'')+'" placeholder="Optional"/></div></div>'+
     '<div class="modalactions"><button class="btn" type="button" onclick="closePlanModal()">← Back to plan</button>'+
-    '<button class="btn primary" type="button" onclick="submitHour('+id+','+h+')">'+(saved?'Save admin correction':'Save hourly record')+'</button></div></div>';
+    '<button class="btn primary" type="button" onclick="submitHour(\''+String(p.id)+'\','+h+')">'+(saved?'Save admin correction':'Save hourly record')+'</button></div></div>';
   modal.classList.remove('hidden');
 }
-function submitHour(id,h){
-  var p=plans.find(function(x){return x.id===id;});
+async function submitHour(id,h){
+  var p=plans.find(function(x){return String(x.id)===String(id);});
   if(!p)return toast('Production plan not found');
   var previous=(p.entries&&p.entries[h])||{},alreadySaved=isHourlyEntrySaved(previous);
   if(alreadySaved&&!window.pmIsSuperAdmin)return toast('This hourly record is locked. Only the super administrator can edit it.');
-  if(!alreadySaved&&p.status==='Completed')return toast('This plan is completed. New hourly records cannot be added.');
-  var q=Number(document.getElementById('ha').value||0),r=Number(document.getElementById('hr').value||0);
-  var startSerial=document.getElementById('hs').value.trim(),endSerial=document.getElementById('he').value.trim();
+  if(!alreadySaved&&p.status!=='Published')return toast('Hourly production can only be recorded against a published plan.');
+  var q=Number(document.getElementById('ha').value||0);
+  var rejected=Number(document.getElementById('hr').value||0);
+  var serialStart=document.getElementById('hs').value.trim();
+  var serialEnd=document.getElementById('he').value.trim();
   var reason=document.getElementById('hreason').value;
-  if(q<0||r<0||r>q)return toast('Rejected quantity must be between 0 and actual produced quantity');
+  var remarks=document.getElementById('hrm').value.trim();
+  if(q<0||rejected<0||rejected>q)return toast('Rejected quantity must be between 0 and actual produced quantity');
   if(alreadySaved){
-    var resolved=normalizeReworkItems(previous).filter(function(unit){return (unit.status||'Pending')!=='Pending';}).length;
-    if(r<resolved)return toast('Rejected quantity cannot be reduced below '+resolved+'; those rejection units already have a saved final disposition');
+    var resolved=normalizeReworkItems(previous).filter(function(unit){return unit.status!=='Pending';}).length;
+    if(rejected<resolved)return toast('Rejected quantity cannot be reduced below '+resolved+'; those rejection units already have a saved final disposition');
+    if(!previous.dbId)return toast('This saved entry has no database ID. Refresh before editing.');
   }
   if(q>planHourTargets(p)[h])return toast('Actual produced quantity cannot exceed the planned quantity for this hour');
-  if(q>0&&(!startSerial||!endSerial))return toast('Enter the serial number range');
-  if(r>0&&!reason)return toast('Please select rejection reason');
-  var now=new Date().toISOString();
-  p.entries=p.entries||{};
-  p.entries[h]={...previous,actual:q,rejected:r,startSerial:startSerial,endSerial:endSerial,reason:reason,
-    remarks:document.getElementById('hrm').value.trim(),
-    reworkStatus:r>0?(previous.reworkStatus||'Pending'):'',
-    reworkRemark:previous.reworkRemark||'',
-    locked:true,recordedAt:previous.recordedAt||now,lockedAt:previous.lockedAt||now,
-    recordedBy:previous.recordedBy||window.pmCurrentUserId||null,lastUpdatedAt:now,lastUpdatedBy:window.pmCurrentUserId||null};
-  recalcPlan(p);persistAppData();closePlanModal();
-  renderOverviewChart();renderReports();renderPlans();renderOperator();openExecution(id);
-  toast(alreadySaved?'Super-admin correction saved':'Hourly production record saved and locked');
+  if(q>0&&(!serialStart||!serialEnd))return toast('Enter the serial number range');
+  if(rejected>0&&!reason)return toast('Please select rejection reason');
+  var button=document.querySelector('#modal .modalactions .btn.primary');
+  if(button){button.disabled=true;button.textContent='Saving…';}
+  try{
+    var db=pmRequireDb();
+    var values={
+      actual_qty:q,
+      rejected_qty:rejected,
+      serial_start:serialStart||null,
+      serial_end:serialEnd||null,
+      rejection_reason:reason||null,
+      remarks:remarks
+    };
+    var result;
+    if(alreadySaved){
+      result=await db.from('pm_hourly_production').update(values).eq('id',previous.dbId).select('id').single();
+    }else{
+      result=await db.from('pm_hourly_production').insert({
+        plan_id:p.id,
+        hour_index:h,
+        actual_qty:q,
+        rejected_qty:rejected,
+        serial_start:serialStart||null,
+        serial_end:serialEnd||null,
+        rejection_reason:reason||null,
+        remarks:remarks,
+        recorded_by:window.pmCurrentUserId
+      }).select('id').single();
+    }
+    if(result.error)throw result.error;
+    closePlanModal();
+    await pmReloadProductionData();
+    openExecution(id);
+    toast(alreadySaved?'Super-admin correction saved to Supabase':'Hourly production saved to Supabase and locked');
+  }catch(error){
+    toast('Could not save hourly production: '+error.message);
+    if(button){button.disabled=false;button.textContent=alreadySaved?'Save admin correction':'Save hourly record';}
+  }
 }
 
 async function closeShift(id){
@@ -1304,42 +1335,18 @@ async function closeShift(id){
 }
 function clearReworkDate(){const field=window.document.querySelector('#reworkDate');if(field)field.value='';renderRework();}
 function normalizeReworkItems(entry){
-  if(!entry)return [];
-  const rejected=Math.max(0,Math.floor(Number(entry.rejected)||0));
-  const validStatuses=['Pending','Completed','Finally Rejected'];
-  if(!Array.isArray(entry.reworkItems)){
-    const legacyStatus=validStatuses.includes(entry.reworkStatus)?entry.reworkStatus:'Pending';
-    const legacyRemark=String(entry.reworkRemark||'');
-    entry.reworkItems=Array.from({length:rejected},(_,i)=>({unitNumber:i+1,status:legacyStatus,remark:legacyRemark,reason:String(entry.reason||'')}));
-  }else{
-    while(entry.reworkItems.length<rejected){
-      entry.reworkItems.push({unitNumber:entry.reworkItems.length+1,status:'Pending',remark:'',reason:String(entry.reason||'')});
-    }
-    while(entry.reworkItems.length>rejected){const removable=entry.reworkItems.map((item,index)=>({item,index})).reverse().find(x=>(x.item.status||'Pending')==='Pending');if(!removable)break;entry.reworkItems.splice(removable.index,1);}
-    entry.reworkItems.forEach((item,i)=>{
-      if(!validStatuses.includes(item.status))item.status='Pending';
-      if(!Number.isFinite(Number(item.unitNumber)))item.unitNumber=i+1;
-      if(item.remark==null)item.remark='';
-      if(!item.reason)item.reason=String(entry.reason||'');
-    });
-  }
+  if(!entry||!Array.isArray(entry.reworkItems))return [];
   return entry.reworkItems;
 }
 function planReworkUnits(plan){
-  const result=[];
-  Object.keys(plan.entries||{}).map(Number).sort((a,b)=>a-b).forEach(hourIndex=>{
-    const entry=plan.entries[hourIndex];
+  var result=[];
+  Object.keys(plan.entries||{}).map(Number).sort(function(a,b){return a-b;}).forEach(function(hourIndex){
+    var entry=plan.entries[hourIndex];
     if(!entry||!(Number(entry.rejected)>0))return;
-    normalizeReworkItems(entry).forEach((unit,unitIndex)=>result.push({planId:plan.id,hourIndex,hour:hours[hourIndex]||`Hour ${hourIndex+1}`,entry,unit,unitIndex}));
+    normalizeReworkItems(entry).forEach(function(unit,unitIndex){
+      result.push({planId:plan.id,hourIndex:hourIndex,hour:(plan.hourLabels||hours)[hourIndex]||hours[hourIndex]||('Hour '+(hourIndex+1)),entry:entry,unit:unit,unitIndex:unitIndex});
+    });
   });
-  // Legacy fallback: if an older saved plan only has a plan-level rejection total,
-  // expose it as unit records on the first hour instead of hiding it from Rework.
-  if(!result.length&&Number(plan.rejection)>0){
-    plan.entries=plan.entries||{};
-    const e=plan.entries[0]||(plan.entries[0]={actual:Number(plan.actual)||Number(plan.rejection),rejected:Number(plan.rejection),reason:'Unspecified rejection',remarks:''});
-    e.rejected=Math.max(Number(e.rejected)||0,Number(plan.rejection)||0);
-    normalizeReworkItems(e).forEach((unit,unitIndex)=>result.push({planId:plan.id,hourIndex:0,hour:hours[0],entry:e,unit,unitIndex}));
-  }
   return result;
 }
 function sumRework(plan,status){
