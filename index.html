@@ -2742,7 +2742,7 @@ function renderReports(){
         date:p.date,shift:p.shift,line:p.line,brand:p.brand,product:p.product,model:p.model,
         plan:0,actual:0,rejection:0,accepted:0,iqc:0,lqc:0,unclassified:0,
         rework:0,pending:0,finalRejected:0,missing:0,achievement:0,
-        status:p.status,plans:[]
+        status:getPlanStatusLabel(p),plans:[]
       };
       groups.set(key,r);
     }
@@ -2757,7 +2757,7 @@ function renderReports(){
     r.pending+=sumRework(p,'Pending');
     r.finalRejected+=sumRework(p,'Finally Rejected');
     r.missing+=Object.values(p.entries||{}).reduce(function(n,e){return n+(Number(e.missingSerialQty)||0);},0);
-    if(r.status!==p.status)r.status='Mixed';
+    if(r.status!==getPlanStatusLabel(p))r.status='Mixed';
     if(r.line!==p.line)r.line='Multiple';
     if(r.shift!==p.shift)r.shift='Multiple';
     if(r.brand!==p.brand)r.brand='Multiple';
@@ -2788,6 +2788,7 @@ function renderReports(){
   var visualTitle=document.getElementById('reportVisualTitle');if(visualTitle)visualTitle.textContent=type==='rejection'?'Quality and rework breakdown':'Production achievement';
   var summary=document.getElementById('reportFilterSummary');
   if(summary)summary.textContent=filtered.length+' plans included · '+(document.getElementById('reportFrom')?.value||'All dates')+' to '+(document.getElementById('reportTo')?.value||'Today');
+  var tableCount=document.getElementById('reportTableCount');if(tableCount)tableCount.textContent=rows.length+' report rows';
   renderReportRows(rows,type);
 }
 function renderReportRows(rows,type){
