@@ -1514,7 +1514,7 @@ syncAll();requestAnimationFrame(()=>{renderOverviewChart();setTimeout(renderOver
     if(!email){if(message)message.textContent='This account has no email address.';return;}
     button.disabled=true;button.textContent='Sending…';if(message)message.textContent='';
     try{
-      const result=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname+'#reset-password'});
+      const result=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});
       if(result.error)throw result.error;
       if(message)message.textContent='Password reset email sent to '+email+'. The user can set a new password using the secure email link.';
     }catch(ex){if(message)message.textContent='Could not send password reset email: '+ex.message;}
