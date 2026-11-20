@@ -1589,12 +1589,19 @@ function rebuildHourlyPlan(){
   var end=parseTime24(document.getElementById('pend')?.value);
   var container=document.getElementById('hourtargetfields');
   if(!container)return;
-  if(!start||!end||end<=start){container.innerHTML='<div class="sub">Enter a valid end time later than the start time.</div>';updatePlanTotal();return;}
+  if(!start||!end||end<=start){
+    container.innerHTML='<div class="sub">Enter a valid end time later than the start time.</div>';
+    updatePlanTotal();return;
+  }
   var slots=timeSlots(start,end);
   if(!slots.length||slots.length>24){toast('A shift can contain between 1 and 24 hourly intervals.');return;}
+  var previous=Array.from(container.querySelectorAll('.targetqty')).map(function(x){return Math.max(0,Number(x.value)||0);});
   var defaultQty=Math.max(0,Number(document.getElementById('defaultHourlyQty')?.value)||0);
   container.className='hourly-target-grid';
-  container.innerHTML=slots.map(function(slot){return '<div class="field"><label>'+escapeHtml(slot)+'</label><input class="targetqty" type="number" min="0" inputmode="numeric" value="'+defaultQty+'"/></div>';}).join('');
+  container.innerHTML=slots.map(function(slot,i){
+    var value=i<previous.length?previous[i]:defaultQty;
+    return '<div class="field"><label>'+escapeHtml(slot)+'</label><input class="targetqty" type="number" min="0" inputmode="numeric" value="'+value+'"/></div>';
+  }).join('');
   container.querySelectorAll('.targetqty').forEach(function(x){x.addEventListener('input',updatePlanTotal);});
   updatePlanTotal();
 }
