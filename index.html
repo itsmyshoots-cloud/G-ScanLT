@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/><title>Production Management</title>
@@ -35,71 +34,7 @@
 <div class="report-filter-foot"><span id="reportFilterSummary">Production records</span></div></div>
 <div class="report-kpi-grid" id="reportKpis"></div>
 <div class="panel report-register-panel"><div class="paneltitle"><div><h3 id="reportTableTitle">Hourly production report</h3><span id="reportTableSubtitle">Detailed output by hour</span></div><span id="reportTableCount">0 rows</span></div><div class="report-table-scroll"><table id="reportTable"><thead></thead><tbody></tbody></table></div><div id="reportCards" class="report-mobile-cards"></div></div>
-</section> html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/><title>Production Management</title>
-<link rel="stylesheet" href="css/style.css"></head><body>
-<div class="app"><aside class="sidebar"><div class="brand">Production Management<small>OPERATIONS CONTROL</small></div><div class="navlabel">WORKSPACE</div><nav class="nav" aria-label="Main navigation"><button class="active" data-page="overview"><span class="ico">▦</span><span>Overview</span></button><button data-page="plans"><span class="ico">▤</span><span>Production Plans</span></button><button data-page="operator"><span class="ico">◉</span><span>Operator</span></button><button data-page="rework"><span class="ico">↻</span><span>Rework</span></button><button data-page="reports"><span class="ico">▧</span><span>Reports</span></button></nav><div class="sidebottom">Production Control · V6 update</div></aside>
-<main class="main"><header class="topbar"><div class="crumb" id="crumb">Overview</div><div class="user"><div class="avatar">SP</div><div><strong style="color:#263449">Supervisor</strong><br/>Production Control</div></div></header><div class="content">
-<section id="overview" class="page"><div class="pagehead overview-heading"><div><h1>Production Overview</h1><div class="sub">Live production performance across all lines</div></div></div>
-<details class="overview-filter-details">
-  <summary><span>Set date & filters</span><small>Choose production date, shift, line, brand or product</small></summary>
-  <div class="filters overview-filter-controls">
-    <label class="overview-filter-field"><span>Production date</span><input class="input" id="overviewDateFilter" type="date" value="" onchange="refreshOverview()"/></label>
-    <label class="overview-filter-field"><span>Shift</span><select class="select" id="overviewShiftFilter" onchange="refreshOverview()"><option>All shifts</option><option>Shift 1</option><option>Shift 2</option><option>Shift 3</option></select></label>
-    <label class="overview-filter-field"><span>Line</span><select class="select" id="lineFilter" onchange="refreshOverview()"><option>All lines</option><option>Line 1</option><option>Line 2</option><option>Line 3</option></select></label>
-    <label class="overview-filter-field"><span>Brand</span><select class="select" id="overviewBrandFilter" onchange="refreshOverview()"><option>All brands</option></select></label>
-    <label class="overview-filter-field"><span>Product</span><select class="select" id="overviewProductFilter" onchange="refreshOverview()"><option>All products</option></select></label>
-  </div>
-</details>
-
-<div class="cards"><div class="card"><div class="klabel">Today's Planned</div><div class="kvalue">300</div><div class="kfoot">Units across 3 lines</div></div><div class="card"><div class="klabel">Actual Produced</div><div class="kvalue">242</div><div class="kfoot good">80.7% of daily target</div></div><div class="card"><div class="klabel">Remaining</div><div class="kvalue">58</div><div class="kfoot">Units to plan</div></div><div class="card"><div class="klabel">Rejections</div><div class="kvalue">6</div><div class="kfoot">Recorded at shift close</div></div></div>
-<div class="panel plan-status-panel"><div class="paneltitle"><h3>Production Plan Status</h3><span id="overviewPlanStatusCount">Loading plans…</span></div><div id="overviewPlanStatusCards" class="plan-status-grid"></div></div>
-<div class="overview-main"><div class="panel overview-chart-panel"><div class="paneltitle"><div class="overview-chart-heading"><h3>Hourly Plan vs Actual</h3><span class="chart-subtitle">Live · Units per hour · Right-click or long-press to share</span></div><button class="btn chart-export-trigger" type="button" onclick="shareOverviewReport()">Share / Download</button></div><div class="legend"><span><i class="dot" style="background:#3978f6"></i>Planned</span><span><i class="dot" style="background:#18a66b"></i>Actual</span></div><div id="overviewBarChart" class="chart" role="img" aria-label="Hourly planned versus actual production bar chart" tabindex="0"></div><div id="overviewChartPlanDetails" class="overview-chart-plan-details"></div><div id="chartExportMenu" class="chart-export-menu hidden" role="menu"><button type="button" onclick="downloadOverviewReport()">Download WhatsApp PNG</button><button type="button" onclick="shareOverviewReport()">Share report</button></div></div>
-
-<div class="panel"><div class="paneltitle"><h3>Line Production Summary</h3><span>Click a plan for details</span></div><div class="table-scroll"><table><thead><tr><th>LINE</th><th>PRODUCT</th><th>PLAN</th><th>ACTUAL</th><th>ACHIEVEMENT</th><th>STATUS</th></tr></thead><tbody id="lineSummaryBody"></tbody></table></div></div></div>
-</div></section>
-<section id="plans" class="page hidden"><div class="pagehead"><div><h1>Production Plans</h1><div class="sub">Create, publish and monitor production plans</div></div><div class="filters"><button class="btn primary" onclick="openPlanModal()">＋ Create plan</button></div></div><div class="filters" style="margin-bottom:16px"><select class="select"><option>All plan status</option><option>Draft</option><option>Published</option><option>Completed</option></select><select class="select"><option>All lines</option><option>Line 1</option><option>Line 2</option><option>Line 3</option></select><input class="input" type="date" value="2026-11-19"/></div><div class="planlist" id="planlist"></div></section>
-<section id="operator" class="page hidden"><div class="pagehead"><div><h1>Operator Workspace</h1><div class="sub">Select an active plan to record hourly production</div></div></div><div class="planlist" id="operatorplans"></div><div id="execution" class="hidden" style="margin-top:18px"></div></section>
-<section id="reports" class="page hidden">
-<div class="pagehead report-pagehead">
-  <div><h1>Production Reports</h1><div class="sub">Production performance, model output, line comparisons and rejection analysis</div></div>
-  <div class="report-actions">
-    <button class="btn" type="button" onclick="exportReportCSV()">Export CSV</button>
-    <button class="btn primary" type="button" onclick="printReportPDF()">Print / Save PDF</button>
-  </div>
-</div>
-<div class="panel report-filter-panel">
-  <div class="paneltitle"><div><h3>Report setup</h3><span>Choose the report view and narrow it to the production period you need.</span></div><button class="btn report-clear-btn" type="button" onclick="clearReportFilters()">Reset filters</button></div>
-  <div class="report-filter-grid">
-    <label class="report-filter-field report-mode-field"><span>Report view</span><select class="select" id="reportType" onchange="renderReports()">
-      <option value="plan">Plan register</option><option value="day">Daily performance</option><option value="line">Line performance</option><option value="model">Model performance</option><option value="rejection">Rejection &amp; rework</option>
-    </select></label>
-    <label class="report-filter-field"><span>From date</span><input class="input" type="date" id="reportFrom" value="" onchange="renderReports()"/></label>
-    <label class="report-filter-field"><span>To date</span><input class="input" type="date" id="reportTo" value="" onchange="renderReports()"/></label>
-    <label class="report-filter-field"><span>Shift</span><select class="select" id="reportShift" onchange="renderReports()"><option value="all">All shifts</option><option>Shift 1</option><option>Shift 2</option><option>Shift 3</option></select></label>
-    <label class="report-filter-field"><span>Production line</span><select class="select" id="reportLine" onchange="renderReports()"><option value="all">All lines</option><option>Line 1</option><option>Line 2</option><option>Line 3</option></select></label>
-    <label class="report-filter-field"><span>Brand</span><select class="select" id="reportBrand" onchange="renderReports()"><option value="all">All brands</option></select></label>
-    <label class="report-filter-field"><span>Product</span><select class="select" id="reportProduct" onchange="renderReports()"><option value="all">All products</option></select></label>
-    <label class="report-filter-field"><span>Model number</span><select class="select" id="reportModel" onchange="renderReports()"><option value="all">All models</option></select></label>
-  </div>
-  <div class="report-filter-foot"><span id="reportFilterSummary">Showing production records</span><label class="history-toggle"><input type="checkbox" id="reportHistoryToggle" onchange="renderReports()"/> Include rejection history actions</label></div>
-</div>
-<div class="report-kpi-grid" id="reportKpis"></div>
-<div class="panel report-performance-panel">
-  <div class="paneltitle"><div><h3 id="reportVisualTitle">Production achievement</h3><span>Actual output compared with planned quantity</span></div><span id="reportRowCount">0 records</span></div>
-  <div id="reportVisuals" class="report-visuals"></div>
-  <div id="reportReasonSummary" class="report-reason-summary"></div>
-</div>
-<div class="panel report-register-panel">
-  <div class="paneltitle"><div><h3 id="reportTableTitle">Production plan register</h3><span id="reportTableSubtitle">Detailed production records for the selected filters</span></div><span id="reportTableCount">0 rows</span></div>
-  <div class="report-table-scroll"><table id="reportTable"><thead></thead><tbody></tbody></table></div>
-  <div id="reportCards" class="report-mobile-cards"></div>
-</div>
-</section>
-
-<section id="rework" class="page hidden"><div class="pagehead"><div><h1>Rework Workspace</h1><div class="sub">Resolve rejected units individually and retain their disposition history</div></div></div>
+</section><section id="rework" class="page hidden"><div class="pagehead"><div><h1>Rework Workspace</h1><div class="sub">Resolve rejected units individually and retain their disposition history</div></div></div>
 <div class="panel rework-filter-panel">
 <div class="paneltitle rework-filter-heading"><div><h3>Rework Filters</h3><span class="sub">Narrow rejected units by production date, line or resolution</span></div><button class="btn rework-reset" type="button" onclick="resetReworkFilters()">Reset filters</button></div>
 <div class="rework-primary-filters">
