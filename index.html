@@ -1222,13 +1222,131 @@ select option,optgroup{
 .plan-break-visible{display:inline-block;margin-top:3px;color:#526b8a;font-size:10px;font-weight:600}
 .plan-chart-breaks{margin:0 0 8px;font-size:10px}
 
+
+/* V7.2 reports workspace and responsive overview */
+.overview-main{display:block;width:100%;min-width:0}
+.overview-main>.overview-chart-panel,.overview-main>.overview-filter-details,.overview-main>.panel{width:100%;min-width:0}
+.overview-main .overview-chart-panel{padding:20px}
+.overview-main .plan-hour-chart-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.report-pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:14px}
+.report-actions{display:flex;flex-wrap:wrap;gap:8px}
+.report-filter-panel .paneltitle{gap:12px}
+.report-filter-panel .paneltitle>div{display:flex;flex-direction:column;gap:4px}
+.report-filter-panel .paneltitle>div>span{font-size:11px;color:var(--muted)}
+.report-filter-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.report-filter-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.report-filter-field>span{font-size:11px;color:var(--muted);font-weight:600}
+.report-filter-field .input,.report-filter-field .select{width:100%;min-width:0;min-height:42px}
+.report-mode-field{grid-column:span 2}
+.report-filter-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:13px;padding-top:12px;border-top:1px solid var(--line)}
+.report-filter-foot>span{font-size:11px;color:var(--muted)}
+.report-kpi-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.report-kpi{min-width:0;padding:15px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.report-kpi .klabel{font-size:10px}
+.report-kpi .kvalue{font-size:23px;margin:7px 0 4px;overflow-wrap:anywhere}
+.report-kpi .kfoot{font-size:10px}
+.report-performance-panel .paneltitle>div,.report-register-panel .paneltitle>div{display:flex;flex-direction:column;gap:4px}
+.report-performance-panel .paneltitle>div>span,.report-register-panel .paneltitle>div>span{font-size:10px;color:var(--muted)}
+.report-visuals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 22px}
+.report-performance-row{min-width:0}
+.report-performance-label{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px}
+.report-performance-label strong{font-size:11px;color:#34445b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.report-performance-label span{font-size:10px;color:var(--muted);white-space:nowrap}
+.report-performance-track{height:8px;background:#edf2f8;border-radius:20px;overflow:hidden}
+.report-performance-track i{display:block;height:100%;background:var(--blue);border-radius:20px}
+.report-reason-summary{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.report-reason-heading{display:flex;justify-content:space-between;gap:10px;margin-bottom:9px}
+.report-reason-heading strong{font-size:11px;color:#34445b}
+.report-reason-heading span{font-size:10px;color:var(--muted)}
+.report-reason-item{display:grid;grid-template-columns:150px minmax(80px,1fr) 34px;align-items:center;gap:10px;margin:7px 0}
+.report-reason-item>span{font-size:10px;color:var(--muted)}
+.report-reason-item>div{height:7px;border-radius:20px;background:#edf2f8;overflow:hidden}
+.report-reason-item>div i{display:block;height:100%;border-radius:20px;background:#e39a35}
+.report-reason-item>b{text-align:right;font-size:11px;color:#34445b}
+.report-register-panel .paneltitle{gap:12px}
+.report-table-scroll{overflow:auto;width:100%;max-width:100%}
+#reportTable{min-width:1200px;font-size:11px}
+#reportTable th{white-space:nowrap;background:#f8fafd;position:sticky;top:0;z-index:1}
+#reportTable td{white-space:nowrap;padding:10px 8px}
+#reportTable td strong{color:#2c3b52}
+.report-achievement{display:inline-flex;padding:4px 7px;border-radius:20px;background:#fff5e6;color:#a86b16;font-size:10px;font-weight:700}
+.report-achievement.good{background:#eaf8f0;color:#16804f}
+.report-achievement.warn{background:#fff0ed;color:#b74e39}
+.report-history-btn{min-height:28px;padding:4px 8px;font-size:10px}
+.report-mobile-cards{display:none}
+.report-empty{padding:20px;text-align:center;color:var(--muted);font-size:12px}
+@media(max-width:1100px){
+ .report-kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .report-filter-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:760px){
+ .overview-main .overview-chart-panel{padding:12px}
+ .overview-main .plan-hour-chart-list{grid-template-columns:minmax(0,1fr);gap:10px}
+ .overview-main .overview-filter-details{margin-top:10px}
+ .overview-main .table-scroll{width:100%;overflow-x:auto}
+ .overview-main #lineSummaryBody{white-space:nowrap}
+ .report-pagehead{align-items:stretch;flex-direction:column;gap:10px}
+ .report-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .report-actions .btn{width:100%;min-width:0;min-height:42px;font-size:11px;padding:9px 7px}
+ .report-filter-panel{padding:13px}
+ .report-filter-panel .paneltitle{align-items:flex-start}
+ .report-filter-panel .paneltitle>div>span{line-height:1.45}
+ .report-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .report-mode-field{grid-column:span 2}
+ .report-filter-field .input,.report-filter-field .select{font-size:14px;min-height:43px}
+ .report-filter-foot{align-items:flex-start;flex-direction:column;gap:8px}
+ .report-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .report-kpi{padding:11px}
+ .report-kpi .kvalue{font-size:20px}
+ .report-visuals{grid-template-columns:minmax(0,1fr);gap:10px}
+ .report-reason-item{grid-template-columns:115px minmax(50px,1fr) 28px}
+ .report-reason-heading{align-items:flex-start;flex-direction:column;gap:4px}
+ .report-register-panel{padding:12px}
+ .report-register-panel>.paneltitle{align-items:flex-start}
+ .report-table-scroll{display:none}
+ .report-mobile-cards{display:grid;gap:10px}
+ .report-mobile-card{border:1px solid var(--line);border-radius:11px;background:#fff;padding:12px;min-width:0}
+ .report-mobile-card-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+ .report-mobile-card-head>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+ .report-mobile-card-head strong{font-size:12px;color:#23344c;overflow-wrap:anywhere}
+ .report-mobile-card-head small{font-size:10px;color:var(--muted)}
+ .report-mobile-product{font-size:10px;color:#60718a;margin:8px 0;line-height:1.4;overflow-wrap:anywhere}
+ .report-mobile-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px 6px}
+ .report-mobile-metrics span{display:flex;flex-direction:column;gap:3px;min-width:0}
+ .report-mobile-metrics small{font-size:9px;color:var(--muted)}
+ .report-mobile-metrics b{font-size:13px;color:#1b2b41}
+ .report-mobile-foot{display:flex;justify-content:space-between;gap:8px;align-items:center;border-top:1px solid #edf1f6;margin-top:10px;padding-top:9px}
+ .report-mobile-foot span{font-size:9px;color:var(--muted)}
+ .report-mobile-foot strong{font-size:10px;color:#2c68c9}
+ .report-mobile-history{width:100%;margin-top:10px;min-height:37px}
+}
+@media(max-width:380px){
+ .report-filter-grid{grid-template-columns:minmax(0,1fr)}
+ .report-mode-field{grid-column:auto}
+ .report-actions{grid-template-columns:minmax(0,1fr)}
+ .report-mobile-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .report-reason-item{grid-template-columns:104px minmax(35px,1fr) 25px}
+}
+@media print{
+ body *{visibility:hidden!important}
+ #reports,#reports *{visibility:visible!important}
+ #reports{position:absolute;left:0;top:0;width:100%;padding:0;margin:0}
+ #reports .report-actions,#reports .report-filter-panel,#reports .report-history-btn,#reports .report-mobile-history{display:none!important}
+ #reports .report-table-scroll{display:block!important;overflow:visible!important}
+ #reports #reportTable{min-width:0!important;font-size:8px!important}
+ #reports #reportTable th,#reports #reportTable td{white-space:normal!important;padding:4px!important}
+ #reports .report-mobile-cards{display:none!important}
+ #reports .report-register-panel{border:0;padding:0}
+ @page{size:landscape;margin:10mm}
+}
+
 </style></head><body>
 <div class="app"><aside class="sidebar"><div class="brand">Production Management<small>OPERATIONS CONTROL</small></div><div class="navlabel">WORKSPACE</div><nav class="nav" aria-label="Main navigation"><button class="active" data-page="overview"><span class="ico">▦</span><span>Overview</span></button><button data-page="plans"><span class="ico">▤</span><span>Production Plans</span></button><button data-page="operator"><span class="ico">◉</span><span>Operator</span></button><button data-page="reports"><span class="ico">▧</span><span>Reports</span></button><button data-page="rework"><span class="ico">↻</span><span>Rework</span></button></nav><div class="sidebottom">Production Control · V6 update</div></aside>
 <main class="main"><header class="topbar"><div class="crumb" id="crumb">Overview</div><div class="user"><div class="avatar">SP</div><div><strong style="color:#263449">Supervisor</strong><br/>Production Control</div></div></header><div class="content">
 <section id="overview" class="page"><div class="pagehead overview-heading"><div><h1>Production Overview</h1><div class="sub">Live production performance across all lines</div></div></div>
 <div class="cards"><div class="card"><div class="klabel">Today's Planned</div><div class="kvalue">300</div><div class="kfoot">Units across 3 lines</div></div><div class="card"><div class="klabel">Actual Produced</div><div class="kvalue">242</div><div class="kfoot good">80.7% of daily target</div></div><div class="card"><div class="klabel">Remaining</div><div class="kvalue">58</div><div class="kfoot">Units to plan</div></div><div class="card"><div class="klabel">Rejections</div><div class="kvalue">6</div><div class="kfoot">Recorded at shift close</div></div></div>
 <div class="panel plan-status-panel"><div class="paneltitle"><h3>Production Plan Status</h3><span id="overviewPlanStatusCount">Loading plans…</span></div><div id="overviewPlanStatusCards" class="plan-status-grid"></div></div>
-<div class="layout"><div><div class="panel overview-chart-panel"><div class="paneltitle"><div class="overview-chart-heading"><h3>Hourly Plan vs Actual</h3><span class="chart-subtitle">Live · Units per hour · Right-click or long-press to share</span></div><button class="btn chart-export-trigger" type="button" onclick="shareOverviewReport()">Share / Download</button></div><div class="legend"><span><i class="dot" style="background:#3978f6"></i>Planned</span><span><i class="dot" style="background:#18a66b"></i>Actual</span></div><div id="overviewBarChart" class="chart" role="img" aria-label="Hourly planned versus actual production bar chart" tabindex="0"></div><div id="overviewChartPlanDetails" class="overview-chart-plan-details"></div><div id="chartExportMenu" class="chart-export-menu hidden" role="menu"><button type="button" onclick="downloadOverviewReport()">Download WhatsApp PNG</button><button type="button" onclick="shareOverviewReport()">Share report</button></div></div>
+<div class="overview-main"><div class="panel overview-chart-panel"><div class="paneltitle"><div class="overview-chart-heading"><h3>Hourly Plan vs Actual</h3><span class="chart-subtitle">Live · Units per hour · Right-click or long-press to share</span></div><button class="btn chart-export-trigger" type="button" onclick="shareOverviewReport()">Share / Download</button></div><div class="legend"><span><i class="dot" style="background:#3978f6"></i>Planned</span><span><i class="dot" style="background:#18a66b"></i>Actual</span></div><div id="overviewBarChart" class="chart" role="img" aria-label="Hourly planned versus actual production bar chart" tabindex="0"></div><div id="overviewChartPlanDetails" class="overview-chart-plan-details"></div><div id="chartExportMenu" class="chart-export-menu hidden" role="menu"><button type="button" onclick="downloadOverviewReport()">Download WhatsApp PNG</button><button type="button" onclick="shareOverviewReport()">Share report</button></div></div>
 <details class="overview-filter-details">
   <summary><span>Set date & filters</span><small>Choose production date, shift, line, brand or product</small></summary>
   <div class="filters overview-filter-controls">
@@ -1240,12 +1358,45 @@ select option,optgroup{
   </div>
 </details>
 <div class="panel"><div class="paneltitle"><h3>Line Production Summary</h3><span>Click a plan for details</span></div><div class="table-scroll"><table><thead><tr><th>LINE</th><th>PRODUCT</th><th>PLAN</th><th>ACTUAL</th><th>ACHIEVEMENT</th><th>STATUS</th></tr></thead><tbody id="lineSummaryBody"></tbody></table></div></div></div>
-<div><div class="panel"><div class="paneltitle"><h3>Active Plans</h3><button class="btn" onclick="showPage('plans')">View all</button></div><div id="overviewActivePlans" style="font-size:12px;line-height:2.1"></div></div></div></div></section>
+</div></section>
 <section id="plans" class="page hidden"><div class="pagehead"><div><h1>Production Plans</h1><div class="sub">Create, publish and monitor production plans</div></div><div class="filters"><button class="btn primary" onclick="openPlanModal()">＋ Create plan</button></div></div><div class="filters" style="margin-bottom:16px"><select class="select"><option>All plan status</option><option>Draft</option><option>Published</option><option>Completed</option></select><select class="select"><option>All lines</option><option>Line 1</option><option>Line 2</option><option>Line 3</option></select><input class="input" type="date" value="2026-11-19"/></div><div class="planlist" id="planlist"></div></section>
 <section id="operator" class="page hidden"><div class="pagehead"><div><h1>Operator Workspace</h1><div class="sub">Select an active plan to record hourly production</div></div></div><div class="planlist" id="operatorplans"></div><div id="execution" class="hidden" style="margin-top:18px"></div></section>
-<section id="reports" class="page hidden"><div class="pagehead"><div><h1>Production Reports</h1><div class="sub">Analyze production by day, product, brand, month, hour or across all records</div></div><div class="filters"><button class="btn" onclick="exportReportCSV()">Export CSV / Excel</button><button class="btn" onclick="printReportPDF()">Print / Save PDF</button></div></div>
-<div class="panel"><div class="paneltitle"><h3>Report Filters</h3><span>Combine filters to refine your report</span></div><div class="filters reportfilters"><select class="select" id="reportType" onchange="renderReports()"><option value="all">Overall report</option><option value="day">Day-wise</option><option value="product">Product-wise</option><option value="brand">Brand-wise</option><option value="month">Month-wise</option><option value="hour">Hour-wise</option></select><input class="input" type="date" id="reportFrom" value="" onchange="renderReports()"><input class="input" type="date" id="reportTo" value="" onchange="renderReports()"><select class="select" id="reportBrand" onchange="renderReports()"><option value="all">All brands</option><option>Gerat</option><option>Cuisino</option><option>Kabel</option></select><select class="select" id="reportProduct" onchange="renderReports()"><option value="all">All products</option></select><select class="select" id="reportModel" onchange="renderReports()"><option value="all">All models</option></select><select class="select" id="reportLine" onchange="renderReports()"><option value="all">All lines</option><option>Line 1</option><option>Line 2</option><option>Line 3</option></select><select class="select" id="reportShift" onchange="renderReports()"><option value="all">All shifts</option><option>Shift 1</option><option>Shift 2</option><option>Shift 3</option></select><label class="history-toggle"><input type="checkbox" id="reportHistoryToggle" onchange="renderReports()"/> Show rejection history</label></div></div>
-<div class="cards" id="reportKpis"></div><div class="panel"><div class="paneltitle"><h3 id="reportTableTitle">Production Summary</h3><span id="reportRowCount">Filtered records</span></div><div style="overflow:auto"><table id="reportTable"><thead></thead><tbody></tbody></table></div></div></section>
+<section id="reports" class="page hidden">
+<div class="pagehead report-pagehead">
+  <div><h1>Production Reports</h1><div class="sub">Production performance, model output, line comparisons and rejection analysis</div></div>
+  <div class="report-actions">
+    <button class="btn" type="button" onclick="exportReportCSV()">Export CSV</button>
+    <button class="btn primary" type="button" onclick="printReportPDF()">Print / Save PDF</button>
+  </div>
+</div>
+<div class="panel report-filter-panel">
+  <div class="paneltitle"><div><h3>Report setup</h3><span>Choose the report view and narrow it to the production period you need.</span></div><button class="btn report-clear-btn" type="button" onclick="clearReportFilters()">Reset filters</button></div>
+  <div class="report-filter-grid">
+    <label class="report-filter-field report-mode-field"><span>Report view</span><select class="select" id="reportType" onchange="renderReports()">
+      <option value="plan">Plan register</option><option value="day">Daily performance</option><option value="line">Line performance</option><option value="model">Model performance</option><option value="rejection">Rejection &amp; rework</option>
+    </select></label>
+    <label class="report-filter-field"><span>From date</span><input class="input" type="date" id="reportFrom" value="" onchange="renderReports()"/></label>
+    <label class="report-filter-field"><span>To date</span><input class="input" type="date" id="reportTo" value="" onchange="renderReports()"/></label>
+    <label class="report-filter-field"><span>Shift</span><select class="select" id="reportShift" onchange="renderReports()"><option value="all">All shifts</option><option>Shift 1</option><option>Shift 2</option><option>Shift 3</option></select></label>
+    <label class="report-filter-field"><span>Production line</span><select class="select" id="reportLine" onchange="renderReports()"><option value="all">All lines</option><option>Line 1</option><option>Line 2</option><option>Line 3</option></select></label>
+    <label class="report-filter-field"><span>Brand</span><select class="select" id="reportBrand" onchange="renderReports()"><option value="all">All brands</option></select></label>
+    <label class="report-filter-field"><span>Product</span><select class="select" id="reportProduct" onchange="renderReports()"><option value="all">All products</option></select></label>
+    <label class="report-filter-field"><span>Model number</span><select class="select" id="reportModel" onchange="renderReports()"><option value="all">All models</option></select></label>
+  </div>
+  <div class="report-filter-foot"><span id="reportFilterSummary">Showing production records</span><label class="history-toggle"><input type="checkbox" id="reportHistoryToggle" onchange="renderReports()"/> Include rejection history actions</label></div>
+</div>
+<div class="report-kpi-grid" id="reportKpis"></div>
+<div class="panel report-performance-panel">
+  <div class="paneltitle"><div><h3 id="reportVisualTitle">Production achievement</h3><span>Actual output compared with planned quantity</span></div><span id="reportRowCount">0 records</span></div>
+  <div id="reportVisuals" class="report-visuals"></div>
+  <div id="reportReasonSummary" class="report-reason-summary"></div>
+</div>
+<div class="panel report-register-panel">
+  <div class="paneltitle"><div><h3 id="reportTableTitle">Production plan register</h3><span id="reportTableSubtitle">Detailed production records for the selected filters</span></div><span id="reportTableCount">0 rows</span></div>
+  <div class="report-table-scroll"><table id="reportTable"><thead></thead><tbody></tbody></table></div>
+  <div id="reportCards" class="report-mobile-cards"></div>
+</div>
+</section>
 
 <section id="rework" class="page hidden"><div class="pagehead"><div><h1>Rework Workspace</h1><div class="sub">Resolve rejected units individually and retain their disposition history</div></div></div>
 <div class="panel"><div class="paneltitle"><h3>Rework Filters</h3><span>Filter rejection records by production plan and disposition</span></div><div class="filters reworkfilters">
@@ -1961,41 +2112,27 @@ function attachCatalogAutocomplete(fieldId,itemsGetter){
   field.addEventListener('input',render);
   field.addEventListener('keydown',function(event){
     var buttons=Array.from(menu.querySelectorAll('.catalog-suggestion'));
-    if(event.key==='ArrowDown'&&buttons.length){
-      event.preventDefault();buttons[0].focus();
-    }else if(event.key==='Escape'){
-      event.preventDefault();menu.classList.add('hidden');field.blur();
-    }else if(event.key==='Enter'&&buttons.length===1){
-      event.preventDefault();buttons[0].click();
-    }
+    if(event.key==='ArrowDown'&&buttons.length){event.preventDefault();buttons[0].focus();}
+    else if(event.key==='Escape'){event.preventDefault();menu.classList.add('hidden');field.blur();}
+    else if(event.key==='Enter'&&buttons.length===1){event.preventDefault();buttons[0].click();}
   });
   menu.addEventListener('mousedown',function(event){event.preventDefault();});
   menu.addEventListener('keydown',function(event){
     var buttons=Array.from(menu.querySelectorAll('.catalog-suggestion'));
     var active=buttons.findIndex(function(x){return x===document.activeElement;});
-    if(event.key==='ArrowDown'&&buttons.length){
-      event.preventDefault();buttons[Math.min(active+1,buttons.length-1)].focus();
-    }else if(event.key==='ArrowUp'&&buttons.length){
-      event.preventDefault();if(active>0)buttons[active-1].focus();else field.focus();
-    }else if(event.key==='Escape'){
-      event.preventDefault();menu.classList.add('hidden');field.focus();
-    }else if(event.key==='Enter'&&active>=0){
-      event.preventDefault();buttons[active].click();
-    }
+    if(event.key==='ArrowDown'&&buttons.length){event.preventDefault();buttons[Math.min(active+1,buttons.length-1)].focus();}
+    else if(event.key==='ArrowUp'&&buttons.length){event.preventDefault();if(active>0)buttons[active-1].focus();else field.focus();}
+    else if(event.key==='Escape'){event.preventDefault();menu.classList.add('hidden');field.focus();}
+    else if(event.key==='Enter'&&active>=0){event.preventDefault();buttons[active].click();}
   });
   menu.addEventListener('click',function(event){
     var option=event.target.closest('.catalog-suggestion');if(!option)return;
     field.value=option.dataset.value||'';
     menu.classList.add('hidden');
-    field.dispatchEvent(new Event('input',{bubbles:true}));
-    field.focus();
+    field.dispatchEvent(new Event('change',{bubbles:true}));
+    field.blur();
   });
-  field.addEventListener('blur',function(event){
-    if(event.relatedTarget&&menu.contains(event.relatedTarget))return;
-    setTimeout(function(){
-      if(!menu.contains(document.activeElement))menu.classList.add('hidden');
-    },180);
-  });
+  field.addEventListener('blur',function(){setTimeout(function(){menu.classList.add('hidden');},80);});
 }
 function planForm(p=null){
   editingPlanId=p?.id??null;
@@ -2162,7 +2299,7 @@ async function addBrandInline(){
     var record=existing.data;
     if(!record){var result=await db.from('pm_brands').insert({name:name,created_by:window.pmCurrentUserId||null}).select('id,name').single();if(result.error)throw result.error;record=result.data;}
     await pmReloadProductionData();
-    var field=document.getElementById('pbrand');if(field){field.value=record.name;field.focus();field.dispatchEvent(new Event('input',{bubbles:true}));}
+    var field=document.getElementById('pbrand');if(field){field.value=record.name;field.dispatchEvent(new Event('change',{bubbles:true}));field.blur();}
     toast(existing.data?'Brand already exists. Selected it.':'Brand added and selected.');
   }catch(error){toast('Could not add brand: '+error.message);}
 }
@@ -2192,7 +2329,7 @@ async function addModelInline(){
     var record=existing.data;
     if(!record){var result=await db.from('pm_models').insert({product_id:null,model_number:name,created_by:window.pmCurrentUserId||null}).select('id,model_number').single();if(result.error)throw result.error;record=result.data;}
     await pmReloadProductionData();
-    var field=document.getElementById('pmodel');if(field){field.value=record.model_number;field.focus();field.dispatchEvent(new Event('input',{bubbles:true}));}
+    var field=document.getElementById('pmodel');if(field){field.value=record.model_number;field.dispatchEvent(new Event('change',{bubbles:true}));field.blur();}
     toast(existing.data?'Model number already exists. Selected it.':'Model number added and selected.');
   }catch(error){toast('Could not add model number: '+error.message);}
 }
@@ -2419,20 +2556,17 @@ function renderOverviewPlanStatusCards(){
   }).join('');
 }
 function renderOverviewSummary(f){
-  var summary=document.getElementById('lineSummaryBody'),cards=document.getElementById('overviewLineCards'),active=document.getElementById('overviewActivePlans');
+  var summary=document.getElementById('lineSummaryBody'),cards=document.getElementById('overviewLineCards');
   if(summary)summary.innerHTML=f.map(function(p){
     var pct=p.qty?Math.round(p.actual/p.qty*100):0;
-    return '<tr><td>'+escapeHtml(p.line)+'</td><td>'+escapeHtml(p.product)+' <small>'+escapeHtml(p.model||'')+'</small></td><td>'+p.qty+'</td><td>'+p.actual+'</td><td>'+pct+'%</td><td><span class="pill '+(pct<80?'warn':'')+'">'+(pct<80?'Behind plan':'Active')+'</span></td></tr>';
+    return '<tr><td>'+escapeHtml(p.line)+'</td><td>'+escapeHtml(p.brand||'—')+' · '+escapeHtml(p.product)+' <small>'+escapeHtml(p.model||'')+'</small></td><td>'+p.qty+'</td><td>'+p.actual+'</td><td>'+pct+'%</td><td><span class="pill '+(pct<80?'warn':'')+'">'+(pct<80?'Behind plan':'On track')+'</span></td></tr>';
   }).join('')||'<tr><td colspan="6">No active published plans match the selected filters.</td></tr>';
   if(cards)cards.innerHTML=f.map(function(p){
     var pct=p.qty?Math.min(100,p.actual/p.qty*100):0,remaining=Math.max(0,p.qty-p.actual);
-    return '<div class="linecard"><div class="linehead">'+escapeHtml(p.line)+' <span class="pill '+(pct<80?'warn':'')+'">Active</span></div>'+
+    return '<div class="linecard"><div class="linehead">'+escapeHtml(p.line)+' <span class="pill '+(pct<80?'warn':'')+'">'+(pct<80?'Behind plan':'On track')+'</span></div>'+
       '<div class="sub" style="margin-top:7px">'+escapeHtml(p.brand||'—')+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model||'—')+' · '+p.actual+' / '+p.qty+' units</div>'+
       '<div class="progress"><i style="width:'+pct+'%"></i></div><div class="linemeta"><span>'+(p.qty?Math.round(p.actual/p.qty*100):0)+'% complete</span><span>'+remaining+' remaining</span></div></div>';
   }).join('')||'<div class="sub">No active plans for the selected filters.</div>';
-  if(active)active.innerHTML=f.map(function(p){return '<div>'+escapeHtml(p.line)+' · '+escapeHtml(p.brand||'—')+' · '+escapeHtml(p.product)+' / '+escapeHtml(p.model||'—')+' <span class="pill" style="float:right">Published</span></div>';}).join('')||'<span class="sub">No active published plans.</span>';
-  var n=document.querySelector('#overview .layout>div:nth-child(2) .panel .paneltitle span');
-  if(n)n.textContent=new Set(f.map(function(p){return p.line;})).size+' active lines';
 }
 function renderOverviewChart(){
   var host=document.getElementById('overviewBarChart');if(!host)return;
@@ -2565,18 +2699,173 @@ function setupChartExportGestures(){
   document.addEventListener('click',function(event){if(!event.target.closest('#chartExportMenu')&&!event.target.closest('#overviewBarChart'))closeChartExportMenu();});
 }
 function refreshOverview(){refreshProductOptions();renderOverviewChart();updateOverviewKpis();}
+function clearReportFilters(){
+  ['reportFrom','reportTo'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  ['reportShift','reportLine','reportBrand','reportProduct','reportModel'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='all';});
+  renderReports();
+}
 function filteredReportPlans(){
   var from=document.getElementById('reportFrom')?.value||'',to=document.getElementById('reportTo')?.value||'';
-  var brand=document.getElementById('reportBrand')?.value||'all',product=document.getElementById('reportProduct')?.value||'all';
-  var model=document.getElementById('reportModel')?.value||'all',line=document.getElementById('reportLine')?.value||'all',shift=document.getElementById('reportShift')?.value||'all';
+  var brand=document.getElementById('reportBrand')?.value||'all';
+  var product=document.getElementById('reportProduct')?.value||'all';
+  var model=document.getElementById('reportModel')?.value||'all';
+  var line=document.getElementById('reportLine')?.value||'all';
+  var shift=document.getElementById('reportShift')?.value||'all';
   return plans.filter(function(p){
     return (!from||p.date>=from)&&(!to||p.date<=to)&&
       (brand==='all'||p.brand===brand)&&(product==='all'||p.product===product)&&
       (model==='all'||p.model===model)&&(line==='all'||p.line===line)&&(shift==='all'||p.shift===shift);
   });
 }
-function renderReports(){let brandSel=document.getElementById('reportBrand');if(brandSel){let selected=brandSel.value||'all';brandSel.innerHTML='<option value="all">All brands</option>'+Object.keys(brandProducts).map(b=>`<option value="${b}">${b}</option>`).join('');brandSel.value=Object.keys(brandProducts).includes(selected)?selected:'all';}let filtered=filteredReportPlans(),type=document.getElementById('reportType')?.value||'all',groupFn={all:p=>`${p.line} · ${p.product} · ${p.date}`,day:p=>p.date,product:p=>p.product,brand:p=>p.brand||'Unbranded',month:p=>p.date.slice(0,7),hour:p=>`${p.date} · ${p.line}`}[type]|| (p=>p.date),grouped={};filtered.forEach(p=>{let k=groupFn(p);if(!grouped[k])grouped[k]={key:k,brand:p.brand,product:p.product,model:p.model||'—',line:p.line,plan:0,actual:0,rejection:0,rework:0,finalRejected:0,plans:[]};let r=grouped[k];r.plan+=p.qty;r.actual+=p.actual;r.rejection+=p.rejection;r.rework+=sumRework(p,'Completed');r.finalRejected+=sumRework(p,'Finally Rejected');r.plans.push(p);});renderReportRows(Object.values(grouped),({all:'Overall Production Report',day:'Day-wise Production Report',product:'Product-wise Production Report',brand:'Brand-wise Production Report',month:'Month-wise Production Report',hour:'Production Report by Plan'})[type]||'Production Report',({all:'Plan',day:'Date',product:'Product',brand:'Brand',month:'Month',hour:'Date / Line'})[type]||'Plan');}
-function renderReportRows(rows,title,firstCol){let filtered=filteredReportPlans(),plan=filtered.reduce((a,p)=>a+p.qty,0),actual=filtered.reduce((a,p)=>a+p.actual,0),rejected=filtered.reduce((a,p)=>a+p.rejection,0),rework=filtered.reduce((a,p)=>a+sumRework(p,'Completed'),0),historyEnabled=!!document.getElementById('reportHistoryToggle')?.checked;document.getElementById('reportKpis').innerHTML=`<div class="card"><div class="klabel">Planned Qty</div><div class="kvalue">${plan}</div></div><div class="card"><div class="klabel">Actual Produced</div><div class="kvalue">${actual}</div></div><div class="card"><div class="klabel">Rejected Qty</div><div class="kvalue">${rejected}</div><div class="kfoot">${historyEnabled?'Click a rejected quantity to view history':'Enable rejection history above to view details'}</div></div><div class="card"><div class="klabel">Accepted Qty</div><div class="kvalue">${actual-rejected}</div></div><div class="card"><div class="klabel">Rework completed</div><div class="kvalue">${rework}</div></div>`;document.getElementById('reportTableTitle').textContent=title;document.getElementById('reportRowCount').textContent=`${rows.length} report rows`;let table=document.getElementById('reportTable');table.querySelector('thead').innerHTML=`<tr><th>${firstCol.toUpperCase()}</th><th>BRAND</th><th>PRODUCT / MODEL</th><th>LINE</th><th>PLANNED</th><th>ACTUAL</th><th>REJECTED</th><th>ACCEPTED</th><th>REWORK COMPLETED</th><th>FINAL REJECTED</th><th>ACHIEVEMENT</th></tr>`;table.querySelector('tbody').innerHTML=rows.map((r,i)=>`<tr><td>${r.key}</td><td>${r.brand||'—'}</td><td>${r.product||'—'}<br><small>${r.model}</small></td><td>${r.line||'—'}</td><td>${r.plan}</td><td>${r.actual}</td><td>${historyEnabled&&r.rejection?`<button class="btn" onclick="showReportHistory(${i})" title="View rejection history">${r.rejection}</button>`:r.rejection}</td><td>${r.actual-r.rejection}</td><td>${r.rework}</td><td>${r.finalRejected}</td><td>${r.plan?Math.round(r.actual/r.plan*100):0}%</td></tr>`).join('')||'<tr><td colspan="11">No production records match these filters.</td></tr>';window.currentReportRows=rows;}
+function renderReports(){
+  var filtered=filteredReportPlans();
+  var type=document.getElementById('reportType')?.value||'plan';
+  var groups=new Map();
+
+  function reasonQty(plan,reason){
+    return Object.values(plan.entries||{}).reduce(function(total,entry){
+      return total+(entry.reason===reason?(Number(entry.rejected)||0):0);
+    },0);
+  }
+  function keyFor(plan){
+    if(type==='day')return plan.date;
+    if(type==='line')return plan.line;
+    if(type==='model')return [plan.brand,plan.product,plan.model].filter(Boolean).join(' · ');
+    if(type==='rejection')return [plan.date,plan.line,plan.shift].join(' · ');
+    return plan.id;
+  }
+  filtered.forEach(function(p){
+    var key=keyFor(p),r=groups.get(key);
+    if(!r){
+      r={
+        id:p.id,key:type==='plan'?[p.date,p.shift,p.line].join(' · '):key,
+        date:p.date,shift:p.shift,line:p.line,brand:p.brand,product:p.product,model:p.model,
+        plan:0,actual:0,rejection:0,accepted:0,iqc:0,lqc:0,unclassified:0,
+        rework:0,pending:0,finalRejected:0,missing:0,achievement:0,
+        status:p.status,plans:[]
+      };
+      groups.set(key,r);
+    }
+    r.plan+=Number(p.qty)||0;
+    r.actual+=Number(p.actual)||0;
+    r.rejection+=Number(p.rejection)||0;
+    r.accepted+=(Number(p.actual)||0)-(Number(p.rejection)||0);
+    r.iqc+=reasonQty(p,'IQC Rejection');
+    r.lqc+=reasonQty(p,'LQC Rejection');
+    r.unclassified+=Math.max(0,(Number(p.rejection)||0)-reasonQty(p,'IQC Rejection')-reasonQty(p,'LQC Rejection'));
+    r.rework+=sumRework(p,'Completed');
+    r.pending+=sumRework(p,'Pending');
+    r.finalRejected+=sumRework(p,'Finally Rejected');
+    r.missing+=Object.values(p.entries||{}).reduce(function(n,e){return n+(Number(e.missingSerialQty)||0);},0);
+    if(r.status!==p.status)r.status='Mixed';
+    if(r.line!==p.line)r.line='Multiple';
+    if(r.shift!==p.shift)r.shift='Multiple';
+    if(r.brand!==p.brand)r.brand='Multiple';
+    if(r.product!==p.product)r.product='Multiple';
+    if(r.model!==p.model)r.model='Multiple';
+    if(r.date!==p.date)r.date='Multiple';
+    r.plans.push(p);
+  });
+  var rows=Array.from(groups.values()).map(function(r){
+    r.achievement=r.plan?Math.round(r.actual/r.plan*100):0;
+    return r;
+  }).sort(function(a,b){
+    if(type==='day')return String(b.date).localeCompare(String(a.date));
+    if(type==='plan')return String(b.date).localeCompare(String(a.date))||String(a.line).localeCompare(String(b.line));
+    return String(a.key).localeCompare(String(b.key));
+  });
+  var titles={plan:'Production plan register',day:'Daily production performance',line:'Line-wise production performance',model:'Product & model performance',rejection:'Rejection & rework register'};
+  var subtitles={
+    plan:'One row per production plan, including output and quality results.',
+    day:'Daily totals across the selected shifts and production lines.',
+    line:'Compare output, achievement and quality across production lines.',
+    model:'Compare output by product and model number.',
+    rejection:'Review rejected quantities, rejection categories, missing stickers and rework disposition.'
+  };
+  var count=document.getElementById('reportRowCount');if(count)count.textContent=rows.length+' '+(rows.length===1?'group':'groups');
+  var title=document.getElementById('reportTableTitle');if(title)title.textContent=titles[type]||titles.plan;
+  var sub=document.getElementById('reportTableSubtitle');if(sub)sub.textContent=subtitles[type]||subtitles.plan;
+  var visualTitle=document.getElementById('reportVisualTitle');if(visualTitle)visualTitle.textContent=type==='rejection'?'Quality and rework breakdown':'Production achievement';
+  var summary=document.getElementById('reportFilterSummary');
+  if(summary)summary.textContent=filtered.length+' plans included · '+(document.getElementById('reportFrom')?.value||'All dates')+' to '+(document.getElementById('reportTo')?.value||'Today');
+  renderReportRows(rows,type);
+}
+function renderReportRows(rows,type){
+  var filtered=filteredReportPlans();
+  var totals=filtered.reduce(function(a,p){
+    a.plan+=Number(p.qty)||0;a.actual+=Number(p.actual)||0;a.rejected+=Number(p.rejection)||0;
+    a.rework+=sumRework(p,'Completed');a.pending+=sumRework(p,'Pending');a.finalRejected+=sumRework(p,'Finally Rejected');
+    return a;
+  },{plan:0,actual:0,rejected:0,rework:0,pending:0,finalRejected:0});
+  var accepted=Math.max(0,totals.actual-totals.rejected);
+  var achievement=totals.plan?Math.round(totals.actual/totals.plan*100):0;
+  var kpis=document.getElementById('reportKpis');
+  if(kpis){
+    kpis.innerHTML=[
+      ['Planned quantity',totals.plan,'Units scheduled'],
+      ['Actual produced',totals.actual,achievement+'% of plan'],
+      ['Accepted quantity',accepted,'Actual less rejected'],
+      ['Rejected quantity',totals.rejected,'Rejected from hourly production'],
+      ['Achievement',achievement+'%','Actual against planned']
+    ].map(function(x){
+      return '<article class="report-kpi"><div class="klabel">'+x[0]+'</div><div class="kvalue">'+x[1]+'</div><div class="kfoot">'+x[2]+'</div></article>';
+    }).join('');
+  }
+
+  var reasonTotals={iqc:0,lqc:0,other:0,missing:0};
+  filtered.forEach(function(p){
+    Object.values(p.entries||{}).forEach(function(e){
+      if(e.reason==='IQC Rejection')reasonTotals.iqc+=Number(e.rejected)||0;
+      else if(e.reason==='LQC Rejection')reasonTotals.lqc+=Number(e.rejected)||0;
+      else reasonTotals.other+=Number(e.rejected)||0;
+      reasonTotals.missing+=Number(e.missingSerialQty)||0;
+    });
+  });
+  var visuals=document.getElementById('reportVisuals');
+  if(visuals){
+    var top=rows.slice(0,8);
+    visuals.innerHTML=top.length?top.map(function(r){
+      var percent=r.plan?Math.min(100,Math.max(0,r.actual/r.plan*100)):0;
+      return '<div class="report-performance-row"><div class="report-performance-label"><strong>'+escapeHtml(r.key)+'</strong><span>'+r.actual.toLocaleString()+' / '+r.plan.toLocaleString()+' units · '+r.achievement+'%</span></div>'+
+        '<div class="report-performance-track"><i style="width:'+percent.toFixed(1)+'%"></i></div></div>';
+    }).join(''):'<div class="report-empty">No production plans match these filters.</div>';
+  }
+  var reasonHost=document.getElementById('reportReasonSummary');
+  if(reasonHost){
+    var maxReason=Math.max(1,reasonTotals.iqc,reasonTotals.lqc,reasonTotals.other);
+    reasonHost.innerHTML='<div class="report-reason-heading"><strong>Rejection categories</strong><span>Missing sticker units: '+reasonTotals.missing+'</span></div>'+
+      [['IQC Rejection',reasonTotals.iqc],['LQC Rejection',reasonTotals.lqc],['Other / Unassigned',reasonTotals.other]].map(function(x){
+        return '<div class="report-reason-item"><span>'+x[0]+'</span><div><i style="width:'+(x[1]/maxReason*100)+'%"></i></div><b>'+x[1]+'</b></div>';
+      }).join('');
+  }
+
+  var table=document.getElementById('reportTable'),historyEnabled=!!document.getElementById('reportHistoryToggle')?.checked;
+  var headers=['Plan / period','Date','Shift','Line','Brand','Product / Model','Planned','Actual','Rejected','Accepted','IQC / LQC','Reworked','Pending','Final rejected','Missing stickers','Achievement','Status'];
+  if(table){
+    table.querySelector('thead').innerHTML='<tr>'+headers.map(function(x){return '<th>'+x.toUpperCase()+'</th>';}).join('')+'</tr>';
+    table.querySelector('tbody').innerHTML=rows.map(function(r,i){
+      var category='IQC '+r.iqc+' · LQC '+r.lqc+(r.unclassified?' · Other '+r.unclassified:'');
+      return '<tr><td><strong>'+escapeHtml(r.key)+'</strong></td><td>'+escapeHtml(r.date||'—')+'</td><td>'+escapeHtml(r.shift||'—')+'</td><td>'+escapeHtml(r.line||'—')+'</td>'+
+        '<td>'+escapeHtml(r.brand||'—')+'</td><td>'+escapeHtml((r.product||'—')+' / '+(r.model||'—'))+'</td>'+
+        '<td>'+r.plan+'</td><td>'+r.actual+'</td><td>'+(historyEnabled&&r.rejection?'<button class="btn report-history-btn" onclick="showReportHistory('+i+')" title="View rejected-unit history">'+r.rejection+'</button>':r.rejection)+'</td>'+
+        '<td>'+r.accepted+'</td><td>'+escapeHtml(category)+'</td><td>'+r.rework+'</td><td>'+r.pending+'</td><td>'+r.finalRejected+'</td><td>'+r.missing+'</td>'+
+        '<td><span class="report-achievement '+(r.achievement>=100?'good':r.achievement<80?'warn':'')+'">'+r.achievement+'%</span></td><td><span class="pill">'+escapeHtml(r.status)+'</span></td></tr>';
+    }).join('')||'<tr><td colspan="17" class="report-empty">No production records match these filters.</td></tr>';
+  }
+  var mobile=document.getElementById('reportCards');
+  if(mobile){
+    mobile.innerHTML=rows.map(function(r,i){
+      var category='IQC '+r.iqc+' · LQC '+r.lqc;
+      return '<article class="report-mobile-card"><div class="report-mobile-card-head"><div><strong>'+escapeHtml(r.key)+'</strong><small>'+escapeHtml(r.date||'—')+' · '+escapeHtml(r.shift||'—')+'</small></div><span class="pill">'+escapeHtml(r.status)+'</span></div>'+
+        '<div class="report-mobile-product">'+escapeHtml(r.brand||'—')+' · '+escapeHtml(r.product||'—')+' · '+escapeHtml(r.model||'—')+'</div>'+
+        '<div class="report-mobile-metrics"><span><small>Planned</small><b>'+r.plan+'</b></span><span><small>Actual</small><b>'+r.actual+'</b></span><span><small>Rejected</small><b>'+r.rejection+'</b></span><span><small>Accepted</small><b>'+r.accepted+'</b></span><span><small>Rework done</small><b>'+r.rework+'</b></span><span><small>Pending</small><b>'+r.pending+'</b></span></div>'+
+        '<div class="report-mobile-foot"><span>'+category+'</span><strong>'+r.achievement+'% achieved</strong></div>'+
+        (historyEnabled&&r.rejection?'<button class="btn report-mobile-history" type="button" onclick="showReportHistory('+i+')">View rejection history</button>':'')+
+      '</article>';
+    }).join('')||'<div class="report-empty">No production records match these filters.</div>';
+  }
+  window.currentReportRows=rows;
+}
 function sumRework(p,status){return planReworkUnits(p).reduce((n,row)=>n+(((row.unit.status||'Pending')===status)?1:0),0)}
 function showReportHistory(i){
   const row=window.currentReportRows?.[i];if(!row)return;
@@ -2586,7 +2875,18 @@ function showReportHistory(i){
   modal.classList.remove('hidden');
 }
 function printReportPDF(){window.print();}
-function exportReportCSV(){let rows=[...document.querySelectorAll('#reportTable tr')].map(tr=>[...tr.querySelectorAll('th,td')].map(c=>'"'+c.innerText.replaceAll('"','""')+'"').join(','));let blob=new Blob([rows.join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='production-report.csv';a.click();URL.revokeObjectURL(url);toast('CSV exported');}
+function exportReportCSV(){
+  var table=document.getElementById('reportTable');if(!table)return;
+  var rows=Array.from(table.querySelectorAll('tr')).map(function(tr){
+    return Array.from(tr.querySelectorAll('th,td')).map(function(cell){return '"'+String(cell.innerText||'').replace(/"/g,'""')+'"';}).join(',');
+  });
+  if(rows.length<2)return toast('There are no report rows to export.');
+  var blob=new Blob(['\uFEFF'+rows.join('\r\n')],{type:'text/csv;charset=utf-8;'});
+  var url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='production-report-'+todayLocalDate()+'.csv';
+  document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+  toast('Filtered production report exported.');
+}
 function refreshProductOptions(){
   var brands=pmBrandNames.slice(),products=pmProductNames.slice(),models=pmModelNumbers.slice();
   function fillSelect(id,values,label,firstValue){
@@ -2601,9 +2901,6 @@ function refreshProductOptions(){
   fillSelect('reportBrand',brands,'All brands','all');
   fillSelect('reportProduct',products,'All products','all');
   fillSelect('reportModel',models,'All models','all');
-  if(document.activeElement&&document.activeElement.id==='pbrand')makeCatalogSuggestions('pbrand',brands);
-  if(document.activeElement&&document.activeElement.id==='pproduct')makeCatalogSuggestions('pproduct',products);
-  if(document.activeElement&&document.activeElement.id==='pmodel')makeCatalogSuggestions('pmodel',models);
 }
 function persistAppData(){
   // Business data is written directly to Supabase by each save operation.
