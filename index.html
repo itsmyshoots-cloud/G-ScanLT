@@ -1123,6 +1123,99 @@
  .hourly-serial-popup-actions{flex-direction:column-reverse}
 }
 
+
+/* V7.1 shared dropdown design across all screens */
+select,.rw-status-select,.rw-remark-input,.rw-serial-input{
+  color-scheme:light;
+  font-family:inherit;
+}
+select,.rw-status-select{
+  appearance:none;-webkit-appearance:none;-moz-appearance:none;
+  border:1px solid var(--line)!important;border-radius:9px!important;
+  background-color:#fff!important;color:#172438!important;
+  background-image:
+    linear-gradient(45deg,transparent 50%,#65758a 50%),
+    linear-gradient(135deg,#65758a 50%,transparent 50%)!important;
+  background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%!important;
+  background-size:5px 5px,5px 5px!important;
+  background-repeat:no-repeat!important;
+  padding:10px 34px 10px 12px!important;
+  min-height:42px;line-height:1.25;
+  box-shadow:0 1px 2px rgba(25,42,68,.035);
+  transition:border-color .15s ease,box-shadow .15s ease,background-color .15s ease;
+}
+select:hover,.rw-status-select:hover{border-color:#b8c9df!important;background-color:#fcfdff!important}
+select:focus,.rw-status-select:focus{
+  outline:0!important;border-color:#80a8f8!important;
+  box-shadow:0 0 0 3px rgba(57,120,246,.13)!important;
+}
+select:disabled{background-color:#f3f6fa!important;color:#8290a2!important;cursor:not-allowed}
+select option,optgroup{
+  background:#fff!important;color:#172438!important;
+  font-family:inherit;font-size:14px;
+}
+.select-action-wrap select{
+  border:0!important;border-radius:0!important;background-color:transparent!important;
+  padding-right:34px!important;min-height:44px;box-shadow:none!important;
+}
+.select-action-wrap select:focus{box-shadow:none!important}
+.select-action-wrap:focus-within{outline:2px solid rgba(57,120,246,.18);border-color:#80a8f8}
+.catalog-input-shell{position:relative;width:100%;min-width:0}
+.catalog-input-shell .select-action-wrap{position:relative;z-index:2}
+.catalog-suggestion-menu{
+  position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:11040;
+  max-height:230px;overflow:auto;background:#fff;border:1px solid #dce5f1;
+  border-radius:10px;padding:5px;box-shadow:0 14px 34px rgba(20,36,58,.16);
+  overscroll-behavior:contain;
+}
+.catalog-suggestion-menu.hidden{display:none}
+.catalog-suggestion{
+  display:flex;align-items:center;width:100%;min-height:39px;text-align:left;
+  padding:9px 11px;border:0;border-radius:7px;background:#fff;color:#24344b;
+  font:500 13px inherit;cursor:pointer;
+}
+.catalog-suggestion:hover,.catalog-suggestion:focus{background:#eef4ff;color:#245fc8;outline:0}
+.catalog-suggestion-empty{padding:12px;color:#738197;font-size:11px}
+.time-picker{display:grid;grid-template-columns:minmax(0,1fr) 8px minmax(0,1fr) minmax(0,.95fr);align-items:center;gap:5px;width:100%;min-width:0}
+.time-picker select{width:100%;min-width:0;text-align:center;padding:9px 20px 9px 7px!important;font-size:13px!important}
+.time-separator{text-align:center;color:#8a98aa;font-weight:700}
+.plan-break-panel{margin-top:12px;padding:13px}
+.plan-break-panel>.paneltitle{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.plan-break-panel>.paneltitle h3{margin:0 0 3px}
+.plan-break-panel>.paneltitle small{font-size:10px;color:var(--muted)}
+.plan-break-add{white-space:nowrap;min-height:36px;padding:7px 10px}
+.plan-break-row{padding:10px 0;border-bottom:1px solid #edf1f6}
+.plan-break-row:last-child{border-bottom:0}
+.plan-break-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.plan-break-title strong{font-size:11px;color:#465a74}
+.plan-break-remove{min-height:30px;padding:5px 9px;font-size:10px}
+.plan-break-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.plan-break-empty{padding:10px 0 2px;color:var(--muted);font-size:11px}
+.plan-time-warning{padding:10px;border:1px solid #f3d6a6;border-radius:8px;background:#fff8e9;color:#92621e;font-size:11px}
+@media(min-width:1100px){
+  .plan-hour-chart-list{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:12px}
+  .plan-hour-chart-card{padding:11px}
+  .plan-hour-chart-heading{min-height:34px}
+  .plan-hour-chart-meta{gap:8px 12px;font-size:9px}
+  .plan-hour-chart-svg svg{width:100%;height:auto}
+}
+@media(max-width:760px){
+  select,.rw-status-select{font-size:16px!important;min-height:44px}
+  .time-picker{gap:4px}
+  .time-picker select{font-size:13px!important;min-height:43px;padding:8px 17px 8px 5px!important}
+  .plan-break-fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .plan-break-panel{padding:10px}
+  .plan-break-panel>.paneltitle{align-items:flex-start}
+  .plan-break-panel>.paneltitle small{font-size:9px}
+  .plan-break-add{font-size:10px;padding:6px 8px}
+  .catalog-suggestion-menu{max-height:190px}
+}
+@media(max-width:390px){
+  .time-picker{grid-template-columns:minmax(0,1fr) 7px minmax(0,1fr) minmax(0,.9fr);gap:2px}
+  .time-picker select{padding-left:3px!important;padding-right:15px!important;font-size:12px!important}
+  .plan-break-fields{grid-template-columns:minmax(0,1fr)}
+}
+
 </style></head><body>
 <div class="app"><aside class="sidebar"><div class="brand">Production Management<small>OPERATIONS CONTROL</small></div><div class="navlabel">WORKSPACE</div><nav class="nav" aria-label="Main navigation"><button class="active" data-page="overview"><span class="ico">▦</span><span>Overview</span></button><button data-page="plans"><span class="ico">▤</span><span>Production Plans</span></button><button data-page="operator"><span class="ico">◉</span><span>Operator</span></button><button data-page="reports"><span class="ico">▧</span><span>Reports</span></button><button data-page="rework"><span class="ico">↻</span><span>Rework</span></button></nav><div class="sidebottom">Production Control · V6 update</div></aside>
 <main class="main"><header class="topbar"><div class="crumb" id="crumb">Overview</div><div class="user"><div class="avatar">SP</div><div><strong style="color:#263449">Supervisor</strong><br/>Production Control</div></div></header><div class="content">
@@ -1289,6 +1382,7 @@ async function pmLoadProductionData(client){
       qty:Number(row.planned_qty)||0,
       start:pmDbTime(row.start_time),
       end:pmDbTime(row.end_time),
+      breakTimes:Array.isArray(row.break_times)?row.break_times:[],
       supervisor:row.supervisor_name||'',
       status:pmTitleStatus(row.status),
       hourTargets:hourTargets,
@@ -1661,6 +1755,7 @@ async function closeShift(id){
 function parseTime24(value){
   var raw=String(value||'').trim().toUpperCase();
   if(!raw)return null;
+  if(/^\d{1,2}:\d{2}:\d{2}$/.test(raw))raw=raw.slice(0,5);
   var m=raw.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/);
   var hour,minute;
   if(m){
@@ -1696,16 +1791,31 @@ function minuteTime24(minutes){
   var h=Math.floor(minutes/60),m=minutes%60;
   return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
 }
-function timeSlots(start,end){
+function timeSlots(start,end,breakTimes){
   var start24=parseTime24(start),end24=parseTime24(end);
   if(!start24||!end24)return [];
   var a=start24.split(':').map(Number),b=end24.split(':').map(Number);
   var startMinutes=a[0]*60+a[1],endMinutes=b[0]*60+b[1];
   if(endMinutes<=startMinutes)return [];
-  var slots=[];
-  for(var t=startMinutes;t<endMinutes;t+=60){
-    var from=minuteTime24(t),to=minuteTime24(Math.min(t+60,endMinutes));
-    slots.push(formatTime12(from)+'–'+formatTime12(to));
+  var breaks=(breakTimes||[]).map(function(item){
+    var s=parseTime24(item.start_time||item.start),e=parseTime24(item.end_time||item.end);
+    if(!s||!e)return null;
+    var sp=s.split(':').map(Number),ep=e.split(':').map(Number);
+    return {start:sp[0]*60+sp[1],end:ep[0]*60+ep[1]};
+  });
+  if(breaks.some(function(x){return !x||x.start>=x.end||x.start<startMinutes||x.end>endMinutes;}))return [];
+  breaks.sort(function(x,y){return x.start-y.start;});
+  for(var i=1;i<breaks.length;i++)if(breaks[i].start<breaks[i-1].end)return [];
+  var slots=[],cursor=startMinutes;
+  while(cursor<endMinutes){
+    var active=breaks.find(function(x){return cursor>=x.start&&cursor<x.end;});
+    if(active){cursor=active.end;continue;}
+    var next=breaks.find(function(x){return x.start>cursor;});
+    var finish=Math.min(cursor+60,endMinutes,next?next.start:endMinutes);
+    if(finish<=cursor)return [];
+    slots.push(formatTime12(minuteTime24(cursor))+'–'+formatTime12(minuteTime24(finish)));
+    cursor=finish;
+    if(slots.length>24)return [];
   }
   return slots;
 }
@@ -1723,62 +1833,217 @@ function initializeTodayDateFilters(){
   if(reportFrom&&!reportFrom.value)reportFrom.value=today.slice(0,7)+'-01';
   if(reportTo&&!reportTo.value)reportTo.value=today;
 }
+
+function timePickerMarkup(prefix,value,changeAction){
+  var parsed=parseTime24(value)||'09:00';
+  var parts=parsed.split(':').map(Number),hour24=parts[0],minute=parts[1];
+  var hour12=hour24%12||12,period=hour24>=12?'PM':'AM';
+  var hoursHtml=Array.from({length:12},function(_,i){
+    var h=String(i+1).padStart(2,'0');
+    return '<option value="'+h+'" '+(Number(h)===hour12?'selected':'')+'>'+h+'</option>';
+  }).join('');
+  var minuteValues=Array.from({length:12},function(_,i){return i*5;});
+  if(!minuteValues.includes(minute))minuteValues.push(minute);
+  minuteValues.sort(function(a,b){return a-b;});
+  var minutesHtml=minuteValues.map(function(m){
+    var v=String(m).padStart(2,'0');
+    return '<option value="'+v+'" '+(m===minute?'selected':'')+'>'+v+'</option>';
+  }).join('');
+  var onchange=changeAction||'';
+  return '<div class="time-picker" role="group" aria-label="Select time">'+
+    '<select id="'+prefix+'Hour" aria-label="Hour" '+(onchange?'onchange="'+onchange+'"':'')+'>'+hoursHtml+'</select>'+
+    '<span class="time-separator">:</span>'+
+    '<select id="'+prefix+'Minute" aria-label="Minute" '+(onchange?'onchange="'+onchange+'"':'')+'>'+minutesHtml+'</select>'+
+    '<select id="'+prefix+'Period" aria-label="AM or PM" '+(onchange?'onchange="'+onchange+'"':'')+'><option '+(period==='AM'?'selected':'')+'>AM</option><option '+(period==='PM'?'selected':'')+'>PM</option></select>'+
+  '</div>';
+}
+function getTimePickerValue(prefix){
+  var h=document.getElementById(prefix+'Hour')?.value;
+  var m=document.getElementById(prefix+'Minute')?.value;
+  var p=document.getElementById(prefix+'Period')?.value;
+  return h&&m&&p?(h+':'+m+' '+p):'';
+}
+function readPlanBreakTimes(){
+  return Array.from(document.querySelectorAll('.plan-break-row')).map(function(row,i){
+    return {
+      start_time:parseTime24(getTimePickerValue('planBreak'+i+'Start')),
+      end_time:parseTime24(getTimePickerValue('planBreak'+i+'End'))
+    };
+  });
+}
+function validatePlanBreakTimes(start,end,breaks){
+  var s=parseTime24(start),e=parseTime24(end);
+  if(!s||!e||e<=s)return 'Enter a valid start and end time first.';
+  var a=s.split(':').map(Number),b=e.split(':').map(Number),minStart=a[0]*60+a[1],minEnd=b[0]*60+b[1];
+  if((breaks||[]).length>6)return 'A maximum of six breaks can be added.';
+  var parsed=(breaks||[]).map(function(x){
+    var ss=parseTime24(x.start_time),ee=parseTime24(x.end_time);
+    if(!ss||!ee)return null;
+    var sp=ss.split(':').map(Number),ep=ee.split(':').map(Number);
+    return {start:sp[0]*60+sp[1],end:ep[0]*60+ep[1]};
+  });
+  if(parsed.some(function(x){return !x||x.start>=x.end||x.start<minStart||x.end>minEnd;}))
+    return 'Each break must have a valid time range within the shift.';
+  parsed.sort(function(x,y){return x.start-y.start;});
+  for(var i=1;i<parsed.length;i++)if(parsed[i].start<parsed[i-1].end)return 'Break timings cannot overlap.';
+  return '';
+}
+function renderPlanBreakRows(breaks){
+  var host=document.getElementById('planBreakRows');if(!host)return;
+  host.innerHTML=(breaks||[]).map(function(br,i){
+    return '<div class="plan-break-row" data-break-index="'+i+'">'+
+      '<div class="plan-break-title"><strong>Break '+(i+1)+'</strong><button class="btn plan-break-remove" type="button" onclick="removePlanBreak('+i+')">Remove</button></div>'+
+      '<div class="plan-break-fields">'+
+        '<div class="field"><label>Break starts</label>'+timePickerMarkup('planBreak'+i+'Start',br.start_time||br.start||'13:00','rebuildHourlyPlan()')+'</div>'+
+        '<div class="field"><label>Break ends</label>'+timePickerMarkup('planBreak'+i+'End',br.end_time||br.end||'13:30','rebuildHourlyPlan()')+'</div>'+
+      '</div></div>';
+  }).join('');
+}
+function addPlanBreak(){
+  var breaks=readPlanBreakTimes();
+  if(breaks.length>=6)return toast('You can add up to six breaks.');
+  var start=parseTime24(getTimePickerValue('pstart')),end=parseTime24(getTimePickerValue('pend'));
+  if(!start||!end||end<=start)return toast('Select the shift start and end times first.');
+  var a=start.split(':').map(Number),b=end.split(':').map(Number),lo=a[0]*60+a[1],hi=b[0]*60+b[1];
+  var candidate=Math.floor(((lo+hi)/2)/15)*15,chosen=null;
+  for(var n=0;n<Math.ceil((hi-lo)/15);n++){
+    var c=lo+((candidate-lo+n*15)%(hi-lo));
+    if(c+30>hi)continue;
+    var overlaps=breaks.some(function(x){
+      var xs=parseTime24(x.start_time),xe=parseTime24(x.end_time);
+      if(!xs||!xe)return false;
+      var xp=xs.split(':').map(Number),yp=xe.split(':').map(Number);
+      return c<yp[0]*60+yp[1]&&c+30>xp[0]*60+xp[1];
+    });
+    if(!overlaps){chosen=c;break;}
+  }
+  if(chosen===null)return toast('No free 30-minute break slot remains inside this shift.');
+  breaks.push({start_time:minuteTime24(chosen),end_time:minuteTime24(chosen+30)});
+  breaks.sort(function(x,y){return parseTime24(x.start_time).localeCompare(parseTime24(y.start_time));});
+  renderPlanBreakRows(breaks);
+  rebuildHourlyPlan();
+}
+function removePlanBreak(index){
+  var breaks=readPlanBreakTimes();breaks.splice(index,1);
+  renderPlanBreakRows(breaks);rebuildHourlyPlan();
+}
+function makeCatalogSuggestions(fieldId,values){
+  var field=document.getElementById(fieldId);
+  var menu=document.getElementById(fieldId+'Menu');
+  if(!field||!menu)return;
+  var q=field.value.trim().toLocaleLowerCase();
+  var matches=(values||[]).filter(function(x){return !q||x.toLocaleLowerCase().includes(q);}).slice(0,60);
+  menu.innerHTML=matches.length
+    ?matches.map(function(value){return '<button type="button" class="catalog-suggestion" role="option" data-value="'+escapeHtml(value)+'">'+escapeHtml(value)+'</button>';}).join('')
+    :'<div class="catalog-suggestion-empty">No match. Use + to add this item.</div>';
+  menu.classList.remove('hidden');
+}
+function attachCatalogAutocomplete(fieldId,itemsGetter){
+  var field=document.getElementById(fieldId),menu=document.getElementById(fieldId+'Menu');
+  if(!field||!menu||field.dataset.autocompleteBound)return;
+  field.dataset.autocompleteBound='1';
+  var render=function(){makeCatalogSuggestions(fieldId,itemsGetter());};
+  field.addEventListener('focus',render);
+  field.addEventListener('input',render);
+  field.addEventListener('keydown',function(event){
+    var buttons=Array.from(menu.querySelectorAll('.catalog-suggestion'));
+    var active=buttons.findIndex(function(x){return x===document.activeElement;});
+    if(event.key==='ArrowDown'&&buttons.length){
+      event.preventDefault();buttons[Math.min(active+1,buttons.length-1)].focus();
+    }else if(event.key==='ArrowUp'&&buttons.length){
+      event.preventDefault();if(active>0)buttons[active-1].focus();else field.focus();
+    }else if(event.key==='Escape'){
+      menu.classList.add('hidden');field.blur();
+    }else if(event.key==='Enter'&&buttons.length===1){
+      event.preventDefault();buttons[0].click();
+    }
+  });
+  menu.addEventListener('mousedown',function(event){event.preventDefault();});
+  menu.addEventListener('click',function(event){
+    var option=event.target.closest('.catalog-suggestion');if(!option)return;
+    field.value=option.dataset.value||'';
+    menu.classList.add('hidden');
+    field.dispatchEvent(new Event('input',{bubbles:true}));
+    field.focus();
+  });
+  field.addEventListener('blur',function(){setTimeout(function(){menu.classList.add('hidden');},160);});
+}
 function planForm(p=null){
   editingPlanId=p?.id??null;
   var modal=document.getElementById('modal');
-  var start24=parseTime24(p?.start||'09:00')||'09:00',end24=parseTime24(p?.end||'17:00')||'17:00';
-  var slots=timeSlots(start24,end24),targets=Array.isArray(p?.hourTargets)?p.hourTargets:slots.map(function(){return 0;});
-  if(!slots.length)return toast('Choose a valid start and end time.');
+  var start24=parseTime24(p?.start||'09:00')||'09:00';
+  var end24=parseTime24(p?.end||'17:00')||'17:00';
+  var breaks=Array.isArray(p?.breakTimes)?p.breakTimes:[];
+  var slots=timeSlots(start24,end24,breaks);
+  var targets=Array.isArray(p?.hourTargets)?p.hourTargets:slots.map(function(){return 0;});
+  if(!slots.length)return toast('Choose valid shift times and break timings.');
   modal.classList.remove('modalback-rework');
   modal.innerHTML='<div class="modal plan-form-modal"><div class="plan-form-scroll"><h2>'+(p?'Edit Production Plan':'Create Production Plan')+'</h2>'+
     '<div class="formgrid plan-main-fields">'+
       '<div class="field"><label for="pdate">Production date</label><input id="pdate" type="date" value="'+escapeHtml(p?.date||todayLocalDate())+'" required/></div>'+
       '<div class="field"><label for="pshift">Shift</label><select id="pshift" required>'+['Shift 1','Shift 2','Shift 3'].map(function(x){return '<option '+(p?.shift===x?'selected':'')+'>'+x+'</option>';}).join('')+'</select></div>'+
       '<div class="field"><label for="pline">Production line</label><select id="pline" required>'+['Line 1','Line 2','Line 3'].map(function(x){return '<option '+(p?.line===x?'selected':'')+'>'+x+'</option>';}).join('')+'</select></div>'+
-      '<div class="field"><label for="pbrand">Brand</label><div class="select-action-wrap"><input id="pbrand" class="select catalog-autocomplete" list="pmBrandOptions" placeholder="Type or select brand" autocomplete="off" value="'+escapeHtml(p?.brand||'')+'" required/><datalist id="pmBrandOptions">'+pmBrandNames.map(function(x){return '<option value="'+escapeHtml(x)+'"></option>';}).join('')+'</datalist><button class="select-add" type="button" title="Add brand" aria-label="Add brand" onclick="addBrandInline()">＋</button></div></div>'+
-      '<div class="field"><label for="pproduct">Product</label><div class="select-action-wrap"><input id="pproduct" class="select catalog-autocomplete" list="pmProductOptions" placeholder="Type or select product" autocomplete="off" value="'+escapeHtml(p?.product||'')+'" required/><datalist id="pmProductOptions">'+pmProductNames.map(function(x){return '<option value="'+escapeHtml(x)+'"></option>';}).join('')+'</datalist><button class="select-add" type="button" title="Add product" aria-label="Add product" onclick="addProductInline()">＋</button></div></div>'+
-      '<div class="field"><label for="pmodel">Model number</label><div class="select-action-wrap"><input id="pmodel" class="select catalog-autocomplete" list="pmModelOptions" placeholder="Type or select model number" autocomplete="off" value="'+escapeHtml(p?.model||'')+'" required/><datalist id="pmModelOptions">'+pmModelNumbers.map(function(x){return '<option value="'+escapeHtml(x)+'"></option>';}).join('')+'</datalist><button class="select-add" type="button" title="Add model number" aria-label="Add model number" onclick="addModelInline()">＋</button></div></div>'+
-      '<div class="field"><label for="pstart">Start time (12-hour)</label><input id="pstart" type="text" inputmode="text" autocomplete="off" placeholder="09:00 AM" value="'+escapeHtml(formatTime12(start24))+'" onblur="normalizePlanTimeInput(this);rebuildHourlyPlan()" required/></div>'+
-      '<div class="field"><label for="pend">End time (12-hour)</label><input id="pend" type="text" inputmode="text" autocomplete="off" placeholder="05:00 PM" value="'+escapeHtml(formatTime12(end24))+'" onblur="normalizePlanTimeInput(this);rebuildHourlyPlan()" required/></div>'+
+      '<div class="field"><label for="pbrand">Brand</label><div class="catalog-input-shell"><div class="select-action-wrap"><input id="pbrand" class="select catalog-autocomplete" placeholder="Search or select brand" autocomplete="off" value="'+escapeHtml(p?.brand||'')+'" required/><button class="select-add" type="button" title="Add brand" aria-label="Add brand" onclick="addBrandInline()">＋</button></div><div id="pbrandMenu" class="catalog-suggestion-menu hidden" role="listbox"></div></div></div>'+
+      '<div class="field"><label for="pproduct">Product</label><div class="catalog-input-shell"><div class="select-action-wrap"><input id="pproduct" class="select catalog-autocomplete" placeholder="Search or select product" autocomplete="off" value="'+escapeHtml(p?.product||'')+'" required/><button class="select-add" type="button" title="Add product" aria-label="Add product" onclick="addProductInline()">＋</button></div><div id="pproductMenu" class="catalog-suggestion-menu hidden" role="listbox"></div></div></div>'+
+      '<div class="field"><label for="pmodel">Model number</label><div class="catalog-input-shell"><div class="select-action-wrap"><input id="pmodel" class="select catalog-autocomplete" placeholder="Search or select model number" autocomplete="off" value="'+escapeHtml(p?.model||'')+'" required/><button class="select-add" type="button" title="Add model number" aria-label="Add model number" onclick="addModelInline()">＋</button></div><div id="pmodelMenu" class="catalog-suggestion-menu hidden" role="listbox"></div></div></div>'+
+      '<div class="field"><label>Start time</label>'+timePickerMarkup('pstart',start24,'rebuildHourlyPlan()')+'</div>'+
+      '<div class="field"><label>End time</label>'+timePickerMarkup('pend',end24,'rebuildHourlyPlan()')+'</div>'+
       '<div class="field"><label for="psuper">Supervisor</label><input id="psuper" value="'+escapeHtml(p?.supervisor||'')+'" placeholder="Supervisor name"/></div>'+
     '</div>'+
-    '<div class="panel plan-hour-panel"><div class="paneltitle"><h3>Hourly planned quantity</h3><span>'+slots.length+' hourly / partial-hour intervals</span></div>'+
+    '<div class="panel plan-break-panel"><div class="paneltitle"><div><h3>Break timings</h3><small>Breaks are excluded from hourly production targets.</small></div><button class="btn plan-break-add" type="button" onclick="addPlanBreak()">＋ Add break</button></div>'+
+      '<div id="planBreakRows">'+breaks.map(function(br,i){return '<div class="plan-break-row" data-break-index="'+i+'"><div class="plan-break-title"><strong>Break '+(i+1)+'</strong><button class="btn plan-break-remove" type="button" onclick="removePlanBreak('+i+')">Remove</button></div><div class="plan-break-fields"><div class="field"><label>Break starts</label>'+timePickerMarkup('planBreak'+i+'Start',br.start_time||br.start,'rebuildHourlyPlan()')+'</div><div class="field"><label>Break ends</label>'+timePickerMarkup('planBreak'+i+'End',br.end_time||br.end,'rebuildHourlyPlan()')+'</div></div></div>';}).join('')+'</div>'+
+      '<div class="plan-break-empty '+(breaks.length?'hidden':'')+'" id="planBreakEmpty">No breaks added. Select Add break to schedule tea, lunch or other breaks.</div></div>'+
+    '<div class="panel plan-hour-panel"><div class="paneltitle"><h3>Hourly planned quantity</h3><span id="planIntervalCount">'+slots.length+' working intervals</span></div>'+
       '<div class="field plan-default-qty"><label for="defaultHourlyQty">Default planned quantity for every interval</label><input id="defaultHourlyQty" type="number" min="0" inputmode="numeric" value="'+(targets.length?Number(targets[0])||0:0)+'" placeholder="Enter hourly target" oninput="fillAllHourlyTargets(this.value)"/>'+
-      '<small>Entering a quantity here applies it to every interval. You can still adjust individual intervals below.</small></div>'+
+      '<small>Break periods are skipped automatically. The last interval can be shorter than one hour.</small></div>'+
       '<div id="hourtargetfields" class="hourly-target-grid">'+slots.map(function(slot,i){return '<div class="field"><label>'+escapeHtml(slot)+'</label><input class="targetqty" type="number" min="0" inputmode="numeric" value="'+(Number(targets[i])||0)+'"/></div>';}).join('')+'</div>'+
       '<div class="plan-total-row">Total shift plan: <strong id="planTotal">'+targets.reduce(function(a,b){return a+(Number(b)||0);},0)+'</strong> units</div></div>'+
     '</div><div class="plan-form-footer"><button class="btn" type="button" onclick="closePlanModal()">Cancel</button><button class="btn primary" type="button" onclick="savePlan()">'+(p?'Save changes':'Save plan')+'</button></div></div>';
+
+  attachCatalogAutocomplete('pbrand',function(){return pmBrandNames;});
+  attachCatalogAutocomplete('pproduct',function(){return pmProductNames;});
+  attachCatalogAutocomplete('pmodel',function(){return pmModelNumbers;});
   updatePlanProducts(p?.product||'');updatePlanModels(p?.model||'');
   document.querySelectorAll('.targetqty').forEach(function(x){x.addEventListener('input',updatePlanTotal);});
   updatePlanTotal();modal.classList.remove('hidden');
 }
 function pModelLookup(b,x){return productModels[b+'|'+x]||'';}function openPlanModal(){planForm();}function editPlan(id){planForm(plans.find(function(x){return String(x.id)===String(id);}));}function updatePlanProducts(selected){
   var field=document.getElementById('pproduct');
-  if(field&&selected)field.value=selected;
+  if(field&&selected){field.value=selected;field.dispatchEvent(new Event('input',{bubbles:true}));}
 }function updatePlanModels(selected){
   var field=document.getElementById('pmodel');
-  if(field&&selected)field.value=selected;
+  if(field&&selected){field.value=selected;field.dispatchEvent(new Event('input',{bubbles:true}));}
 }
 function updatePlanTotal(){let total=[...document.querySelectorAll('.targetqty')].reduce((sum,x)=>sum+Math.max(0,Number(x.value)||0),0);let el=document.getElementById('planTotal');if(el)el.textContent=total;}function fillAllHourlyTargets(value){let qty=Math.max(0,Number(value)||0);document.querySelectorAll('.targetqty').forEach(x=>x.value=qty);updatePlanTotal();}
 function rebuildHourlyPlan(){
-  var start=parseTime24(document.getElementById('pstart')?.value);
-  var end=parseTime24(document.getElementById('pend')?.value);
+  var start=parseTime24(getTimePickerValue('pstart'));
+  var end=parseTime24(getTimePickerValue('pend'));
+  var breaks=readPlanBreakTimes();
   var container=document.getElementById('hourtargetfields');
   if(!container)return;
-  if(!start||!end||end<=start){
-    container.innerHTML='<div class="sub">Enter a valid end time later than the start time.</div>';
-    updatePlanTotal();return;
+  var error=validatePlanBreakTimes(start,end,breaks);
+  if(error){
+    container.innerHTML='<div class="sub plan-time-warning">'+escapeHtml(error)+'</div>';
+    var total=document.getElementById('planTotal');if(total)total.textContent='—';
+    return;
   }
-  var slots=timeSlots(start,end);
-  if(!slots.length||slots.length>24){toast('A shift can contain between 1 and 24 hourly intervals.');return;}
-  var previous=Array.from(container.querySelectorAll('.targetqty')).map(function(x){return Math.max(0,Number(x.value)||0);});
+  var slots=timeSlots(start,end,breaks);
+  if(!slots.length||slots.length>24){toast('The shift must contain between one and 24 working intervals.');return;}
+  var previous={};
+  Array.from(container.querySelectorAll('.field')).forEach(function(field){
+    var label=field.querySelector('label')?.textContent;
+    var input=field.querySelector('.targetqty');
+    if(label&&input)previous[label]=Math.max(0,Number(input.value)||0);
+  });
   var defaultQty=Math.max(0,Number(document.getElementById('defaultHourlyQty')?.value)||0);
   container.className='hourly-target-grid';
-  container.innerHTML=slots.map(function(slot,i){
-    var value=i<previous.length?previous[i]:defaultQty;
+  container.innerHTML=slots.map(function(slot){
+    var value=Object.prototype.hasOwnProperty.call(previous,slot)?previous[slot]:defaultQty;
     return '<div class="field"><label>'+escapeHtml(slot)+'</label><input class="targetqty" type="number" min="0" inputmode="numeric" value="'+value+'"/></div>';
   }).join('');
   container.querySelectorAll('.targetqty').forEach(function(x){x.addEventListener('input',updatePlanTotal);});
+  var count=document.getElementById('planIntervalCount');if(count)count.textContent=slots.length+' working intervals';
+  var empty=document.getElementById('planBreakEmpty');if(empty)empty.classList.toggle('hidden',breaks.length>0);
   updatePlanTotal();
 }
 
@@ -1792,28 +2057,32 @@ async function savePlan(){
     var date=document.getElementById('pdate').value;
     var shift=document.getElementById('pshift').value;
     var line=document.getElementById('pline').value;
-    var start=parseTime24(document.getElementById('pstart').value);
-    var end=parseTime24(document.getElementById('pend').value);
+    var start=parseTime24(getTimePickerValue('pstart'));
+    var end=parseTime24(getTimePickerValue('pend'));
+    var breaks=readPlanBreakTimes();
     var supervisor=document.getElementById('psuper').value.trim();
     var targets=Array.from(document.querySelectorAll('.targetqty')).map(function(x){return Math.max(0,Number(x.value)||0);});
-    var slots=start&&end?timeSlots(start,end):[];
+    var slots=start&&end?timeSlots(start,end,breaks):[];
     var qty=targets.reduce(function(a,b){return a+b;},0);
     var catalogHas=function(value,list){return list.some(function(item){return String(item).trim().toLocaleLowerCase()===String(value).trim().toLocaleLowerCase();});};
     if(!date||!brand||!product||!model||qty<=0){toast('Select production date, brand, product, model and hourly quantities');return;}
     if(!catalogHas(brand,pmBrandNames)||!catalogHas(product,pmProductNames)||!catalogHas(model,pmModelNumbers)){
       toast('Choose an available Brand, Product and Model Number, or add it using the + button.');return;
     }
-    if(!start||!end||end<=start){toast('Enter a valid 12-hour start and end time. End time must be later than start time.');return;}
+    var breakError=validatePlanBreakTimes(start,end,breaks);
+    if(breakError){toast(breakError);return;}
+    if(!start||!end||end<=start){toast('Select a valid start and end time.');return;}
     if(slots.length<1||slots.length>24||targets.length!==slots.length){
-      toast('The hourly target fields must match the shift duration (1–24 intervals).');return;
+      toast('Hourly target fields must match the working intervals after breaks (1–24).');return;
     }
     if(targets.some(function(x){return !Number.isInteger(x)||x<0;})){toast('Hourly planned quantities must be non-negative whole numbers.');return;}
     const db=pmRequireDb();
-    const result=await db.rpc('pm_save_production_plan',{
+    const result=await db.rpc('pm_save_production_plan_v2',{
       p_plan_id:editingPlanId||null,p_plan_date:date,p_shift:shift,p_line:line,
       p_brand_name:brand,p_product_name:product,p_model_number:model,p_planned_qty:qty,
       p_start_time:start,p_end_time:end,p_supervisor_name:supervisor||null,
-      p_hour_targets:slots.map(function(label,i){return {hour_label:label,planned_qty:targets[i]};})
+      p_hour_targets:slots.map(function(label,i){return {hour_label:label,planned_qty:targets[i]};}),
+      p_break_times:breaks
     });
     if(result.error)throw result.error;
     var savedId=result.data;editingPlanId=null;closePlanModal();
@@ -1860,7 +2129,7 @@ async function addBrandInline(){
     var record=existing.data;
     if(!record){var result=await db.from('pm_brands').insert({name:name,created_by:window.pmCurrentUserId||null}).select('id,name').single();if(result.error)throw result.error;record=result.data;}
     await pmReloadProductionData();
-    var field=document.getElementById('pbrand');if(field){field.value=record.name;field.focus();}
+    var field=document.getElementById('pbrand');if(field){field.value=record.name;field.focus();field.dispatchEvent(new Event('input',{bubbles:true}));}
     toast(existing.data?'Brand already exists. Selected it.':'Brand added and selected.');
   }catch(error){toast('Could not add brand: '+error.message);}
 }
@@ -1875,7 +2144,7 @@ async function addProductInline(){
     var record=existing.data;
     if(!record){var result=await db.from('pm_products').insert({brand_id:null,name:name,created_by:window.pmCurrentUserId||null}).select('id,name').single();if(result.error)throw result.error;record=result.data;}
     await pmReloadProductionData();
-    var field=document.getElementById('pproduct');if(field){field.value=record.name;field.focus();}
+    var field=document.getElementById('pproduct');if(field){field.value=record.name;field.focus();field.dispatchEvent(new Event('input',{bubbles:true}));}
     toast(existing.data?'Product already exists. Selected it.':'Product added and selected. Add a model separately.');
   }catch(error){toast('Could not add product: '+error.message);}
 }
@@ -1890,7 +2159,7 @@ async function addModelInline(){
     var record=existing.data;
     if(!record){var result=await db.from('pm_models').insert({product_id:null,model_number:name,created_by:window.pmCurrentUserId||null}).select('id,model_number').single();if(result.error)throw result.error;record=result.data;}
     await pmReloadProductionData();
-    var field=document.getElementById('pmodel');if(field){field.value=record.model_number;field.focus();}
+    var field=document.getElementById('pmodel');if(field){field.value=record.model_number;field.focus();field.dispatchEvent(new Event('input',{bubbles:true}));}
     toast(existing.data?'Model number already exists. Selected it.':'Model number added and selected.');
   }catch(error){toast('Could not add model number: '+error.message);}
 }
@@ -2295,12 +2564,9 @@ function refreshProductOptions(){
   fillSelect('reportBrand',brands,'All brands','all');
   fillSelect('reportProduct',products,'All products','all');
   fillSelect('reportModel',models,'All models','all');
-  [
-    ['pmBrandOptions',brands],['pmProductOptions',products],['pmModelOptions',models]
-  ].forEach(function(pair){
-    var list=document.getElementById(pair[0]);
-    if(list)list.innerHTML=pair[1].map(function(x){return '<option value="'+escapeHtml(x)+'"></option>';}).join('');
-  });
+  if(document.activeElement&&document.activeElement.id==='pbrand')makeCatalogSuggestions('pbrand',brands);
+  if(document.activeElement&&document.activeElement.id==='pproduct')makeCatalogSuggestions('pproduct',products);
+  if(document.activeElement&&document.activeElement.id==='pmodel')makeCatalogSuggestions('pmodel',models);
 }
 function persistAppData(){
   // Business data is written directly to Supabase by each save operation.
