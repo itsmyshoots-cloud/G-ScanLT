@@ -724,6 +724,63 @@
 @media(max-width:760px){.plan-status-grid{grid-template-columns:minmax(0,1fr)}.plan-status-card{padding:12px}.plan-status-numbers b{font-size:15px}.chart-export-trigger{min-height:42px;font-size:11px;padding:8px 10px}}
 @media(max-width:380px){.plan-status-numbers b{font-size:14px}}
 
+
+/* V6.4 hourly record lock, centered form and user reset controls */
+.hour.recorded{background:#edf5ff;border-color:#9fc5ff}
+.hour.recorded .actual{color:#174ea6}
+.hour.recorded.locked{background:#edf5ff;border-color:#8db8f2}
+.hour.recorded.admin-editable{background:#f0f5ff;border-color:#678fe0}
+.hour-status{display:block;margin-top:7px;color:#365f9d;font-size:10px;font-weight:700;line-height:1.35}
+.hour.pending .hour-status{color:#8895a7;font-weight:500}
+.hour button:disabled{opacity:.72;cursor:not-allowed;background:#e8edf4;color:#68778b}
+.execution-panel{scroll-margin-top:76px}
+#operatorplans{scroll-margin-top:76px}
+.execution-header{align-items:center}
+.execution-back{min-height:42px;white-space:nowrap}
+.hourly-entry-modal{width:min(520px,calc(100vw - 32px));max-height:min(82vh,760px);overflow-y:auto;overflow-x:hidden}
+.hourly-modal-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
+.hourly-modal-heading h2{margin:0 0 5px}
+.hourly-admin-badge{flex:0 0 auto;padding:6px 9px;border-radius:20px;background:#eaf1ff;color:#2457a8;font-size:10px;font-weight:700}
+.hourly-admin-note{margin:0 0 13px;padding:9px 11px;border:1px solid #cfe0ff;border-radius:9px;background:#f5f8ff;color:#47617f;font-size:11px;line-height:1.45}
+.hourly-entry-modal .formgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.hourly-entry-modal .field{min-width:0}
+.hourly-entry-modal .hourly-remarks-field{grid-column:1/-1}
+.hourly-entry-modal .field input,.hourly-entry-modal .field select{width:100%;min-width:0}
+#pmRecoveryModal{position:fixed;inset:0;z-index:100010;display:flex;align-items:center;justify-content:center;padding:18px;background:#14203388}
+#pmRecoveryModal.hidden{display:none!important}
+.pm-recovery-card{width:min(420px,100%);max-height:90vh;overflow:auto;border-radius:16px;background:#fff;padding:22px;box-shadow:0 20px 60px #0003}
+.pm-recovery-card h2{margin:0 0 8px;font-size:19px}
+.pm-recovery-card p{font-size:12px;color:#718096;line-height:1.5}
+.pm-recovery-card label{display:block;margin:12px 0 6px;font-size:12px;font-weight:700}
+.pm-recovery-card input{width:100%;min-height:44px;border:1px solid #d9e1ec;border-radius:9px;padding:10px;font-size:16px}
+.pm-recovery-actions{display:flex;gap:8px;margin-top:16px}
+.pm-recovery-actions button{flex:1;min-height:43px;border:1px solid #d9e1ec;border-radius:9px;background:#fff;font-weight:700}
+.pm-recovery-actions .primary{background:#3978f6;border-color:#3978f6;color:#fff}
+.pm-recovery-error{min-height:18px;margin-top:8px;color:#b42318;font-size:12px}
+.pm-admin-actions{display:flex;flex-direction:column;gap:7px;min-width:150px}
+.pm-admin-reset{background:#fff7ed;border-color:#f4d4b1;color:#99520f}
+@media(max-width:760px){
+  .execution-header{align-items:stretch;gap:9px}
+  .execution-back{width:100%;min-height:44px;justify-content:center}
+  .execution-panel .hourgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .modalback{align-items:center;justify-content:center;padding:12px;overflow-y:auto}
+  .modal.hourly-entry-modal{width:min(440px,calc(100vw - 28px));max-width:440px;max-height:min(78vh,690px);max-height:min(78dvh,690px);margin:auto;padding:17px;border-radius:16px;overflow-y:auto}
+  .hourly-entry-modal .formgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px}
+  .hourly-entry-modal .field label{font-size:11px;line-height:1.3}
+  .hourly-entry-modal .field input,.hourly-entry-modal .field select{min-height:42px;padding:8px;font-size:14px}
+  .hourly-entry-modal .modalactions{bottom:-17px;margin-top:10px;padding-top:9px}
+  .hourly-entry-modal .modalactions .btn{min-height:42px;padding:8px 9px;font-size:11px}
+  .pm-admin-actions{min-width:120px}
+  .pm-admin-actions .btn{width:100%;white-space:normal}
+}
+@media(max-width:380px){
+  .modal.hourly-entry-modal{width:calc(100vw - 20px);max-height:82dvh;padding:13px}
+  .hourly-entry-modal .formgrid{grid-template-columns:minmax(0,1fr)}
+  .hourly-entry-modal .hourly-remarks-field{grid-column:auto}
+  .hourly-entry-modal .modalactions{flex-direction:column-reverse}
+  .hourly-entry-modal .modalactions .btn{width:100%}
+}
+
 </style></head><body>
 <div class="app"><aside class="sidebar"><div class="brand">Production Management<small>OPERATIONS CONTROL</small></div><div class="navlabel">WORKSPACE</div><nav class="nav" aria-label="Main navigation"><button class="active" data-page="overview"><span class="ico">▦</span><span>Overview</span></button><button data-page="plans"><span class="ico">▤</span><span>Production Plans</span></button><button data-page="operator"><span class="ico">◉</span><span>Operator</span></button><button data-page="reports"><span class="ico">▧</span><span>Reports</span></button><button data-page="rework"><span class="ico">↻</span><span>Rework</span></button></nav><div class="sidebottom">Production Control · V6 update</div></aside>
 <main class="main"><header class="topbar"><div class="crumb" id="crumb">Overview</div><div class="user"><div class="avatar">SP</div><div><strong style="color:#263449">Supervisor</strong><br/>Production Control</div></div></header><div class="content">
@@ -772,10 +829,114 @@ function showPage(page){document.querySelectorAll('.page').forEach(x=>x.classLis
 let pageHistory=['overview'];if(!history.state)history.replaceState({pmPage:'overview'},'',location.pathname+'#overview');function navigatePage(page,fromPop=false){if(!fromPop&&pageHistory[pageHistory.length-1]!==page){pageHistory.push(page);history.pushState({pmPage:page},'',`#${page}`);}showPage(page); }document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>navigatePage(b.dataset.page)));window.addEventListener('popstate',e=>{let page=e.state?.pmPage||'overview';let idx=pageHistory.lastIndexOf(page);pageHistory=idx>=0?pageHistory.slice(0,idx+1):[page];showPage(page);});window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('modal').classList.contains('hidden'))closePlanModal();});document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closePlanModal();});
 function renderPlans(){let el=document.getElementById('planlist');el.innerHTML=plans.map(p=>`<div class="plan"><h3>${p.line} · ${p.brand||'Unbranded'} · ${p.product} · ${p.model||p.product}</h3><div class="planmeta">${p.date} · ${p.shift}<br>Target: ${p.qty} units · ${p.actual} actual · ${p.rejection} rejected<br>${p.start}–${p.end} · ${p.supervisor||'Unassigned'}</div><div class="planbottom"><span class="pill ${p.status==='Draft'?'warn':''}">${p.status}</span><div class="filters"><button class="btn" onclick="viewPlan(${p.id})">View</button><button class="btn" onclick="editPlan(${p.id})">Edit</button>${p.status==='Draft'?`<button class="btn primary" onclick="publishPlan(${p.id})">Publish</button>`:''}</div></div></div>`).join('');}
 function renderOperator(){let el=document.getElementById('operatorplans');el.innerHTML=plans.filter(p=>p.status!=='Completed').map(p=>`<div class="plan"><h3>${p.line} · ${p.brand||'Unbranded'} · ${p.product} · ${p.model||p.product}</h3><div class="planmeta">${p.date} · ${p.shift}<br>Target: ${p.qty} units · ${p.start}–${p.end}</div><div class="progress"><i style="width:${Math.min(100,p.actual/p.qty*100)}%"></i></div><div class="linemeta"><span>${p.actual} / ${p.qty} units · Rejected ${p.rejection}</span><span>${Math.round(p.actual/p.qty*100)}%</span></div><div class="planbottom"><span class="pill ${p.status==='Draft'?'warn':''}">${p.status}</span><button class="btn primary" onclick="openExecution(${p.id})">Open plan</button></div></div>`).join('');}
-function hourCards(p,editable){let targets=planHourTargets(p);return hours.map((label,i)=>{let e=p.entries?.[i],q=e?.actual||0,r=e?.rejected||0;return `<div class="hour ${e?'done':''}"><strong>${label}</strong><small>Plan: ${targets[i]} units</small><div class="actual">${e?`${q} produced`:'—'}</div><small>${e?`${r} rejected · ${q-r} accepted`:'Pending'}</small><button class="btn" style="margin-top:10px;width:100%" ${p.status==='Completed'?'disabled':''} onclick="hourEntry(${p.id},${i})">${e?'Edit entry':'Record hour'}</button></div>`}).join('');}
-function openExecution(id){let p=plans.find(x=>x.id===id);if(!p)return;let allRecorded=hours.every((_,i)=>!!p.entries?.[i]);let html=`<div class="panel"><div class="pagehead"><div><h2 style="margin:0 0 5px;font-size:18px">${p.line} · ${p.brand} · ${p.product} · ${p.model||'—'}</h2><div class="sub">${p.date} · ${p.shift} · Plan ${p.qty} units</div></div><button class="btn" onclick="document.getElementById('execution').classList.add('hidden')">Close details</button></div><div class="detailgrid"><div class="detailbox"><div class="klabel">Planned</div><div class="num">${p.qty}</div></div><div class="detailbox"><div class="klabel">Actual recorded</div><div class="num">${p.actual}</div></div><div class="detailbox"><div class="klabel">Accepted · Rejected</div><div class="num">${p.actual-p.rejection} · ${p.rejection}</div></div></div><div class="paneltitle"><h3>Hourly Production Entries</h3><span>Tap an hour to record or edit</span></div><div class="hourgrid">${hourCards(p,true)}</div><div class="paneltitle" style="margin-top:18px"><h3>Shift Closing</h3><span>${allRecorded?'All hourly entries completed':'Record every scheduled hour to enable closing'}</span></div><div class="detailgrid"><div class="detailbox"><div class="klabel">Total actual</div><div class="num">${p.actual}</div></div><div class="detailbox"><div class="klabel">Total rejected</div><div class="num">${p.rejection}</div></div><div class="detailbox"><div class="klabel">Accepted</div><div class="num">${p.actual-p.rejection}</div></div></div><div class="modalactions"><button class="btn primary" ${allRecorded&&p.status!=='Completed'?'':'disabled'} onclick="closeShift(${p.id})">Close Shift</button></div></div>`;let e=document.getElementById('execution');e.innerHTML=html;e.classList.remove('hidden');e.scrollIntoView({behavior:'smooth'});}
-function hourEntry(id,h){let p=plans.find(x=>x.id===id),e=p.entries?.[h]||{},modal=document.getElementById('modal');modal.innerHTML=`<div class="modal"><h2>Hourly Production · ${hours[h]}</h2><div class="formgrid"><div class="field"><label>Planned quantity</label><input value="${planHourTargets(p)[h]}" disabled/></div><div class="field"><label>Actual quantity</label><input id="ha" type="number" min="0" value="${e.actual??''}" placeholder="Actual produced"/></div><div class="field"><label>Rejected quantity</label><input id="hr" type="number" min="0" value="${e.rejected??0}" placeholder="Rejected units"/></div><div class="field"><label>Rejection reason</label><select id="hreason"><option value="">Select reason</option>${['Electrical failure','Assembly defect','Appearance defect','Component defect','Testing failure','Packaging defect','Other'].map(x=>`<option ${e.reason===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>Start serial number</label><input id="hs" value="${e.startSerial||''}" placeholder="First barcode serial"/></div><div class="field"><label>End serial number</label><input id="he" value="${e.endSerial||''}" placeholder="Last barcode serial"/></div><div class="field" style="grid-column:1/-1"><label>Remarks</label><input id="hrm" value="${e.remarks||''}" placeholder="Optional"/></div></div><div class="modalactions"><button class="btn" onclick="closePlanModal()">Cancel</button><button class="btn primary" onclick="submitHour(${id},${h})">Save hourly record</button></div></div>`;modal.classList.remove('hidden');}
-function submitHour(id,h){let p=plans.find(x=>x.id===id),q=Number(document.getElementById('ha').value||0),r=Number(document.getElementById('hr').value||0),s=document.getElementById('hs').value.trim(),e=document.getElementById('he').value.trim(),reason=document.getElementById('hreason').value;if(q<0||r<0||r>q){toast('Rejected quantity must be between 0 and actual produced quantity');return}if(p.entries?.[h]){const resolvedUnits=normalizeReworkItems(p.entries[h]).filter(unit=>(unit.status||'Pending')!=='Pending').length;if(r<resolvedUnits){toast(`Rejected quantity cannot be reduced below ${resolvedUnits}; those rejection units already have a saved final disposition`);return}}if(q>planHourTargets(p)[h]){toast('Actual produced quantity cannot exceed the planned quantity for this hour');return}if(q>0&&(!s||!e)){toast('Enter the serial number range');return}if(r>0&&!reason){toast('Please select rejection reason');return}p.entries[h]={...(p.entries[h]||{}),actual:q,rejected:r,startSerial:s,endSerial:e,reason,remarks:document.getElementById('hrm').value.trim(),reworkStatus:r>0?(p.entries[h]?.reworkStatus||'Pending'):'',reworkRemark:p.entries[h]?.reworkRemark||''};recalcPlan(p);persistAppData();closePlanModal();renderOverviewChart();renderReports();renderPlans();renderOperator();openExecution(id);toast('Hourly production record saved');}
+
+function isHourlyEntrySaved(entry){
+  return !!entry&&Object.prototype.hasOwnProperty.call(entry,'actual');
+}
+function hourCards(p){
+  var targets=planHourTargets(p),admin=!!window.pmIsSuperAdmin;
+  return hours.map(function(label,i){
+    var entry=p.entries&&p.entries[i],saved=isHourlyEntrySaved(entry);
+    var q=Number(entry&&entry.actual)||0,r=Number(entry&&entry.rejected)||0;
+    var canOpen=saved?admin:p.status!=='Completed';
+    var cls='hour '+(saved?'recorded':'pending')+(saved&&!admin?' locked':'')+(saved&&admin?' admin-editable':'');
+    var status=saved?(admin?'Updated · Super Admin can edit':'Updated · Locked'):'Not recorded';
+    var action=saved?(admin?'Edit · Super Admin':'Locked'):'Record hour';
+    return '<div class="'+cls+'"><strong>'+label+'</strong><small>Plan: '+targets[i]+' units</small>'+
+      '<div class="actual">'+(saved?q+' produced':'—')+'</div>'+
+      '<small>'+(saved?r+' rejected · '+(q-r)+' accepted':'Pending')+'</small>'+
+      '<small class="hour-status">'+(saved?'✓ ':'')+status+'</small>'+
+      '<button class="btn" style="margin-top:10px;width:100%" '+(canOpen?'':'disabled')+
+      ' title="'+(saved&&!admin?'Only the super administrator can edit a saved hour':'')+
+      '" onclick="hourEntry('+p.id+','+i+')">'+action+'</button></div>';
+  }).join('');
+}
+function closeExecution(id){
+  var panel=document.getElementById('execution');
+  if(panel)panel.classList.add('hidden');
+  var plansList=document.getElementById('operatorplans');
+  if(plansList)plansList.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function openExecution(id){
+  var p=plans.find(function(x){return x.id===id;});
+  if(!p)return;
+  var allRecorded=hours.every(function(_,i){return isHourlyEntrySaved(p.entries&&p.entries[i]);});
+  var admin=!!window.pmIsSuperAdmin;
+  var html='<div class="panel execution-panel"><div class="pagehead execution-header"><div>'+
+    '<h2 style="margin:0 0 5px;font-size:18px">'+p.line+' · '+p.brand+' · '+p.product+' · '+(p.model||'—')+'</h2>'+
+    '<div class="sub">'+p.date+' · '+p.shift+' · Plan '+p.qty+' units</div></div>'+
+    '<button class="btn execution-back" type="button" onclick="closeExecution('+p.id+')">← Back to plans</button></div>'+
+    '<div class="detailgrid"><div class="detailbox"><div class="klabel">Planned</div><div class="num">'+p.qty+'</div></div>'+
+    '<div class="detailbox"><div class="klabel">Actual recorded</div><div class="num">'+p.actual+'</div></div>'+
+    '<div class="detailbox"><div class="klabel">Accepted · Rejected</div><div class="num">'+(p.actual-p.rejection)+' · '+p.rejection+'</div></div></div>'+
+    '<div class="paneltitle"><h3>Hourly Production Entries</h3><span>'+
+    (admin?'Saved hours may be corrected by the super administrator':'Saved hours are locked after submission')+
+    '</span></div><div class="hourgrid">'+hourCards(p)+'</div>'+
+    '<div class="paneltitle" style="margin-top:18px"><h3>Shift Closing</h3><span>'+
+    (allRecorded?'All hourly entries completed':'Record every scheduled hour to enable closing')+
+    '</span></div><div class="detailgrid"><div class="detailbox"><div class="klabel">Total actual</div><div class="num">'+p.actual+'</div></div>'+
+    '<div class="detailbox"><div class="klabel">Total rejected</div><div class="num">'+p.rejection+'</div></div>'+
+    '<div class="detailbox"><div class="klabel">Accepted</div><div class="num">'+(p.actual-p.rejection)+'</div></div></div>'+
+    '<div class="modalactions"><button class="btn primary" '+(allRecorded&&p.status!=='Completed'?'':'disabled')+
+    ' onclick="closeShift('+p.id+')">Close Shift</button></div></div>';
+  var host=document.getElementById('execution');host.innerHTML=html;host.classList.remove('hidden');
+  host.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function hourEntry(id,h){
+  var p=plans.find(function(x){return x.id===id;});
+  if(!p)return toast('Production plan not found');
+  var entry=(p.entries&&p.entries[h])||{},saved=isHourlyEntrySaved(entry),admin=!!window.pmIsSuperAdmin;
+  if(saved&&!admin)return toast('This hourly record is locked. Only the super administrator can edit it.');
+  if(!saved&&p.status==='Completed')return toast('This plan is completed. New hourly records cannot be added.');
+  var modal=document.getElementById('modal');
+  var note=saved
+    ?'<div class="hourly-admin-note">Super administrator correction mode. Saving this correction keeps the record locked for all other users.</div>'
+    :'<div class="hourly-admin-note">After saving, this hourly entry is locked. Only the super administrator can make a correction.</div>';
+  var options=['Electrical failure','Assembly defect','Appearance defect','Component defect','Testing failure','Packaging defect','Other']
+    .map(function(x){return '<option '+(entry.reason===x?'selected':'')+'>'+x+'</option>';}).join('');
+  modal.innerHTML='<div class="modal hourly-entry-modal"><div class="hourly-modal-heading"><div>'+
+    '<h2>'+(saved?'Edit saved hourly record':'Record hourly production')+'</h2><div class="sub">'+p.line+' · '+p.product+' · '+hours[h]+'</div></div>'+
+    (saved?'<span class="hourly-admin-badge">Admin edit</span>':'')+'</div>'+note+
+    '<div class="formgrid"><div class="field"><label>Planned quantity</label><input value="'+planHourTargets(p)[h]+'" disabled/></div>'+
+    '<div class="field"><label>Actual quantity</label><input id="ha" type="number" min="0" value="'+(entry.actual==null?'':entry.actual)+'" placeholder="Actual produced"/></div>'+
+    '<div class="field"><label>Rejected quantity</label><input id="hr" type="number" min="0" value="'+(entry.rejected==null?0:entry.rejected)+'" placeholder="Rejected units"/></div>'+
+    '<div class="field"><label>Rejection reason</label><select id="hreason"><option value="">Select reason</option>'+options+'</select></div>'+
+    '<div class="field"><label>Start serial number</label><input id="hs" value="'+(entry.startSerial||'')+'" placeholder="First barcode serial"/></div>'+
+    '<div class="field"><label>End serial number</label><input id="he" value="'+(entry.endSerial||'')+'" placeholder="Last barcode serial"/></div>'+
+    '<div class="field hourly-remarks-field"><label>Remarks</label><input id="hrm" value="'+(entry.remarks||'')+'" placeholder="Optional"/></div></div>'+
+    '<div class="modalactions"><button class="btn" type="button" onclick="closePlanModal()">← Back to plan</button>'+
+    '<button class="btn primary" type="button" onclick="submitHour('+id+','+h+')">'+(saved?'Save admin correction':'Save hourly record')+'</button></div></div>';
+  modal.classList.remove('hidden');
+}
+function submitHour(id,h){
+  var p=plans.find(function(x){return x.id===id;});
+  if(!p)return toast('Production plan not found');
+  var previous=(p.entries&&p.entries[h])||{},alreadySaved=isHourlyEntrySaved(previous);
+  if(alreadySaved&&!window.pmIsSuperAdmin)return toast('This hourly record is locked. Only the super administrator can edit it.');
+  if(!alreadySaved&&p.status==='Completed')return toast('This plan is completed. New hourly records cannot be added.');
+  var q=Number(document.getElementById('ha').value||0),r=Number(document.getElementById('hr').value||0);
+  var startSerial=document.getElementById('hs').value.trim(),endSerial=document.getElementById('he').value.trim();
+  var reason=document.getElementById('hreason').value;
+  if(q<0||r<0||r>q)return toast('Rejected quantity must be between 0 and actual produced quantity');
+  if(alreadySaved){
+    var resolved=normalizeReworkItems(previous).filter(function(unit){return (unit.status||'Pending')!=='Pending';}).length;
+    if(r<resolved)return toast('Rejected quantity cannot be reduced below '+resolved+'; those rejection units already have a saved final disposition');
+  }
+  if(q>planHourTargets(p)[h])return toast('Actual produced quantity cannot exceed the planned quantity for this hour');
+  if(q>0&&(!startSerial||!endSerial))return toast('Enter the serial number range');
+  if(r>0&&!reason)return toast('Please select rejection reason');
+  var now=new Date().toISOString();
+  p.entries=p.entries||{};
+  p.entries[h]={...previous,actual:q,rejected:r,startSerial:startSerial,endSerial:endSerial,reason:reason,
+    remarks:document.getElementById('hrm').value.trim(),
+    reworkStatus:r>0?(previous.reworkStatus||'Pending'):'',
+    reworkRemark:previous.reworkRemark||'',
+    locked:true,recordedAt:previous.recordedAt||now,lockedAt:previous.lockedAt||now,
+    recordedBy:previous.recordedBy||window.pmCurrentUserId||null,lastUpdatedAt:now,lastUpdatedBy:window.pmCurrentUserId||null};
+  recalcPlan(p);persistAppData();closePlanModal();
+  renderOverviewChart();renderReports();renderPlans();renderOperator();openExecution(id);
+  toast(alreadySaved?'Super-admin correction saved':'Hourly production record saved and locked');
+}
 function closeShift(id){let p=plans.find(x=>x.id===id);if(!hours.every((_,i)=>!!p.entries?.[i])){toast('Record all hourly entries before closing shift');return}p.status='Completed';toast('Shift closed and plan completed');renderOperator();renderPlans();renderOverviewChart();renderReports();document.getElementById('execution').classList.add('hidden');}
 function timeSlots(start,end){let [sh,sm]=start.split(':').map(Number),[eh,em]=end.split(':').map(Number),mins=sh*60+sm,endmins=eh*60+em,slots=[];for(let t=mins;t<endmins;t+=60){let a=t,b=Math.min(t+60,endmins);slots.push(`${String(Math.floor(a/60)).padStart(2,'0')}:${String(a%60).padStart(2,'0')}–${String(Math.floor(b/60)).padStart(2,'0')}:${String(b%60).padStart(2,'0')}`)}return slots;}
 function planForm(p=null){editingPlanId=p?.id??null;let slots=timeSlots(p?.start||'09:00',p?.end||'17:00'),targets=p?.hourTargets||slots.map(()=>0);document.getElementById('modal').innerHTML=`<div class="modal" style="width:min(780px,100%);max-height:90vh;overflow:auto"><h2>${p?'Edit Production Plan':'Create Production Plan'}</h2><div class="formgrid"><div class="field"><label>Production date</label><input id="pdate" type="date" value="${p?.date||'2026-11-19'}"/></div><div class="field"><label>Shift</label><select id="pshift">${['Shift 1','Shift 2','Shift 3'].map(x=>`<option ${p?.shift===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>Production line</label><select id="pline">${['Line 1','Line 2','Line 3'].map(x=>`<option ${p?.line===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>Brand</label><div class="select-action-wrap"><select id="pbrand" class="select" onchange="updatePlanProducts()"><option value="">Select brand</option>${Object.keys(brandProducts).map(b=>`<option value="${b}" ${p?.brand===b?'selected':''}>${b}</option>`).join('')}</select><button class="select-add" type="button" title="Add brand" aria-label="Add brand" onclick="addBrandInline()">＋</button></div></div><div class="field"><label>Product</label><div class="select-action-wrap"><select id="pproduct" class="select" onchange="updatePlanModels()"><option value="">Select product</option></select><button class="select-add" type="button" title="Add product" aria-label="Add product" onclick="addProductInline()">＋</button></div></div><div class="field"><label>Model number</label><div class="select-action-wrap"><select id="pmodel" class="select"><option value="">Select model</option></select><button class="select-add" type="button" title="Add model number" aria-label="Add model number" onclick="addModelInline()">＋</button></div></div><div class="field"><label>Start time</label><input id="pstart" type="time" value="${p?.start||'09:00'}" onchange="rebuildHourlyPlan()"/></div><div class="field"><label>End time</label><input id="pend" type="time" value="${p?.end||'17:00'}" onchange="rebuildHourlyPlan()"/></div><div class="field"><label>Supervisor</label><input id="psuper" value="${p?.supervisor||''}" placeholder="Supervisor name"/></div></div><div class="panel" style="margin-top:15px"><div class="paneltitle"><h3>Hourly planned quantity</h3><span>Total shift quantity calculates automatically</span></div><div class="field" style="margin-bottom:12px"><label>Default planned quantity for every hour</label><input id="defaultHourlyQty" type="number" min="0" value="${targets.length?targets[0]:0}" placeholder="Enter hourly target" oninput="fillAllHourlyTargets(this.value)"/><small style="color:var(--muted)">Entering a quantity here applies it to every scheduled hour. You can still adjust individual hours below.</small></div><div id="hourtargetfields" class="formgrid">${slots.map((slot,i)=>`<div class="field"><label>${slot}</label><input class="targetqty" type="number" min="0" value="${targets[i]||0}"/></div>`).join('')}</div><div style="margin-top:12px;font-weight:700">Total Shift Plan: <span id="planTotal">${targets.reduce((a,b)=>a+Number(b),0)}</span> units</div></div><div class="modalactions"><button class="btn" onclick="closePlanModal()">Cancel</button><button class="btn primary" onclick="savePlan()">${p?'Save changes':'Save plan'}</button></div></div>`;let b=document.getElementById('pbrand');updatePlanProducts(p?.product);updatePlanModels(p?.model);document.querySelectorAll('.targetqty').forEach(x=>x.addEventListener('input',updatePlanTotal));modal.classList.remove('hidden');}
@@ -1151,7 +1312,7 @@ syncAll();requestAnimationFrame(()=>{renderOverviewChart();setTimeout(renderOver
       '</form>'+
       '<div id="pmAuthError" class="auth-error" role="alert"></div>'+
       '<div id="pmAuthInfo" class="auth-info" role="status"></div>'+
-      '<button type="button" id="pmAuthSwitch" class="auth-switch">New team member? Create an account</button>'+
+      '<button type="button" id="pmAuthSwitch" class="auth-switch">Signup</button>'+
       '<div class="auth-note" id="pmAuthNote">New accounts require super-administrator approval. Your access tabs are assigned after signup.</div>'+
       '<div id="pmAuthUser"></div>'+
     '</div>';
@@ -1171,10 +1332,13 @@ syncAll();requestAnimationFrame(()=>{renderOverviewChart();setTimeout(renderOver
   let mode='login';
   let signupInProgress=false;
   let checkingUser=false;
+  let recoveryMode=false;
   let appAuthorized=false;
   let currentUserId=null;
   let allowedTabs=[];
   let isSuperAdmin=false;
+  window.pmIsSuperAdmin=false;
+  window.pmCurrentUserId=null;
 
   function showError(message){err.textContent=message||'Unable to continue. Please try again.';info.textContent='';}
   function showInfo(message){info.textContent=message||'';err.textContent='';}
@@ -1193,7 +1357,7 @@ syncAll();requestAnimationFrame(()=>{renderOverviewChart();setTimeout(renderOver
     passwordInput.minLength=mode==='signup'?8:0;
     root.querySelector('#pmAuthSubtitle').textContent=mode==='signup'?'Create your production workspace account':'Sign in to your production workspace';
     btn.textContent=mode==='signup'?'Create account':'Sign in';
-    switchBtn.textContent=mode==='signup'?'Already have an account? Sign in':'New team member? Create an account';
+    switchBtn.textContent=mode==='signup'?'Already have an account? Sign in':'Signup';
     root.querySelector('#pmAuthNote').textContent=mode==='signup'
       ?'After signup, confirm your email if prompted. The super administrator must approve your account and assign the tabs you can access.'
       :'New accounts require super-administrator approval. Your access tabs are assigned after signup.';
@@ -1249,6 +1413,8 @@ syncAll();requestAnimationFrame(()=>{renderOverviewChart();setTimeout(renderOver
       tbody.addEventListener('click',function(event){
         const saveButton=event.target.closest('[data-save-user]');
         if(saveButton) saveAdminUser(saveButton);
+        const resetButton=event.target.closest('[data-reset-email]');
+        if(resetButton) resetAdminPassword(resetButton);
       });
       tbody.addEventListener('change',function(event){
         if(event.target.classList.contains('pm-admin-role')){
@@ -1305,7 +1471,7 @@ syncAll();requestAnimationFrame(()=>{renderOverviewChart();setTimeout(renderOver
         '<td><select class="pm-admin-role">'+roleOptions+'</select></td>'+
         '<td><div class="pm-admin-status"><label><input type="checkbox" class="pm-admin-active"'+(u.is_active?' checked':'')+(u.role==='pending'?' disabled':'')+'> Active</label>'+verified+'</div></td>'+
         '<td><div class="pm-admin-tabs">'+tabChecks+'</div></td>'+
-        '<td><button type="button" class="btn primary pm-admin-save" data-save-user="'+escapeHtml(u.id)+'">Save access</button></td>'+
+        '<td><div class="pm-admin-actions"><button type="button" class="btn primary pm-admin-save" data-save-user="'+escapeHtml(u.id)+'">Save access</button><button type="button" class="btn pm-admin-reset" data-reset-email="'+escapeHtml(u.email||'')+'">Send password reset</button></div></td>'+
       '</tr>';
     }).join('');
   }
@@ -1339,6 +1505,50 @@ syncAll();requestAnimationFrame(()=>{renderOverviewChart();setTimeout(renderOver
       button.disabled=false;
       button.textContent='Save access';
     }
+  }
+
+
+  async function resetAdminPassword(button){
+    if(!isSuperAdmin)return;
+    const email=(button.dataset.resetEmail||'').trim(),message=document.getElementById('pmAdminMessage');
+    if(!email){if(message)message.textContent='This account has no email address.';return;}
+    button.disabled=true;button.textContent='Sending…';if(message)message.textContent='';
+    try{
+      const result=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname+'#reset-password'});
+      if(result.error)throw result.error;
+      if(message)message.textContent='Password reset email sent to '+email+'. The user can set a new password using the secure email link.';
+    }catch(ex){if(message)message.textContent='Could not send password reset email: '+ex.message;}
+    finally{button.disabled=false;button.textContent='Send password reset';}
+  }
+  function showPasswordRecovery(){
+    recoveryMode=true;
+    let panel=document.getElementById('pmRecoveryModal');
+    if(!panel){
+      panel=document.createElement('div');panel.id='pmRecoveryModal';panel.className='hidden';
+      panel.innerHTML='<div class="pm-recovery-card"><h2>Set a new password</h2><p>Choose a new password for your Production Management account.</p><form id="pmRecoveryForm"><label for="pmRecoveryPassword">New password</label><input id="pmRecoveryPassword" type="password" minlength="8" autocomplete="new-password" required><label for="pmRecoveryConfirm">Confirm new password</label><input id="pmRecoveryConfirm" type="password" minlength="8" autocomplete="new-password" required><div id="pmRecoveryError" class="pm-recovery-error" role="alert"></div><div class="pm-recovery-actions"><button type="button" id="pmRecoveryCancel">Cancel</button><button type="submit" class="primary" id="pmRecoverySubmit">Update password</button></div></form></div>';
+      document.body.appendChild(panel);
+      panel.querySelector('#pmRecoveryCancel').addEventListener('click',async function(){
+        recoveryMode=false;panel.classList.add('hidden');await sb.auth.signOut();root.hidden=false;document.body.classList.add('pm-auth-pending');setMode('login');
+      });
+      panel.querySelector('#pmRecoveryForm').addEventListener('submit',async function(event){
+        event.preventDefault();
+        const password=panel.querySelector('#pmRecoveryPassword').value,confirm=panel.querySelector('#pmRecoveryConfirm').value;
+        const error=panel.querySelector('#pmRecoveryError'),submit=panel.querySelector('#pmRecoverySubmit');
+        error.textContent='';
+        if(password.length<8){error.textContent='Use at least 8 characters.';return;}
+        if(password!==confirm){error.textContent='The passwords do not match.';return;}
+        submit.disabled=true;submit.textContent='Updating…';
+        try{
+          const result=await sb.auth.updateUser({password:password});if(result.error)throw result.error;
+          panel.classList.add('hidden');recoveryMode=false;await sb.auth.signOut();
+          root.hidden=false;document.body.classList.add('pm-auth-pending');setMode('login');
+          showInfo('Your password has been updated. Sign in using your new password.');
+        }catch(ex){error.textContent=ex.message;}
+        finally{submit.disabled=false;submit.textContent='Update password';}
+      });
+    }
+    root.hidden=true;document.body.classList.add('pm-auth-pending');panel.classList.remove('hidden');
+    panel.querySelector('#pmRecoveryPassword').value='';panel.querySelector('#pmRecoveryConfirm').value='';panel.querySelector('#pmRecoveryError').textContent='';
   }
 
   async function authorizeUser(user){
@@ -1375,6 +1585,8 @@ syncAll();requestAnimationFrame(()=>{renderOverviewChart();setTimeout(renderOver
       currentUserId=user.id;
       allowedTabs=newAllowed;
       isSuperAdmin=!!profile.is_super_admin;
+      window.pmIsSuperAdmin=isSuperAdmin;
+      window.pmCurrentUserId=user.id;
       appAuthorized=true;
       root.hidden=true;
       document.body.classList.remove('pm-auth-pending');
@@ -1424,6 +1636,8 @@ syncAll();requestAnimationFrame(()=>{renderOverviewChart();setTimeout(renderOver
           appAuthorized=false;
           currentUserId=null;
           isSuperAdmin=false;
+          window.pmIsSuperAdmin=false;
+          window.pmCurrentUserId=null;
           allowedTabs=[];
           root.hidden=false;
           document.body.classList.add('pm-auth-pending');
@@ -1491,19 +1705,22 @@ syncAll();requestAnimationFrame(()=>{renderOverviewChart();setTimeout(renderOver
   });
 
   sb.auth.onAuthStateChange(function(event,session){
-    if(session&&session.user&&!signupInProgress){
+    if(event==='PASSWORD_RECOVERY'){
+      window.setTimeout(showPasswordRecovery,0);
+      return;
+    }
+    if(session&&session.user&&!signupInProgress&&!recoveryMode){
       window.setTimeout(function(){authorizeUser(session.user);},0);
     }else if(event==='SIGNED_OUT'){
-      appAuthorized=false;
-      currentUserId=null;
-      root.hidden=false;
-      document.body.classList.add('pm-auth-pending');
+      window.pmIsSuperAdmin=false;window.pmCurrentUserId=null;
+      appAuthorized=false;currentUserId=null;
+      root.hidden=false;document.body.classList.add('pm-auth-pending');
     }
   });
 
   sb.auth.getSession().then(function(result){
     if(result.error) showError(result.error.message);
-    else if(result.data.session&&result.data.session.user) authorizeUser(result.data.session.user);
+    else if(result.data.session&&result.data.session.user&&!recoveryMode) authorizeUser(result.data.session.user);
   }).catch(function(ex){showError(ex.message);});
 })();
 </script>
