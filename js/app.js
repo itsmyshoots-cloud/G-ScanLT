@@ -207,7 +207,25 @@ installUniversalPopupControls();
 
 function renderPlans(){
   var el=document.getElementById('planlist');if(!el)return;
-  el.innerHTML=plans.map(function(p){
+  var date=document.getElementById('planDateFilter')?.value||'';
+  var line=document.getElementById('planLineFilter')?.value||'all';
+  var shift=document.getElementById('planShiftFilter')?.value||'all';
+  var status=document.getElementById('planStatusFilter')?.value||'all';
+  var query=(document.getElementById('planSearchFilter')?.value||'').trim().toLocaleLowerCase();
+  var filtered=plans.filter(function(p){
+    if(date&&p.date!==date)return false;
+    if(line!=='all'&&p.line!==line)return false;
+    if(shift!=='all'&&p.shift!==shift)return false;
+    if(status!=='all'&&p.status!==status)return false;
+    if(query){
+      var haystack=[p.brand,p.product,p.model,p.line,p.shift,p.status].join(' ').toLocaleLowerCase();
+      if(!haystack.includes(query))return false;
+    }
+    return true;
+  });
+  var summary=document.getElementById('planFilterSummary');
+  if(summary)summary.textContent='Showing '+filtered.length+' of '+plans.length+' production plans'+(date?' · '+date:'');
+  el.innerHTML=filtered.map(function(p){
     var breakText=(p.breakTimes||[]).map(function(x){
       return formatTime12(x.start_time||x.start)+'–'+formatTime12(x.end_time||x.end);
     }).join(', ');
@@ -219,8 +237,14 @@ function renderPlans(){
       '<button class="btn" onclick="viewPlan(\''+p.id+'\')">View</button>'+
       (p.status==='Draft'?'<button class="btn" onclick="editPlan(\''+p.id+'\')">Edit</button><button class="btn primary" onclick="publishPlan(\''+p.id+'\')">Publish</button>':'')+
       '</div></div></div>';
-  }).join('')||'<div class="panel"><div class="sub">No production plans have been created yet.</div></div>';
+  }).join('')||'<div class="panel workspace-empty"><div class="sub">'+(plans.length?'No production plans match these filters.':'No production plans have been created yet.')+'</div></div>';
 }
+function resetPlanFilters(){
+  ['planDateFilter','planSearchFilter'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  ['planLineFilter','planShiftFilter','planStatusFilter'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='all';});
+  renderPlans();
+}
+
 function renderOperator(){
   var el=document.getElementById('operatorplans');if(!el)return;
   var today=todayLocalDate();
