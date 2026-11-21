@@ -56,7 +56,24 @@
     <div class="table-scroll"><table class="overview-data-table overview-hourly-table"><thead><tr><th>DATE</th><th>LINE / SHIFT</th><th>BRAND / PRODUCT / MODEL</th><th>HOUR</th><th>TARGET</th><th>ACTUAL</th><th>ACCEPTED</th><th>REJECTED</th><th>ENTRY</th></tr></thead><tbody id="overviewHourlyBody"></tbody></table></div>
   </section>
 </section>
-<section id="plans" class="page hidden"><div class="pagehead"><div><h1>Production Plans</h1><div class="sub">Create, publish and monitor production plans</div></div><div class="filters"><button class="btn primary" onclick="openPlanModal()">＋ Create plan</button></div></div><div class="filters" style="margin-bottom:16px"><select class="select"><option>All plan status</option><option>Draft</option><option>Published</option><option>Completed</option></select><select class="select"><option>All lines</option><option>Line 1</option><option>Line 2</option><option>Line 3</option></select><input class="input" type="date" value="2026-11-19"/></div><div class="planlist" id="planlist"></div></section>
+<section id="plans" class="page hidden">
+  <div class="pagehead workspace-pagehead">
+    <div><div class="workspace-eyebrow">PLANNING</div><h1>Production Plans</h1><div class="sub">Create, publish and monitor factory production plans.</div></div>
+    <div class="pagehead-actions"><button class="btn primary" type="button" onclick="openPlanModal()">＋ Create plan</button></div>
+  </div>
+  <div class="panel workspace-filter-panel plan-filter-panel">
+    <div class="workspace-filter-heading"><div><strong>Find production plans</strong><span>Filter by date, line, shift, status or product details.</span></div><button class="btn" type="button" onclick="resetPlanFilters()">Clear filters</button></div>
+    <div class="workspace-filter-grid plan-filter-grid">
+      <label class="workspace-filter-field"><span>Production date</span><input class="input" id="planDateFilter" type="date" onchange="renderPlans()"/></label>
+      <label class="workspace-filter-field"><span>Production line</span><select class="select" id="planLineFilter" onchange="renderPlans()"><option value="all">All lines</option><option>Line 1</option><option>Line 2</option><option>Line 3</option></select></label>
+      <label class="workspace-filter-field"><span>Shift</span><select class="select" id="planShiftFilter" onchange="renderPlans()"><option value="all">All shifts</option><option>Shift 1</option><option>Shift 2</option><option>Shift 3</option></select></label>
+      <label class="workspace-filter-field"><span>Plan status</span><select class="select" id="planStatusFilter" onchange="renderPlans()"><option value="all">All statuses</option><option>Draft</option><option>Published</option><option>Completed</option></select></label>
+      <label class="workspace-filter-field plan-search-field"><span>Search product / model</span><input class="input" id="planSearchFilter" type="search" placeholder="Type product, model or brand" oninput="renderPlans()"/></label>
+    </div>
+  </div>
+  <div class="workspace-result-meta" id="planFilterSummary" aria-live="polite">Loading production plans…</div>
+  <div class="planlist" id="planlist"></div>
+</section>
 <section id="operator" class="page hidden"><div class="pagehead"><div><h1>Operator Workspace</h1><div class="sub">Select an active plan to record hourly production</div></div></div><div class="planlist" id="operatorplans"></div><div id="execution" class="hidden" style="margin-top:18px"></div></section>
 <section id="reports" class="page hidden">
 <div class="pagehead report-pagehead"><div><h1>Production Reports</h1><div class="sub">Shift-level production detail, quality and traceability</div></div><div class="report-actions"><button class="btn" type="button" onclick="exportReportCSV()">Export CSV</button><button class="btn primary" type="button" onclick="printReportPDF()">Print / Save PDF</button></div></div>
