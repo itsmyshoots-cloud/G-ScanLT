@@ -1132,7 +1132,7 @@ function getOverviewPlanFilters(){
     line:document.getElementById('lineFilter')?.value||'All lines',
     brand:document.getElementById('overviewBrandFilter')?.value||'',
     product:document.getElementById('overviewProductFilter')?.value||'',
-    date:document.getElementById('overviewDateFilter')?.value||todayLocalDate(),
+    date:document.getElementById('overviewDateFilter')?.value||'',
     shift:document.getElementById('overviewShiftFilter')?.value||'All shifts'
   };
 }
