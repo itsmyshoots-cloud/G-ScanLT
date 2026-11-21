@@ -2275,3 +2275,90 @@ html,body{max-width:100%;overflow-x:hidden}
 @media(max-width:950px){.overview-dashboard-grid,.overview-secondary-grid{grid-template-columns:minmax(0,1fr)}.overview-filter-controls{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:650px){#overview .overview-heading{align-items:flex-start;flex-direction:column}.overview-head-actions{width:100%;justify-content:space-between}.overview-filter-heading{align-items:flex-start}.overview-filter-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.overview-filter-foot{align-items:flex-start;flex-direction:column}.overview-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.overview-kpi{padding:12px}.overview-kpi-value{font-size:22px}.overview-chart-panel,.overview-attention-panel,.overview-secondary-grid>.panel,.overview-hourly-panel{padding:12px}.overview-filter-panel{padding:12px}}
 @media(max-width:380px){.overview-filter-controls{grid-template-columns:minmax(0,1fr)}.overview-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.overview-kpi-value{font-size:20px}}
+
+/* V8.1 unified workspace layout and form rhythm */
+:root{--workspace-gutter:clamp(18px,2vw,32px);--workspace-radius:12px}
+@media(min-width:761px){
+  .app{display:block!important;position:relative!important;width:100%!important;min-width:0!important;overflow:visible!important}
+  .sidebar{position:fixed!important;inset:0 auto 0 0!important;width:238px!important;min-width:238px!important;max-width:238px!important;height:100vh!important;max-height:100vh!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain;z-index:1200!important}
+  .sidebar .nav{display:flex;flex-direction:column;gap:3px}
+  .main{display:block!important;width:calc(100% - 238px)!important;max-width:none!important;min-width:0!important;margin:0 0 0 238px!important;padding:0!important;overflow-x:clip!important}
+  .main>.topbar{position:sticky!important;top:0!important;z-index:100!important;width:100%!important;height:68px!important;padding:0 var(--workspace-gutter)!important}
+  .main>.content{display:block!important;width:100%!important;max-width:none!important;min-width:0!important;margin:0!important;padding:0!important}
+  .main>.content>.page,.main>.content>.page.hidden{display:block;width:100%!important;max-width:none!important;min-width:0!important;min-height:calc(100vh - 68px);margin:0!important;padding:26px var(--workspace-gutter) 42px!important;box-sizing:border-box!important}
+  .main>.content>.page.hidden{display:none!important}
+}
+@media(min-width:761px) and (max-width:1050px){
+  .sidebar{width:205px!important;min-width:205px!important;max-width:205px!important}
+  .main{width:calc(100% - 205px)!important;margin-left:205px!important}
+  .main>.content>.page,.main>.content>.page.hidden{padding:22px 18px 36px!important}
+}
+@media(max-width:760px){
+  .app{display:block!important;width:100%!important;min-width:0!important;overflow-x:hidden!important}
+  .sidebar{position:fixed!important;inset:auto 0 0 0!important;width:100%!important;max-width:none!important;height:calc(66px + env(safe-area-inset-bottom))!important;min-height:0!important;z-index:1200!important;overflow:hidden!important}
+  .sidebar .nav{display:flex!important;flex-direction:row!important;align-items:stretch!important;width:100%!important;overflow-x:auto!important;overflow-y:hidden!important;overscroll-behavior-x:contain!important}
+  .main{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;padding:0!important;overflow-x:hidden!important}
+  .main>.topbar{position:sticky!important;top:0!important;z-index:100!important;width:100%!important;min-height:58px;height:auto!important;padding:8px 12px!important}
+  .main>.content{width:100%!important;max-width:none!important;margin:0!important;padding:0!important}
+  .main>.content>.page,.main>.content>.page.hidden{display:block;width:100%!important;max-width:none!important;min-width:0!important;min-height:calc(100vh - 58px);margin:0!important;padding:16px 12px calc(96px + env(safe-area-inset-bottom))!important;box-sizing:border-box!important}
+  .main>.content>.page.hidden{display:none!important}
+}
+@media(max-width:390px){.main>.content>.page,.main>.content>.page.hidden{padding-left:10px!important;padding-right:10px!important}}
+
+.workspace-pagehead{align-items:center!important;gap:16px!important;margin-bottom:16px!important}
+.workspace-pagehead h1{margin:0 0 5px!important;font-size:23px!important;line-height:1.2}
+.workspace-eyebrow{margin-bottom:5px;color:var(--blue);font-size:10px;font-weight:800;letter-spacing:1.4px}
+.pagehead-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.workspace-filter-panel{padding:15px 16px!important;margin:0 0 12px!important}
+.workspace-filter-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.workspace-filter-heading>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.workspace-filter-heading strong{font-size:13px;color:#26364b}
+.workspace-filter-heading span{font-size:11px;color:var(--muted);line-height:1.35}
+.workspace-filter-grid{display:grid;gap:10px;min-width:0}
+.plan-filter-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+.workspace-filter-field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.workspace-filter-field>span{font-size:10px;font-weight:700;color:var(--muted)}
+.workspace-filter-field .input,.workspace-filter-field .select{width:100%;min-width:0;height:40px;min-height:40px;padding:8px 10px}
+.workspace-result-meta{margin:0 0 12px;color:var(--muted);font-size:11px}
+.workspace-empty{grid-column:1/-1;text-align:center;padding:24px!important}
+.plan-filter-panel{box-shadow:0 2px 8px rgba(20,40,70,.025)}
+.plan-filter-panel .plan-search-field{grid-column:span 1}
+.plan-filter-grid .input[type="search"]{background:#fff}
+.report-filter-grid{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:10px!important}
+.report-mode-field{grid-column:span 2!important}
+.report-filter-field{min-width:0}
+.report-filter-field .input,.report-filter-field .select{width:100%;min-width:0}
+#overview .overview-filter-panel{margin-top:0}
+#overview .overview-filter-controls{grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+#overview .overview-filter-field .input,#overview .overview-filter-field .select{height:40px;min-height:40px}
+#overview .overview-filter-heading{margin-bottom:10px}
+#rework .rework-primary-filters,#rework .rework-advanced-filters{gap:10px}
+.panel{border-radius:var(--workspace-radius)}
+.input,.select,textarea,.field input,.field select{font-family:inherit}
+.input:focus,.select:focus,textarea:focus,.field input:focus,.field select:focus{outline:2px solid #dce8ff;border-color:#8fb2ff}
+@media(max-width:1100px){
+  .plan-filter-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .report-filter-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  .report-mode-field{grid-column:span 2!important}
+}
+@media(max-width:760px){
+  .workspace-pagehead{align-items:stretch!important;flex-direction:column!important;gap:12px!important}
+  .workspace-pagehead h1{font-size:20px!important}
+  .pagehead-actions{width:100%}
+  .pagehead-actions .btn{width:100%}
+  .workspace-filter-panel{padding:13px!important}
+  .workspace-filter-heading{align-items:flex-start;flex-wrap:wrap}
+  .workspace-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px}
+  .plan-filter-grid .plan-search-field{grid-column:1/-1}
+  .workspace-filter-field .input,.workspace-filter-field .select{height:42px;min-height:42px;font-size:14px}
+  #overview .overview-filter-controls{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .report-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .report-mode-field{grid-column:1/-1!important}
+}
+@media(max-width:390px){
+  .workspace-filter-grid{grid-template-columns:minmax(0,1fr)!important}
+  .plan-filter-grid .plan-search-field{grid-column:auto}
+  .report-filter-grid{grid-template-columns:minmax(0,1fr)!important}
+  .report-mode-field{grid-column:auto!important}
+  #overview .overview-filter-controls{grid-template-columns:minmax(0,1fr)}
+}
