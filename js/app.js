@@ -172,7 +172,7 @@ function showPage(page){
   if(page==='plans')renderPlans();
   if(page==='operator')renderOperator();
   if(page==='rework')renderRework();
-  if(page==='overview'){requestAnimationFrame(renderOverviewChart);setTimeout(renderOverviewChart,80);}
+  if(page==='overview'){requestAnimationFrame(refreshOverview);setTimeout(refreshOverview,80);}
   if(window.pmProductionDataLoaded&&window.pmReloadProductionData){
     window.pmReloadProductionData().catch(function(error){toast('Could not refresh shared data: '+error.message);});
   }
@@ -1101,95 +1101,174 @@ async function saveReworkUnit(id,h,unitIndex){
   }
 }
 function toast(t){let x=document.getElementById('toast');x.textContent=t;x.style.display='block';setTimeout(()=>x.style.display='none',2600);}
-function refreshOverview(){refreshProductOptions();renderOverviewChart();updateOverviewKpis();}
-
+function refreshOverview(){
+  refreshProductOptions();
+  var plansForView=getOverviewPlans();
+  updateOverviewKpis(plansForView);
+  renderOverviewChart(plansForView);
+  renderOverviewHourlyDetails(plansForView);
+}
+async function refreshOverviewData(){
+  var button=document.getElementById('overviewRefreshBtn');
+  if(button){button.disabled=true;button.textContent='Refreshing…';}
+  try{
+    if(typeof window.pmReloadProductionData!=='function')throw new Error('Production data service is unavailable.');
+    await window.pmReloadProductionData();
+    refreshOverview();
+    toast('Production data refreshed from Supabase.');
+  }catch(error){toast('Could not refresh production data: '+(error.message||'Please try again.'));}
+  finally{if(button){button.disabled=false;button.textContent='↻ Refresh data';}}
+}
+function clearOverviewFilters(){
+  var date=document.getElementById('overviewDateFilter');if(date)date.value=todayLocalDate();
+  var shift=document.getElementById('overviewShiftFilter');if(shift)shift.value='All shifts';
+  var line=document.getElementById('lineFilter');if(line)line.value='All lines';
+  var brand=document.getElementById('overviewBrandFilter');if(brand)brand.value='';
+  var product=document.getElementById('overviewProductFilter');if(product)product.value='';
+  refreshOverview();
+}
 function getOverviewPlanFilters(){
-  var line=document.getElementById('lineFilter')?.value||'All lines';
-  var brand=document.getElementById('overviewBrandFilter')?.value||'All brands';
-  var product=document.getElementById('overviewProductFilter')?.value||'All products';
-  var date=document.getElementById('overviewDateFilter')?.value||'';
-  var shift=document.getElementById('overviewShiftFilter')?.value||'All shifts';
-  return {line:line,brand:brand,product:product,date:date,shift:shift};
+  return {
+    line:document.getElementById('lineFilter')?.value||'All lines',
+    brand:document.getElementById('overviewBrandFilter')?.value||'',
+    product:document.getElementById('overviewProductFilter')?.value||'',
+    date:document.getElementById('overviewDateFilter')?.value||todayLocalDate(),
+    shift:document.getElementById('overviewShiftFilter')?.value||'All shifts'
+  };
 }
 function overviewPlanMatches(p){
   var f=getOverviewPlanFilters();
   return (!f.date||p.date===f.date)&&(f.shift==='All shifts'||p.shift===f.shift)&&
-    (f.line==='All lines'||p.line===f.line)&&(f.brand==='All brands'||p.brand===f.brand)&&
-    (f.product==='All products'||p.product===f.product);
+    (f.line==='All lines'||p.line===f.line)&&(!f.brand||p.brand===f.brand)&&(!f.product||p.product===f.product);
 }
-function getOverviewPlans(){return plans.filter(function(p){return p.status==='Published'&&overviewPlanMatches(p);});}
+function getOverviewPlans(){
+  return plans.filter(function(p){return (p.status==='Published'||p.status==='Completed')&&overviewPlanMatches(p);});
+}
 function getOverviewStatusPlans(){
-  return plans.filter(function(p){return overviewPlanMatches(p);})
-    .sort(function(a,b){return String(a.date).localeCompare(String(b.date))||String(a.line).localeCompare(String(b.line));});
+  return plans.filter(overviewPlanMatches).sort(function(a,b){
+    return String(a.line).localeCompare(String(b.line))||String(a.shift).localeCompare(String(b.shift))||String(a.product).localeCompare(String(b.product));
+  });
 }
 function getPlanStatusLabel(p){
   if(p.status==='Draft')return 'Draft';
   if(p.status==='Completed')return 'Completed';
   return Number(p.actual)>0?'In Progress':'Published';
 }
-function updateOverviewKpis(){
-  var f=getOverviewPlans(),planned=f.reduce(function(a,p){return a+(Number(p.qty)||0);},0);
-  var actual=f.reduce(function(a,p){return a+(Number(p.actual)||0);},0);
-  var rej=f.reduce(function(a,p){return a+(Number(p.rejection)||0);},0);
-  var cards=document.querySelectorAll('#overview .cards .card');
-  if(cards.length>=4){
-    cards[0].querySelector('.kvalue').textContent=planned;
-    cards[0].querySelector('.kfoot').textContent='Units across '+new Set(f.map(function(p){return p.line;})).size+' active lines';
-    cards[1].querySelector('.kvalue').textContent=actual;
-    cards[1].querySelector('.kfoot').textContent=(planned?Math.round(actual/planned*100):0)+'% of filtered target';
-    cards[2].querySelector('.kvalue').textContent=Math.max(0,planned-actual);
-    cards[3].querySelector('.kvalue').textContent=rej;
-    cards[3].querySelector('.kfoot').textContent='Hourly rejection totals';
-  }
-  renderOverviewSummary(f);renderOverviewPlanStatusCards();
+function updateOverviewKpis(filteredPlans){
+  var f=filteredPlans||getOverviewPlans();
+  var totals=f.reduce(function(a,p){
+    var actual=Number(p.actual)||0,rejected=Number(p.rejection)||0;
+    a.planned+=Number(p.qty)||0;a.actual+=actual;a.rejected+=rejected;
+    a.accepted+=Math.max(0,actual-rejected);
+    a.pendingRework+=sumRework(p,'Pending');
+    a.stickers+=sumMissingSticker(p);
+    return a;
+  },{planned:0,actual:0,accepted:0,rejected:0,pendingRework:0,stickers:0});
+  var rate=totals.actual?totals.rejected/totals.actual*100:0;
+  function set(id,value){var el=document.getElementById(id);if(el)el.textContent=String(value);}
+  set('overviewKpiPlanned',totals.planned.toLocaleString('en-IN'));
+  set('overviewKpiActual',totals.actual.toLocaleString('en-IN'));
+  set('overviewKpiAccepted',totals.accepted.toLocaleString('en-IN'));
+  set('overviewKpiRejection',rate.toFixed(1)+'%');
+  set('overviewKpiRework',totals.pendingRework.toLocaleString('en-IN'));
+  set('overviewKpiStickers',totals.stickers.toLocaleString('en-IN'));
+  set('overviewKpiPlannedFoot',f.length+' published / completed plans');
+  set('overviewKpiActualFoot',Math.max(0,totals.planned-totals.actual).toLocaleString('en-IN')+' units remaining');
+  set('overviewKpiAcceptedFoot','Accepted output after rejection');
+  set('overviewKpiRejectionFoot',totals.rejected+' rejected of '+totals.actual+' produced');
+  set('overviewKpiReworkFoot',totals.pendingRework?'Requires resolution':'No pending rework');
+  set('overviewKpiStickersFoot',totals.stickers?'Needs serial-level follow-up':'No sticker exceptions');
+  var ftr=getOverviewPlanFilters(),filterText=ftr.date?('Production date: '+ftr.date):'All production dates';
+  if(ftr.shift!=='All shifts')filterText+=' · '+ftr.shift;
+  if(ftr.line!=='All lines')filterText+=' · '+ftr.line;
+  if(ftr.brand)filterText+=' · '+ftr.brand;
+  if(ftr.product)filterText+=' · '+ftr.product;
+  set('overviewFilterSummary',filterText+' · '+f.length+' production plans');
+  set('overviewLastRefresh','Updated '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}));
+  renderOverviewSummary(f);
+  renderOverviewPlanStatusCards();
+  renderOverviewAttention(f);
 }
 function renderOverviewPlanStatusCards(){
   var host=document.getElementById('overviewPlanStatusCards'),count=document.getElementById('overviewPlanStatusCount');
   if(!host)return;
   var rows=getOverviewStatusPlans();
-  if(count)count.textContent=rows.length+' plan'+(rows.length===1?'':'s')+' matching filters';
-  if(!rows.length){host.innerHTML='<div class="sub plan-status-empty">No production plans match the selected date and filters.</div>';return;}
+  if(count)count.textContent=rows.length+' plans';
+  if(!rows.length){host.innerHTML='<div class="overview-empty">No plans match these filters.</div>';return;}
   host.innerHTML=rows.map(function(p){
-    var qty=Number(p.qty)||0,actual=Number(p.actual)||0,rejected=Number(p.rejection)||0;
-    var pct=qty?Math.max(0,Math.min(100,actual/qty*100)):0,status=getPlanStatusLabel(p);
-    var statusClass=status==='In Progress'?'in-progress':status.toLowerCase();
-    return '<article class="plan-status-card"><div class="plan-status-heading"><strong>'+escapeHtml(p.line)+' · '+escapeHtml(p.brand||'Unbranded')+'</strong><span class="plan-status-pill '+statusClass+'">'+status+'</span></div>'+
-      '<div class="plan-status-product">'+escapeHtml(p.product||'—')+' <span>· Model '+escapeHtml(p.model||'—')+'</span></div>'+
-      '<div class="plan-status-meta"><span>'+escapeHtml(p.date||'—')+'</span><span>'+escapeHtml(p.shift||'—')+'</span></div>'+
-      '<div class="plan-status-numbers"><span><small>Planned</small><b>'+qty+'</b></span><span><small>Produced</small><b>'+actual+'</b></span><span><small>Accepted</small><b>'+Math.max(0,actual-rejected)+'</b></span><span><small>Rejected</small><b>'+rejected+'</b></span></div>'+
-      '<div class="plan-status-track"><i style="width:'+pct.toFixed(1)+'%"></i></div><div class="plan-status-foot"><span>'+Math.round(pct)+'% complete</span><span>'+Math.max(0,qty-actual)+' remaining</span></div></article>';
+    var status=getPlanStatusLabel(p),pct=Number(p.qty)?Math.min(100,Math.round((Number(p.actual)||0)/Number(p.qty)*100)):0;
+    return '<article class="overview-plan-status-row"><div class="overview-plan-status-main"><strong>'+escapeHtml(p.line)+' · '+escapeHtml(p.shift)+'</strong><span>'+escapeHtml(p.product||'—')+' / '+escapeHtml(p.model||'—')+'</span></div><span class="overview-state '+status.toLowerCase().replace(/\s+/g,'-')+'">'+escapeHtml(status)+'</span><div class="overview-mini-progress"><i style="width:'+pct+'%"></i></div><small>'+pct+'% · '+(Number(p.actual)||0)+' / '+(Number(p.qty)||0)+' units</small></article>';
   }).join('');
 }
-function renderOverviewSummary(f){
-  var summary=document.getElementById('lineSummaryBody'),cards=document.getElementById('overviewLineCards');
-  if(summary)summary.innerHTML=f.map(function(p){
-    var pct=p.qty?Math.round(p.actual/p.qty*100):0;
-    return '<tr><td>'+escapeHtml(p.line)+'</td><td>'+escapeHtml(p.brand||'—')+' · '+escapeHtml(p.product)+' <small>'+escapeHtml(p.model||'')+'</small></td><td>'+p.qty+'</td><td>'+p.actual+'</td><td>'+pct+'%</td><td><span class="pill '+(pct<80?'warn':'')+'">'+(pct<80?'Behind plan':'On track')+'</span></td></tr>';
-  }).join('')||'<tr><td colspan="6">No active published plans match the selected filters.</td></tr>';
-  if(cards)cards.innerHTML=f.map(function(p){
-    var pct=p.qty?Math.min(100,p.actual/p.qty*100):0,remaining=Math.max(0,p.qty-p.actual);
-    return '<div class="linecard"><div class="linehead">'+escapeHtml(p.line)+' <span class="pill '+(pct<80?'warn':'')+'">'+(pct<80?'Behind plan':'On track')+'</span></div>'+
-      '<div class="sub" style="margin-top:7px">'+escapeHtml(p.brand||'—')+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model||'—')+' · '+p.actual+' / '+p.qty+' units</div>'+
-      '<div class="progress"><i style="width:'+pct+'%"></i></div><div class="linemeta"><span>'+(p.qty?Math.round(p.actual/p.qty*100):0)+'% complete</span><span>'+remaining+' remaining</span></div></div>';
-  }).join('')||'<div class="sub">No active plans for the selected filters.</div>';
+function renderOverviewSummary(filteredPlans){
+  var body=document.getElementById('lineSummaryBody'),count=document.getElementById('overviewLineCount');
+  if(!body)return;
+  var groups=new Map();
+  filteredPlans.forEach(function(p){
+    var key=p.line||'Unassigned',g=groups.get(key);
+    if(!g){g={line:key,plans:0,planned:0,actual:0,accepted:0,rejected:0,completed:0};groups.set(key,g);}
+    var actual=Number(p.actual)||0,rejected=Number(p.rejection)||0;
+    g.plans++;g.planned+=Number(p.qty)||0;g.actual+=actual;g.rejected+=rejected;g.accepted+=Math.max(0,actual-rejected);if(p.status==='Completed')g.completed++;
+  });
+  var rows=Array.from(groups.values()).sort(function(a,b){return a.line.localeCompare(b.line);});
+  if(count)count.textContent=rows.length+' lines';
+  body.innerHTML=rows.map(function(g){
+    var pct=g.planned?Math.round(g.actual/g.planned*100):0;
+    var status=g.completed===g.plans?'Completed':(g.actual?'In progress':'Awaiting entries');
+    return '<tr><td><strong>'+escapeHtml(g.line)+'</strong></td><td>'+g.plans+'</td><td>'+g.planned+'</td><td>'+g.actual+'</td><td>'+g.accepted+'</td><td>'+g.rejected+'</td><td><div class="overview-achievement"><b>'+pct+'%</b><span><i style="width:'+Math.min(100,Math.max(0,pct))+'%"></i></span></div></td><td><span class="overview-state '+status.toLowerCase().replace(/\s+/g,'-')+'">'+status+'</span></td></tr>';
+  }).join('')||'<tr><td colspan="8" class="overview-table-empty">No published or completed production plans for these filters.</td></tr>';
 }
-function renderOverviewChart(){
+function renderOverviewAttention(filteredPlans){
+  var host=document.getElementById('overviewAttentionList'),count=document.getElementById('overviewAttentionCount');
+  if(!host)return;
+  var items=[];
+  filteredPlans.forEach(function(p){
+    var pending=sumRework(p,'Pending'),missing=sumMissingSticker(p),rejected=Number(p.rejection)||0,actual=Number(p.actual)||0;
+    if(pending)items.push({rank:1,icon:'↻',title:pending+' rework unit'+(pending===1?'':'s')+' pending',detail:p.line+' · '+p.product+' · '+p.shift,kind:'warning'});
+    if(missing)items.push({rank:2,icon:'▣',title:missing+' missing / damaged sticker'+(missing===1?'':'s'),detail:p.line+' · '+p.product+' · '+p.shift,kind:'warning'});
+    if(rejected)items.push({rank:3,icon:'!',title:rejected+' rejected unit'+(rejected===1?'':'s')+' recorded',detail:p.line+' · '+p.product+' · '+p.shift,kind:'danger'});
+    if(p.status==='Completed'&&actual<Number(p.qty||0))items.push({rank:4,icon:'◷',title:'Plan closed below target',detail:p.line+' · '+p.product+' · '+Math.max(0,Number(p.qty||0)-actual)+' units short',kind:'info'});
+    if(p.status==='Published'&&!actual)items.push({rank:5,icon:'○',title:'No hourly output recorded yet',detail:p.line+' · '+p.product+' · '+p.shift,kind:'info'});
+  });
+  var drafts=getOverviewStatusPlans().filter(function(p){return p.status==='Draft';});
+  drafts.forEach(function(p){items.push({rank:6,icon:'✎',title:'Draft plan not published',detail:p.line+' · '+p.product+' · '+p.shift,kind:'info'});});
+  items.sort(function(a,b){return a.rank-b.rank;});
+  if(count)count.textContent=items.length+' items';
+  host.innerHTML=items.length?items.slice(0,8).map(function(x){
+    return '<article class="overview-attention-item '+x.kind+'"><span class="overview-attention-icon">'+x.icon+'</span><div><strong>'+escapeHtml(x.title)+'</strong><small>'+escapeHtml(x.detail)+'</small></div></article>';
+  }).join(''):'<div class="overview-all-clear"><span>✓</span><div><strong>No immediate exceptions</strong><small>No pending rework or sticker exceptions in the selected production view.</small></div></div>';
+}
+function renderOverviewHourlyDetails(filteredPlans){
+  var body=document.getElementById('overviewHourlyBody'),count=document.getElementById('overviewHourlyCount');
+  if(!body)return;
+  var rows=[];
+  filteredPlans.forEach(function(p){
+    var targets=planHourTargets(p),labels=p.hourLabels||[];
+    targets.forEach(function(target,i){
+      var entry=p.entries&&p.entries[i],actual=entry?Number(entry.actual)||0:0,rejected=entry?Number(entry.rejected)||0:0;
+      rows.push({date:p.date,line:p.line,shift:p.shift,brand:p.brand,product:p.product,model:p.model,hour:labels[i]||hours[i]||('Hour '+(i+1)),target:Number(target)||0,actual:actual,accepted:Math.max(0,actual-rejected),rejected:rejected,recorded:!!entry});
+    });
+  });
+  rows.sort(function(a,b){return String(a.date).localeCompare(String(b.date))||String(a.line).localeCompare(String(b.line))||String(a.shift).localeCompare(String(b.shift))||String(a.hour).localeCompare(String(b.hour));});
+  if(count)count.textContent=rows.length+' scheduled hours';
+  body.innerHTML=rows.map(function(r){
+    return '<tr><td>'+escapeHtml(r.date)+'</td><td><strong>'+escapeHtml(r.line)+'</strong><small class="overview-cell-sub">'+escapeHtml(r.shift)+'</small></td><td>'+escapeHtml([r.brand,r.product,r.model].filter(Boolean).join(' · '))+'</td><td>'+escapeHtml(r.hour)+'</td><td>'+r.target+'</td><td>'+r.actual+'</td><td>'+r.accepted+'</td><td>'+r.rejected+'</td><td><span class="overview-entry-state '+(r.recorded?'recorded':'not-recorded')+'">'+(r.recorded?'Recorded':'Not recorded')+'</span></td></tr>';
+  }).join('')||'<tr><td colspan="9" class="overview-table-empty">No scheduled hours match the selected filters.</td></tr>';
+}
+function renderOverviewChart(filteredPlans){
   var host=document.getElementById('overviewBarChart');if(!host)return;
-  var filtered=getOverviewPlans();
+  var filtered=filteredPlans||getOverviewPlans();
   renderOverviewChartPlanDetails([]);
-  if(!filtered.length){
-    host.innerHTML='<div class="chart-empty">No active published plans for the selected date and filters.</div>';
-    updateOverviewKpis();return;
-  }
+  if(!filtered.length){host.innerHTML='<div class="chart-empty">No published or completed plans match these filters.</div>';return;}
   function renderPlanGraph(p){
     var labels=p.hourLabels||timeSlots(p.start,p.end,p.breakTimes||[]);
     var targets=planHourTargets(p);
     var actual=labels.map(function(_,i){return getHourlyActual(p,i);});
     var planned=labels.map(function(_,i){return Number(targets[i])||0;});
-    var W=900,H=280,L=48,R=18,T=25,B=42,plotW=W-L-R,plotH=H-T-B;
+    var W=900,H=252,L=48,R=18,T=24,B=40,plotW=W-L-R,plotH=H-T-B;
     var max=Math.max(1,...planned,...actual),ceil=Math.max(1,Math.ceil(max/5)*5);
     var slot=plotW/Math.max(1,labels.length),barW=Math.min(22,slot*.28),svg=[];
-    svg.push('<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="280" role="img" aria-label="Hourly plan versus actual for '+escapeHtml(p.line)+'">');
+    svg.push('<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="252" role="img" aria-label="Hourly plan versus actual for '+escapeHtml(p.line)+'">');
     for(var t=0;t<=4;t++){
       var val=ceil*t/4,y=T+plotH-(plotH*t/4);
       svg.push('<line x1="'+L+'" y1="'+y+'" x2="'+(W-R)+'" y2="'+y+'" stroke="#e8edf4"/><text x="'+(L-10)+'" y="'+(y+4)+'" text-anchor="end" font-size="11" fill="#8491a3">'+Math.round(val)+'</text>');
@@ -1205,20 +1284,16 @@ function renderOverviewChart(){
     });
     svg.push('</svg>');
     var pct=p.qty?Math.round(p.actual/p.qty*100):0;
-    var breakText=(p.breakTimes||[]).map(function(x){
-      return formatTime12(x.start_time||x.start)+'–'+formatTime12(x.end_time||x.end);
-    }).join(', ');
+    var breakText=(p.breakTimes||[]).map(function(x){return formatTime12(x.start_time||x.start)+'–'+formatTime12(x.end_time||x.end);}).join(', ');
     return '<article class="plan-hour-chart-card"><div class="plan-hour-chart-heading"><div><strong>'+escapeHtml(p.line)+' · '+escapeHtml(p.shift)+'</strong><small>'+escapeHtml(p.brand)+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model)+'</small></div><span>'+escapeHtml(getPlanStatusLabel(p))+'</span></div>'+
       '<div class="plan-hour-chart-meta"><span>Planned <b>'+p.qty+'</b></span><span>Actual <b>'+p.actual+'</b></span><span>'+pct+'% complete</span></div>'+
       (breakText?'<div class="plan-break-visible plan-chart-breaks">Breaks: '+escapeHtml(breakText)+'</div>':'')+
       '<div class="plan-hour-chart-svg">'+svg.join('')+'</div></article>';
   }
   host.innerHTML='<div class="plan-hour-chart-list">'+filtered.map(renderPlanGraph).join('')+'</div>';
-  updateOverviewKpis();
 }
 function renderOverviewChartPlanDetails(){
-  var host=document.getElementById('overviewChartPlanDetails');
-  if(host)host.innerHTML='';
+  var host=document.getElementById('overviewChartPlanDetails');if(host)host.innerHTML='';
 }
 function makeOverviewReportCanvas(){
   var graphPlans=getOverviewPlans(),W=1200,header=230,chartCard=350,gap=18;
@@ -1303,7 +1378,6 @@ function setupChartExportGestures(){
   host.addEventListener('pointermove',function(event){if(timer&&Math.abs(event.clientX-startX)+Math.abs(event.clientY-startY)>14){clearTimeout(timer);timer=null;}});
   document.addEventListener('click',function(event){if(!event.target.closest('#chartExportMenu')&&!event.target.closest('#overviewBarChart'))closeChartExportMenu();});
 }
-function refreshOverview(){refreshProductOptions();renderOverviewChart();updateOverviewKpis();}
 function clearReportFilters(){
   ['reportFrom','reportTo'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   ['reportShift','reportLine','reportBrand','reportProduct','reportModel','reportHour'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='all';});
@@ -1376,7 +1450,7 @@ function syncAll(){
   refreshProductOptions();
   try{renderPlans();}catch(e){console.error('Plans render error',e);}
   try{renderOperator();}catch(e){console.error('Operator render error',e);}
-  try{renderOverviewChart();}catch(e){console.error('Overview render error',e);}
+  try{refreshOverview();}catch(e){console.error('Overview render error',e);}
   try{renderReports();}catch(e){console.error('Reports render error',e);}
   try{renderRework();}catch(e){console.error('Rework render error',e);}
 }
