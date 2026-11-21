@@ -4,24 +4,58 @@
 <link rel="stylesheet" href="css/style.css"></head><body>
 <div class="app"><aside class="sidebar"><div class="brand">Production Management<small>OPERATIONS CONTROL</small></div><div class="navlabel">WORKSPACE</div><nav class="nav" aria-label="Main navigation"><button class="active" data-page="overview"><span class="ico">▦</span><span>Overview</span></button><button data-page="plans"><span class="ico">▤</span><span>Production Plans</span></button><button data-page="operator"><span class="ico">◉</span><span>Operator</span></button><button data-page="rework"><span class="ico">↻</span><span>Rework</span></button><button data-page="reports"><span class="ico">▧</span><span>Reports</span></button></nav><div class="sidebottom">Production Control · V6 update</div></aside>
 <main class="main"><header class="topbar"><div class="crumb" id="crumb">Overview</div><div class="user"><div class="avatar">SP</div><div><strong style="color:#263449">Supervisor</strong><br/>Production Control</div></div></header><div class="content">
-<section id="overview" class="page"><div class="pagehead overview-heading"><div><h1>Production Overview</h1><div class="sub">Live production performance across all lines</div></div></div>
-<details class="overview-filter-details">
-  <summary><span>Set date & filters</span><small>Choose production date, shift, line, brand or product</small></summary>
-  <div class="filters overview-filter-controls">
-    <label class="overview-filter-field"><span>Production date</span><input class="input" id="overviewDateFilter" type="date" value="" onchange="refreshOverview()"/></label>
-    <label class="overview-filter-field"><span>Shift</span><select class="select" id="overviewShiftFilter" onchange="refreshOverview()"><option>All shifts</option><option>Shift 1</option><option>Shift 2</option><option>Shift 3</option></select></label>
-    <label class="overview-filter-field"><span>Line</span><select class="select" id="lineFilter" onchange="refreshOverview()"><option>All lines</option><option>Line 1</option><option>Line 2</option><option>Line 3</option></select></label>
-    <label class="overview-filter-field"><span>Brand</span><select class="select" id="overviewBrandFilter" onchange="refreshOverview()"><option>All brands</option></select></label>
-    <label class="overview-filter-field"><span>Product</span><select class="select" id="overviewProductFilter" onchange="refreshOverview()"><option>All products</option></select></label>
+<section id="overview" class="page">
+  <div class="pagehead overview-heading">
+    <div><div class="overview-eyebrow">FACTORY CONTROL</div><h1>Production Overview</h1><div class="sub">A live view of production output, line performance and items needing attention.</div></div>
+    <div class="overview-head-actions"><span class="overview-live-indicator"><i></i> Supabase data</span><button class="btn" id="overviewRefreshBtn" type="button" onclick="refreshOverviewData()">↻ Refresh data</button></div>
   </div>
-</details>
-
-<div class="cards"><div class="card"><div class="klabel">Today's Planned</div><div class="kvalue">300</div><div class="kfoot">Units across 3 lines</div></div><div class="card"><div class="klabel">Actual Produced</div><div class="kvalue">242</div><div class="kfoot good">80.7% of daily target</div></div><div class="card"><div class="klabel">Remaining</div><div class="kvalue">58</div><div class="kfoot">Units to plan</div></div><div class="card"><div class="klabel">Rejections</div><div class="kvalue">6</div><div class="kfoot">Recorded at shift close</div></div></div>
-<div class="panel plan-status-panel"><div class="paneltitle"><h3>Production Plan Status</h3><span id="overviewPlanStatusCount">Loading plans…</span></div><div id="overviewPlanStatusCards" class="plan-status-grid"></div></div>
-<div class="overview-main"><div class="panel overview-chart-panel"><div class="paneltitle"><div class="overview-chart-heading"><h3>Hourly Plan vs Actual</h3><span class="chart-subtitle">Live · Units per hour · Right-click or long-press to share</span></div><button class="btn chart-export-trigger" type="button" onclick="shareOverviewReport()">Share / Download</button></div><div class="legend"><span><i class="dot" style="background:#3978f6"></i>Planned</span><span><i class="dot" style="background:#18a66b"></i>Actual</span></div><div id="overviewBarChart" class="chart" role="img" aria-label="Hourly planned versus actual production bar chart" tabindex="0"></div><div id="overviewChartPlanDetails" class="overview-chart-plan-details"></div><div id="chartExportMenu" class="chart-export-menu hidden" role="menu"><button type="button" onclick="downloadOverviewReport()">Download WhatsApp PNG</button><button type="button" onclick="shareOverviewReport()">Share report</button></div></div>
-
-<div class="panel"><div class="paneltitle"><h3>Line Production Summary</h3><span>Click a plan for details</span></div><div class="table-scroll"><table><thead><tr><th>LINE</th><th>PRODUCT</th><th>PLAN</th><th>ACTUAL</th><th>ACHIEVEMENT</th><th>STATUS</th></tr></thead><tbody id="lineSummaryBody"></tbody></table></div></div></div>
-</div></section>
+  <div class="panel overview-filter-panel">
+    <div class="overview-filter-heading"><div><strong>Dashboard filters</strong><span>Choose the production date and narrow the factory view.</span></div><button class="btn" type="button" onclick="clearOverviewFilters()">Reset filters</button></div>
+    <div class="filters overview-filter-controls">
+      <label class="overview-filter-field"><span>Production date</span><input class="input" id="overviewDateFilter" type="date" onchange="refreshOverview()"/></label>
+      <label class="overview-filter-field"><span>Shift</span><select class="select" id="overviewShiftFilter" onchange="refreshOverview()"><option>All shifts</option><option>Shift 1</option><option>Shift 2</option><option>Shift 3</option></select></label>
+      <label class="overview-filter-field"><span>Production line</span><select class="select" id="lineFilter" onchange="refreshOverview()"><option>All lines</option><option>Line 1</option><option>Line 2</option><option>Line 3</option></select></label>
+      <label class="overview-filter-field"><span>Brand</span><select class="select" id="overviewBrandFilter" onchange="refreshOverview()"><option value="">All brands</option></select></label>
+      <label class="overview-filter-field"><span>Product</span><select class="select" id="overviewProductFilter" onchange="refreshOverview()"><option value="">All products</option></select></label>
+    </div>
+    <div class="overview-filter-foot"><span id="overviewFilterSummary">Showing production for today</span><span id="overviewLastRefresh">Waiting for production data…</span></div>
+  </div>
+  <div class="overview-kpi-grid">
+    <article class="overview-kpi"><div class="overview-kpi-label">Planned units</div><div class="overview-kpi-value" id="overviewKpiPlanned">—</div><div class="overview-kpi-foot" id="overviewKpiPlannedFoot">Filtered production plans</div></article>
+    <article class="overview-kpi"><div class="overview-kpi-label">Produced</div><div class="overview-kpi-value" id="overviewKpiActual">—</div><div class="overview-kpi-foot" id="overviewKpiActualFoot">Actual quantity recorded</div></article>
+    <article class="overview-kpi"><div class="overview-kpi-label">Accepted</div><div class="overview-kpi-value" id="overviewKpiAccepted">—</div><div class="overview-kpi-foot" id="overviewKpiAcceptedFoot">Produced less rejected</div></article>
+    <article class="overview-kpi"><div class="overview-kpi-label">Rejection rate</div><div class="overview-kpi-value" id="overviewKpiRejection">—</div><div class="overview-kpi-foot" id="overviewKpiRejectionFoot">Rejected units / produced</div></article>
+    <article class="overview-kpi"><div class="overview-kpi-label">Pending rework</div><div class="overview-kpi-value" id="overviewKpiRework">—</div><div class="overview-kpi-foot" id="overviewKpiReworkFoot">Units awaiting resolution</div></article>
+    <article class="overview-kpi"><div class="overview-kpi-label">Sticker exceptions</div><div class="overview-kpi-value" id="overviewKpiStickers">—</div><div class="overview-kpi-foot" id="overviewKpiStickersFoot">Missing / damaged stickers</div></article>
+  </div>
+  <div class="overview-dashboard-grid">
+    <section class="panel overview-chart-panel">
+      <div class="paneltitle"><div><h3>Hourly plan vs actual</h3><span class="chart-subtitle">Production by hour for each matching line and shift</span></div><button class="btn chart-export-trigger" type="button" onclick="shareOverviewReport()">Share / Download</button></div>
+      <div class="legend"><span><i class="dot" style="background:#3978f6"></i>Planned</span><span><i class="dot" style="background:#18a66b"></i>Actual</span></div>
+      <div id="overviewBarChart" class="chart" role="img" aria-label="Hourly planned versus actual production chart"></div>
+      <div id="overviewChartPlanDetails" class="overview-chart-plan-details"></div>
+      <div id="chartExportMenu" class="chart-export-menu hidden" role="menu"><button type="button" onclick="downloadOverviewReport()">Download WhatsApp PNG</button><button type="button" onclick="shareOverviewReport()">Share report</button></div>
+    </section>
+    <section class="panel overview-attention-panel">
+      <div class="paneltitle"><div><h3>Needs attention</h3><span>Quality, traceability and production exceptions</span></div><span id="overviewAttentionCount">0 items</span></div>
+      <div id="overviewAttentionList" class="overview-attention-list"></div>
+    </section>
+  </div>
+  <div class="overview-secondary-grid">
+    <section class="panel">
+      <div class="paneltitle"><div><h3>Line performance</h3><span>Aggregated by production line across the selected filters</span></div><span id="overviewLineCount">0 lines</span></div>
+      <div class="table-scroll"><table class="overview-data-table"><thead><tr><th>LINE</th><th>PLANS</th><th>PLANNED</th><th>PRODUCED</th><th>ACCEPTED</th><th>REJECTED</th><th>ACHIEVEMENT</th><th>STATUS</th></tr></thead><tbody id="lineSummaryBody"></tbody></table></div>
+    </section>
+    <section class="panel overview-plan-panel">
+      <div class="paneltitle"><div><h3>Production plan status</h3><span>Draft, published and completed plans</span></div><span id="overviewPlanStatusCount">0 plans</span></div>
+      <div id="overviewPlanStatusCards" class="overview-plan-status-list"></div>
+    </section>
+  </div>
+  <section class="panel overview-hourly-panel">
+    <div class="paneltitle"><div><h3>Hourly production register</h3><span>One row per scheduled hour, including hours without a submitted entry</span></div><span id="overviewHourlyCount">0 records</span></div>
+    <div class="table-scroll"><table class="overview-data-table overview-hourly-table"><thead><tr><th>DATE</th><th>LINE / SHIFT</th><th>BRAND / PRODUCT / MODEL</th><th>HOUR</th><th>TARGET</th><th>ACTUAL</th><th>ACCEPTED</th><th>REJECTED</th><th>ENTRY</th></tr></thead><tbody id="overviewHourlyBody"></tbody></table></div>
+  </section>
+</section>
 <section id="plans" class="page hidden"><div class="pagehead"><div><h1>Production Plans</h1><div class="sub">Create, publish and monitor production plans</div></div><div class="filters"><button class="btn primary" onclick="openPlanModal()">＋ Create plan</button></div></div><div class="filters" style="margin-bottom:16px"><select class="select"><option>All plan status</option><option>Draft</option><option>Published</option><option>Completed</option></select><select class="select"><option>All lines</option><option>Line 1</option><option>Line 2</option><option>Line 3</option></select><input class="input" type="date" value="2026-11-19"/></div><div class="planlist" id="planlist"></div></section>
 <section id="operator" class="page hidden"><div class="pagehead"><div><h1>Operator Workspace</h1><div class="sub">Select an active plan to record hourly production</div></div></div><div class="planlist" id="operatorplans"></div><div id="execution" class="hidden" style="margin-top:18px"></div></section>
 <section id="reports" class="page hidden">
