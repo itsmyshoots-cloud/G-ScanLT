@@ -304,7 +304,7 @@
       allowedTabs=newAllowed;
       isSuperAdmin=!!profile.is_super_admin;
       window.pmIsSuperAdmin=isSuperAdmin;
-      window.pmCanEditSavedHours=isSuperAdmin||profile.role==='admin';
+      window.pmCanEditSavedHours=isSuperAdmin||(profile.role==='admin'&&newAllowed.indexOf('operator')>=0);
       window.pmCurrentRole=profile.role||'operator';
       window.pmCurrentUserId=user.id;
       appAuthorized=true;
