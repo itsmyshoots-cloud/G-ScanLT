@@ -339,7 +339,7 @@ function hourEntry(id,h){
   }):[];
   window.pmHourlyEntryDraft={
     id:String(id),hourIndex:h,saved:saved,previous:entry,
-    serialPairs:serialPairs
+    serialPairs:serialPairs,confirmedOverproductionQty:null
   };
 
   var modal=document.getElementById('modal');
@@ -377,6 +377,24 @@ function hourEntry(id,h){
   modal.classList.remove('hidden');
 }
 
+function confirmHourlyOverproduction(plan,hourIndex,actualQty,draft){
+  var plannedQty=Number(planHourTargets(plan)[hourIndex])||0;
+  if(actualQty<=plannedQty){
+    draft.confirmedOverproductionQty=null;
+    return true;
+  }
+  if(draft.confirmedOverproductionQty===actualQty)return true;
+  var excess=actualQty-plannedQty;
+  var message='Production quantity is higher than the hourly plan.\\n\\n'+
+    'Hourly target: '+plannedQty+' units\\n'+
+    'Actual quantity: '+actualQty+' units\\n'+
+    'Above plan by: '+excess+' units\\n\\n'+
+    'Do you want to continue and save this higher production quantity?';
+  if(!window.confirm(message))return false;
+  draft.confirmedOverproductionQty=actualQty;
+  return true;
+}
+
 function continueHourlyEntry(){
   var draft=window.pmHourlyEntryDraft;if(!draft)return;
   var p=plans.find(function(x){return String(x.id)===draft.id;});if(!p)return;
@@ -387,7 +405,7 @@ function continueHourlyEntry(){
   var reason=document.getElementById('hreason').value;
   var missingQty=Number(document.getElementById('hmissqty').value||0);
   if(!Number.isInteger(q)||q<0||!Number.isInteger(rejected)||rejected<0||rejected>q)return toast('Rejected quantity must be a whole number between zero and actual quantity.');
-  if(q>planHourTargets(p)[draft.hourIndex])return toast('Actual quantity cannot exceed the planned quantity for this hour.');
+  if(!confirmHourlyOverproduction(p,draft.hourIndex,q,draft))return;
   if(q>0&&(!serialStart||!serialEnd))return toast('Enter the starting and ending production serial numbers.');
   if(rejected>0&&!['IQC Rejection','LQC Rejection'].includes(reason))return toast('Choose IQC Rejection or LQC Rejection.');
   if(rejected===0)document.getElementById('hreason').value='';
@@ -482,7 +500,7 @@ async function submitHour(id,h){
 
   if(q<0||rejected<0||rejected>q)return toast('Rejected quantity must be between zero and actual produced quantity.');
   if(missingQty<0||missingQty>q)return toast('Missing sticker quantity must be between zero and actual produced quantity.');
-  if(q>planHourTargets(p)[h])return toast('Actual produced quantity cannot exceed the planned quantity for this hour.');
+  if(!confirmHourlyOverproduction(p,h,q,draft))return;
   if(q>0&&(!serialStart||!serialEnd))return toast('Enter the normal serial range.');
   if(rejected>0&&!['IQC Rejection','LQC Rejection'].includes(reason))return toast('Choose IQC Rejection or LQC Rejection.');
   if(pairs.length!==missingQty)return toast('Enter the missing and replacement serial numbers first.');
