@@ -377,7 +377,61 @@ function hourEntry(id,h){
   modal.classList.remove('hidden');
 }
 
-function confirmHourlyOverproduction(plan,hourIndex,actualQty,draft){
+function showHourlyOverproductionDialog(plan,hourIndex,plannedQty,actualQty,excess){
+  return new Promise(function(resolve){
+    var labels=plan.hourLabels||timeSlots(plan.start,plan.end,plan.breakTimes||[]);
+    var hourLabel=labels[hourIndex]||('Hour '+(hourIndex+1));
+    var overlay=document.createElement('div');
+    overlay.className='hourly-overproduction-overlay';
+    overlay.id='hourlyOverproductionConfirm';
+    overlay.innerHTML=
+      '<section class="hourly-overproduction-dialog" role="alertdialog" aria-modal="true" aria-labelledby="hourlyOverproductionTitle" aria-describedby="hourlyOverproductionDescription">'+
+        '<div class="hourly-overproduction-head">'+
+          '<span class="hourly-overproduction-icon" aria-hidden="true">↑</span>'+
+          '<span class="hourly-overproduction-badge">Above hourly plan</span>'+
+        '</div>'+
+        '<h2 id="hourlyOverproductionTitle">Confirm higher production</h2>'+
+        '<p class="hourly-overproduction-context">'+escapeHtml(plan.line||'Line')+' · '+escapeHtml(plan.product||'Product')+' · '+escapeHtml(plan.shift||'Shift')+' · '+escapeHtml(hourLabel)+'</p>'+
+        '<p class="hourly-overproduction-description" id="hourlyOverproductionDescription">The quantity entered is higher than the scheduled target for this hour. Review the comparison before saving.</p>'+
+        '<div class="hourly-overproduction-metrics">'+
+          '<div class="hourly-overproduction-metric"><span>Hourly target</span><strong>'+plannedQty.toLocaleString('en-IN')+'</strong><small>Units planned</small></div>'+
+          '<div class="hourly-overproduction-metric"><span>Actual output</span><strong>'+actualQty.toLocaleString('en-IN')+'</strong><small>Units entered</small></div>'+
+          '<div class="hourly-overproduction-metric excess"><span>Extra output</span><strong>+'+excess.toLocaleString('en-IN')+'</strong><small>Units above target</small></div>'+
+        '</div>'+
+        '<div class="hourly-overproduction-note"><strong>Before you confirm</strong><span>Confirm only when these additional units were actually produced during this hourly interval. The scheduled target will remain unchanged.</span></div>'+
+        '<div class="hourly-overproduction-actions">'+
+          '<button type="button" class="btn" data-overproduction-cancel>Go back and review</button>'+
+          '<button type="button" class="btn primary" data-overproduction-confirm>Confirm '+actualQty.toLocaleString('en-IN')+' units</button>'+
+        '</div>'+
+      '</section>';
+    document.body.appendChild(overlay);
+    var settled=false;
+    function finish(confirmed){
+      if(settled)return;
+      settled=true;
+      document.removeEventListener('keydown',onKeydown);
+      overlay.remove();
+      resolve(confirmed);
+    }
+    function onKeydown(event){
+      if(event.key==='Escape'){event.preventDefault();finish(false);}
+      if(event.key==='Tab'){
+        var controls=overlay.querySelectorAll('button:not(:disabled)');
+        if(!controls.length)return;
+        var first=controls[0],last=controls[controls.length-1];
+        if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+        else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+      }
+    }
+    overlay.querySelector('[data-overproduction-cancel]').addEventListener('click',function(){finish(false);});
+    overlay.querySelector('[data-overproduction-confirm]').addEventListener('click',function(){finish(true);});
+    overlay.addEventListener('click',function(event){if(event.target===overlay)finish(false);});
+    document.addEventListener('keydown',onKeydown);
+    overlay.querySelector('[data-overproduction-cancel]').focus();
+  });
+}
+
+async function confirmHourlyOverproduction(plan,hourIndex,actualQty,draft){
   var plannedQty=Number(planHourTargets(plan)[hourIndex])||0;
   if(actualQty<=plannedQty){
     draft.confirmedOverproductionQty=null;
@@ -385,17 +439,13 @@ function confirmHourlyOverproduction(plan,hourIndex,actualQty,draft){
   }
   if(draft.confirmedOverproductionQty===actualQty)return true;
   var excess=actualQty-plannedQty;
-  var message='Production quantity is higher than the hourly plan.\\n\\n'+
-    'Hourly target: '+plannedQty+' units\\n'+
-    'Actual quantity: '+actualQty+' units\\n'+
-    'Above plan by: '+excess+' units\\n\\n'+
-    'Do you want to continue and save this higher production quantity?';
-  if(!window.confirm(message))return false;
+  var confirmed=await showHourlyOverproductionDialog(plan,hourIndex,plannedQty,actualQty,excess);
+  if(!confirmed)return false;
   draft.confirmedOverproductionQty=actualQty;
   return true;
 }
 
-function continueHourlyEntry(){
+async function continueHourlyEntry(){
   var draft=window.pmHourlyEntryDraft;if(!draft)return;
   var p=plans.find(function(x){return String(x.id)===draft.id;});if(!p)return;
   var q=Number(document.getElementById('ha').value||0);
@@ -405,7 +455,7 @@ function continueHourlyEntry(){
   var reason=document.getElementById('hreason').value;
   var missingQty=Number(document.getElementById('hmissqty').value||0);
   if(!Number.isInteger(q)||q<0||!Number.isInteger(rejected)||rejected<0||rejected>q)return toast('Rejected quantity must be a whole number between zero and actual quantity.');
-  if(!confirmHourlyOverproduction(p,draft.hourIndex,q,draft))return;
+  if(!await confirmHourlyOverproduction(p,draft.hourIndex,q,draft))return;
   if(q>0&&(!serialStart||!serialEnd))return toast('Enter the starting and ending production serial numbers.');
   if(rejected>0&&!['IQC Rejection','LQC Rejection'].includes(reason))return toast('Choose IQC Rejection or LQC Rejection.');
   if(rejected===0)document.getElementById('hreason').value='';
@@ -500,7 +550,7 @@ async function submitHour(id,h){
 
   if(q<0||rejected<0||rejected>q)return toast('Rejected quantity must be between zero and actual produced quantity.');
   if(missingQty<0||missingQty>q)return toast('Missing sticker quantity must be between zero and actual produced quantity.');
-  if(!confirmHourlyOverproduction(p,h,q,draft))return;
+  if(!await confirmHourlyOverproduction(p,h,q,draft))return;
   if(q>0&&(!serialStart||!serialEnd))return toast('Enter the normal serial range.');
   if(rejected>0&&!['IQC Rejection','LQC Rejection'].includes(reason))return toast('Choose IQC Rejection or LQC Rejection.');
   if(pairs.length!==missingQty)return toast('Enter the missing and replacement serial numbers first.');
