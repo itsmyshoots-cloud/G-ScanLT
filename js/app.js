@@ -154,6 +154,20 @@ async function pmReloadProductionData(){
 function sumEntries(p,key){return Object.values(p.entries||{}).reduce((a,e)=>a+(Number(e[key])||0),0)}
 function getHourlyActual(p,h){return Number(p.entries?.[h]?.actual)||0}
 function getHourlyRejected(p,h){return Number(p.entries?.[h]?.rejected)||0}
+function getHourlyReworked(p,h){
+  var entry=p.entries&&p.entries[h];
+  var units=entry&&Array.isArray(entry.reworkItems)?entry.reworkItems:[];
+  var completed=units.filter(function(unit){return unit.status==='Completed';}).length;
+  return Math.min(getHourlyRejected(p,h),completed);
+}
+function getHourlyAccepted(p,h){
+  return Math.max(0,getHourlyActual(p,h)-getHourlyRejected(p,h)+getHourlyReworked(p,h));
+}
+function getPlanAccepted(p){
+  var actual=Number(p.actual)||0,rejected=Number(p.rejection)||0;
+  var reworked=Math.min(rejected,sumRework(p,'Completed'));
+  return Math.max(0,actual-rejected+reworked);
+}
 function planHourTargets(p){
   if(Array.isArray(p.hourTargets))return p.hourTargets;
   return timeSlots(p.start,p.end).map(function(){return 0;});
@@ -271,13 +285,13 @@ function hourCards(p){
   var admin=!!window.pmCanEditSavedHours;
   return targets.map(function(target,i){
     var label=labels[i]||hours[i]||('Hour '+(i+1)),entry=p.entries&&p.entries[i],saved=isHourlyEntrySaved(entry);
-    var q=Number(entry&&entry.actual)||0,r=Number(entry&&entry.rejected)||0,missing=Number(entry&&entry.missingSerialQty)||0;
+    var q=Number(entry&&entry.actual)||0,r=Number(entry&&entry.rejected)||0,missing=Number(entry&&entry.missingSerialQty)||0,reworked=getHourlyReworked(p,i),accepted=getHourlyAccepted(p,i);
     var canOpen=saved?admin:p.status!=='Completed';
     var cls='hour '+(saved?'recorded':'pending')+(saved&&!admin?' locked':'')+(saved&&admin?' admin-editable':'');
     var action=saved?(admin?'Updated / Edit':'Updated'):'Record hour';
     return '<div class="'+cls+'"><strong>'+escapeHtml(label)+'</strong><small>Plan: '+target+' units</small>'+
       '<div class="actual">'+(saved?q+' produced':'—')+'</div>'+
-      '<small>'+(saved?r+' rejected · '+(q-r)+' accepted':'Pending')+'</small>'+
+      '<small>'+(saved?r+' originally rejected · '+accepted+' accepted'+(reworked?' · '+reworked+' reworked':''):'Pending')+'</small>'+
       (missing?'<small>Missing serial labels: '+missing+'</small>':'')+
       '<small class="hour-status">'+(saved?'✓ Updated':'Not recorded')+'</small>'+
       '<button class="btn" style="margin-top:10px;width:100%" '+(canOpen?'':'disabled')+
@@ -301,13 +315,13 @@ function openExecution(id){
     '<button class="btn execution-back" type="button" onclick="closeExecution(\''+safeId+'\')">← Back to plans</button></div>'+
     '<div class="detailgrid"><div class="detailbox"><div class="klabel">Planned</div><div class="num">'+p.qty+'</div></div>'+
     '<div class="detailbox"><div class="klabel">Actual recorded</div><div class="num">'+p.actual+'</div></div>'+
-    '<div class="detailbox"><div class="klabel">Accepted · Rejected</div><div class="num">'+(p.actual-p.rejection)+' · '+p.rejection+'</div></div></div>'+
+    '<div class="detailbox"><div class="klabel">Accepted · Rejected</div><div class="num">'+getPlanAccepted(p)+' · '+p.rejection+'</div></div></div>'+
     '<div class="paneltitle"><h3>Hourly Production Entries</h3><span>'+(admin?'Saved hours may be corrected by Admin or Super Admin':'Saved hours are locked after submission')+'</span></div>'+
     '<div class="hourgrid">'+hourCards(p)+'</div>'+
     '<div class="paneltitle" style="margin-top:18px"><h3>Shift Closing</h3><span>'+(allRecorded?'All scheduled hourly intervals completed':'Record every scheduled interval to enable closing')+'</span></div>'+
     '<div class="detailgrid"><div class="detailbox"><div class="klabel">Total actual</div><div class="num">'+p.actual+'</div></div>'+
     '<div class="detailbox"><div class="klabel">Total rejected</div><div class="num">'+p.rejection+'</div></div>'+
-    '<div class="detailbox"><div class="klabel">Accepted</div><div class="num">'+(p.actual-p.rejection)+'</div></div></div>'+
+    '<div class="detailbox"><div class="klabel">Accepted</div><div class="num">'+getPlanAccepted(p)+'</div></div></div>'+
     '<div class="modalactions"><button class="btn primary" '+(allRecorded&&p.status!=='Completed'?'':'disabled')+' onclick="closeShift(\''+safeId+'\')">Close Shift</button></div></div>';
   var host=document.getElementById('execution');host.innerHTML=content;host.classList.remove('hidden');
   host.scrollIntoView({behavior:'smooth',block:'start'});
@@ -879,13 +893,13 @@ async function publishPlan(id){
 }
 function viewPlan(id){
   var p=plans.find(function(x){return String(x.id)===String(id);});if(!p)return;
-  var accepted=p.actual-p.rejection,labels=p.hourLabels||timeSlots(p.start,p.end,p.breakTimes||[]);
+  var accepted=getPlanAccepted(p),labels=p.hourLabels||timeSlots(p.start,p.end,p.breakTimes||[]);
   var breakText=(p.breakTimes||[]).map(function(x){
     return formatTime12(x.start_time||x.start)+'–'+formatTime12(x.end_time||x.end);
   }).join(', ');
   var body=planHourTargets(p).map(function(_,i){
     var e=p.entries&&p.entries[i]||{};
-    return '<tr><td>'+escapeHtml(labels[i]||'Hour '+(i+1))+'</td><td>'+planHourTargets(p)[i]+'</td><td>'+getHourlyActual(p,i)+'</td><td>'+getHourlyRejected(p,i)+'</td><td>'+(getHourlyActual(p,i)-getHourlyRejected(p,i))+'</td><td>'+Number(e.missingSerialQty||0)+'</td></tr>';
+    return '<tr><td>'+escapeHtml(labels[i]||'Hour '+(i+1))+'</td><td>'+planHourTargets(p)[i]+'</td><td>'+getHourlyActual(p,i)+'</td><td>'+getHourlyRejected(p,i)+'</td><td>'+getHourlyAccepted(p,i)+'</td><td>'+Number(e.missingSerialQty||0)+'</td></tr>';
   }).join('');
   var modal=document.getElementById('modal');
   modal.innerHTML='<div class="modal" style="width:min(900px,100%);max-height:90vh;overflow:auto">'+
@@ -1183,7 +1197,7 @@ function updateOverviewKpis(filteredPlans){
   var totals=f.reduce(function(a,p){
     var actual=Number(p.actual)||0,rejected=Number(p.rejection)||0;
     a.planned+=Number(p.qty)||0;a.actual+=actual;a.rejected+=rejected;
-    a.accepted+=Math.max(0,actual-rejected);
+    a.accepted+=getPlanAccepted(p);
     a.pendingRework+=sumRework(p,'Pending');
     a.reworked+=sumRework(p,'Completed');
     a.finalRejected+=sumRework(p,'Finally Rejected');
@@ -1235,7 +1249,7 @@ function renderOverviewSummary(filteredPlans){
     var key=p.line||'Unassigned',g=groups.get(key);
     if(!g){g={line:key,plans:0,planned:0,actual:0,accepted:0,rejected:0,completed:0};groups.set(key,g);}
     var actual=Number(p.actual)||0,rejected=Number(p.rejection)||0;
-    g.plans++;g.planned+=Number(p.qty)||0;g.actual+=actual;g.rejected+=rejected;g.accepted+=Math.max(0,actual-rejected);if(p.status==='Completed')g.completed++;
+    g.plans++;g.planned+=Number(p.qty)||0;g.actual+=actual;g.rejected+=rejected;g.accepted+=getPlanAccepted(p);if(p.status==='Completed')g.completed++;
   });
   var rows=Array.from(groups.values()).sort(function(a,b){return a.line.localeCompare(b.line);});
   if(count)count.textContent=rows.length+' lines';
@@ -1278,7 +1292,7 @@ function renderOverviewHourlyDetails(filteredPlans){
     var targets=planHourTargets(p),labels=p.hourLabels||[];
     targets.forEach(function(target,i){
       var entry=p.entries&&p.entries[i],actual=entry?Number(entry.actual)||0:0,rejected=entry?Number(entry.rejected)||0:0;
-      rows.push({date:p.date,line:p.line,shift:p.shift,brand:p.brand,product:p.product,model:p.model,hour:labels[i]||hours[i]||('Hour '+(i+1)),target:Number(target)||0,actual:actual,accepted:Math.max(0,actual-rejected),rejected:rejected,recorded:!!entry});
+      rows.push({date:p.date,line:p.line,shift:p.shift,brand:p.brand,product:p.product,model:p.model,hour:labels[i]||hours[i]||('Hour '+(i+1)),target:Number(target)||0,actual:actual,accepted:getHourlyAccepted(p,i),rejected:rejected,recorded:!!entry});
     });
   });
   rows.sort(function(a,b){return String(a.date).localeCompare(String(b.date))||String(a.line).localeCompare(String(b.line))||String(a.shift).localeCompare(String(b.shift))||String(a.hour).localeCompare(String(b.hour));});
@@ -1349,7 +1363,7 @@ function makeOverviewReportCanvas(){
     rr(48,y,W-96,chartCard,14,'#fff','#e4eaf2');
     txt(p.line+' · '+p.shift+' · '+p.date,74,y+32,18,'#172438','700');
     txt((p.brand||'—')+' · '+(p.product||'—')+' · Model '+(p.model||'—'),74,y+58,14,'#526277');
-    txt('Planned '+p.qty+'   Actual '+p.actual+'   Accepted '+(p.actual-p.rejection)+'   Rejected '+p.rejection+'   Status '+getPlanStatusLabel(p),74,y+86,14,'#334155','600');
+    txt('Planned '+p.qty+'   Actual '+p.actual+'   Accepted '+getPlanAccepted(p)+'   Rejected '+p.rejection+'   Status '+getPlanStatusLabel(p),74,y+86,14,'#334155','600');
     var labels=p.hourLabels||timeSlots(p.start,p.end),targets=planHourTargets(p);
     var actual=labels.map(function(_,i){return getHourlyActual(p,i);});
     var planned=labels.map(function(_,i){return Number(targets[i])||0;});
@@ -1427,7 +1441,7 @@ function renderReports(){
  if(type==='sticker'){var stickerRows=[];filtered.forEach(function(p){Object.entries(p.entries||{}).forEach(function(pair){var h=pair[0],e=pair[1],qty=Number(e.missingSerialQty)||0,exceptions=Array.isArray(e.serialExceptions)?e.serialExceptions:[];if(!qty&&!exceptions.length)return;var labels=p.hourLabels||hours,hourLabel=labels[Number(h)]||('Hour '+(Number(h)+1));if(hourFilter!=='all'&&String(hourLabel)!==hourFilter)return;if(exceptions.length){exceptions.forEach(function(x,i){stickerRows.push({key:[p.date,p.shift,p.line,hourLabel,i+1].join(' · '),date:p.date,shift:p.shift,line:p.line,brand:p.brand,product:p.product,model:p.model,hour:hourLabel,missing:1,missingSerial:x.missing_serial_number||'',replacementSerial:x.alternate_serial_number||'',remarks:x.remark||x.remarks||e.remarks||''});});}else{stickerRows.push({key:[p.date,p.shift,p.line,hourLabel].join(' · '),date:p.date,shift:p.shift,line:p.line,brand:p.brand,product:p.product,model:p.model,hour:hourLabel,missing:qty,missingSerial:e.missingSerialStart||'',replacementSerial:e.alternateSerialStart||'',remarks:e.remarks||''});}});});document.getElementById('reportTableTitle').textContent='Missing / damaged sticker detail';document.getElementById('reportTableSubtitle').textContent='Missing sticker serials and replacement serial numbers';document.getElementById('reportTableCount').textContent=stickerRows.length+' rows';document.getElementById('reportFilterSummary').textContent=filtered.length+' plans matched';renderStickerReportRows(stickerRows);return;}
  function reasonQty(plan,reason){return Object.values(plan.entries||{}).reduce(function(n,e){return n+(e.reason===reason?(Number(e.rejected)||0):0);},0);}
  function makeKey(p,h){if(type==='hourly')return [p.date,p.shift,p.line,h].join(' · ');if(type==='day')return p.date;if(type==='month')return String(p.date||'').slice(0,7);if(type==='shift')return [p.date,p.shift,p.line].join(' · ');if(type==='model')return [p.brand,p.product,p.model].filter(Boolean).join(' · ');if(type==='product')return [p.brand,p.product].filter(Boolean).join(' · ');if(type==='brand')return p.brand||'—';if(type==='rejection')return [p.date,p.line,p.shift].join(' · ');if(type==='rework')return [p.date,p.line,p.shift,p.product,p.model].join(' · ');if(type==='sticker')return [p.date,p.line,p.shift,p.product,p.model].join(' · ');return p.id;}
- filtered.forEach(function(p){var hoursToUse=(type==='hourly'?Object.keys(p.entries||{}):['summary']);if(hourFilter!=='all'&&type==='hourly')hoursToUse=hoursToUse.filter(function(h){return String((p.hourLabels||hours)[Number(h)]||hours[Number(h)]||('Hour '+(Number(h)+1)))===hourFilter;});if(type==='rework'&&!sumRework(p,'Completed')&&!sumRework(p,'Pending')&&!sumRework(p,'Finally Rejected'))return;if(type==='sticker'&&!sumMissingSticker(p))return;hoursToUse.forEach(function(h){var key=makeKey(p,h),r=groups.get(key);if(!r){r={key:key,date:p.date,shift:p.shift,line:p.line,brand:p.brand,product:p.product,model:p.model,hour:type==='hourly'?(p.hourLabels?.[Number(h)]||hours[Number(h)]||('Hour '+(Number(h)+1))):'—',plan:0,actual:0,rejection:0,accepted:0,iqc:0,lqc:0,other:0,rework:0,pending:0,finalRejected:0,missing:0,achievement:0,status:getPlanStatusLabel(p),plans:[]};groups.set(key,r);}var entry=type==='hourly'?p.entries?.[h]:null; r.plan+=type==='hourly'?(Number(p.hourTargets?.[Number(h)])||0):Number(p.qty)||0;r.actual+=type==='hourly'?(Number(entry?.actual)||0):Number(p.actual)||0;r.rejection+=type==='hourly'?(Number(entry?.rejected)||0):Number(p.rejection)||0;r.accepted+=type==='hourly'?Math.max(0,(Number(entry?.actual)||0)-(Number(entry?.rejected)||0)):Math.max(0,(Number(p.actual)||0)-(Number(p.rejection)||0));r.iqc+=type==='hourly'?(entry?.reason==='IQC Rejection'?(Number(entry.rejected)||0):0):reasonQty(p,'IQC Rejection');r.lqc+=type==='hourly'?(entry?.reason==='LQC Rejection'?(Number(entry.rejected)||0):0):reasonQty(p,'LQC Rejection');r.other+=type==='hourly'?(entry?.rejected&&entry.reason!=='IQC Rejection'&&entry.reason!=='LQC Rejection'?(Number(entry.rejected)||0):0):Math.max(0,(Number(p.rejection)||0)-reasonQty(p,'IQC Rejection')-reasonQty(p,'LQC Rejection'));r.rework+=type==='hourly'?planReworkUnits(p).filter(x=>String(x.hour)===String(p.hourLabels?.[Number(h)])&&(x.unit.status||'Pending')==='Completed').length:sumRework(p,'Completed');r.pending+=type==='hourly'?planReworkUnits(p).filter(x=>String(x.hour)===String(p.hourLabels?.[Number(h)])&&(x.unit.status||'Pending')==='Pending').length:sumRework(p,'Pending');r.finalRejected+=type==='hourly'?planReworkUnits(p).filter(x=>String(x.hour)===String(p.hourLabels?.[Number(h)])&&(x.unit.status||'Pending')==='Finally Rejected').length:sumRework(p,'Finally Rejected');r.missing+=type==='hourly'?(Number(entry?.missingSerialQty)||0):sumMissingSticker(p);if(r.status!==getPlanStatusLabel(p))r.status='Mixed';r.plans.push(p);});});
+ filtered.forEach(function(p){var hoursToUse=(type==='hourly'?Object.keys(p.entries||{}):['summary']);if(hourFilter!=='all'&&type==='hourly')hoursToUse=hoursToUse.filter(function(h){return String((p.hourLabels||hours)[Number(h)]||hours[Number(h)]||('Hour '+(Number(h)+1)))===hourFilter;});if(type==='rework'&&!sumRework(p,'Completed')&&!sumRework(p,'Pending')&&!sumRework(p,'Finally Rejected'))return;if(type==='sticker'&&!sumMissingSticker(p))return;hoursToUse.forEach(function(h){var key=makeKey(p,h),r=groups.get(key);if(!r){r={key:key,date:p.date,shift:p.shift,line:p.line,brand:p.brand,product:p.product,model:p.model,hour:type==='hourly'?(p.hourLabels?.[Number(h)]||hours[Number(h)]||('Hour '+(Number(h)+1))):'—',plan:0,actual:0,rejection:0,accepted:0,iqc:0,lqc:0,other:0,rework:0,pending:0,finalRejected:0,missing:0,achievement:0,status:getPlanStatusLabel(p),plans:[]};groups.set(key,r);}var entry=type==='hourly'?p.entries?.[h]:null; r.plan+=type==='hourly'?(Number(p.hourTargets?.[Number(h)])||0):Number(p.qty)||0;r.actual+=type==='hourly'?(Number(entry?.actual)||0):Number(p.actual)||0;r.rejection+=type==='hourly'?(Number(entry?.rejected)||0):Number(p.rejection)||0;r.accepted+=type==='hourly'?getHourlyAccepted(p,Number(h)):getPlanAccepted(p);r.iqc+=type==='hourly'?(entry?.reason==='IQC Rejection'?(Number(entry.rejected)||0):0):reasonQty(p,'IQC Rejection');r.lqc+=type==='hourly'?(entry?.reason==='LQC Rejection'?(Number(entry.rejected)||0):0):reasonQty(p,'LQC Rejection');r.other+=type==='hourly'?(entry?.rejected&&entry.reason!=='IQC Rejection'&&entry.reason!=='LQC Rejection'?(Number(entry.rejected)||0):0):Math.max(0,(Number(p.rejection)||0)-reasonQty(p,'IQC Rejection')-reasonQty(p,'LQC Rejection'));r.rework+=type==='hourly'?planReworkUnits(p).filter(x=>String(x.hour)===String(p.hourLabels?.[Number(h)])&&(x.unit.status||'Pending')==='Completed').length:sumRework(p,'Completed');r.pending+=type==='hourly'?planReworkUnits(p).filter(x=>String(x.hour)===String(p.hourLabels?.[Number(h)])&&(x.unit.status||'Pending')==='Pending').length:sumRework(p,'Pending');r.finalRejected+=type==='hourly'?planReworkUnits(p).filter(x=>String(x.hour)===String(p.hourLabels?.[Number(h)])&&(x.unit.status||'Pending')==='Finally Rejected').length:sumRework(p,'Finally Rejected');r.missing+=type==='hourly'?(Number(entry?.missingSerialQty)||0):sumMissingSticker(p);if(r.status!==getPlanStatusLabel(p))r.status='Mixed';r.plans.push(p);});});
  var rows=Array.from(groups.values()).map(function(r){r.achievement=r.plan?Math.round(r.actual/r.plan*100):0;return r;}).sort(function(a,b){return String(b.date).localeCompare(String(a.date))||String(a.key).localeCompare(String(b.key));});
  var titles={hourly:'Hourly production detail',day:'Daily production summary',month:'Monthly production summary',shift:'Shift production summary',model:'Model-wise production',product:'Product-wise production',brand:'Brand-wise production',rejection:'Rejection analysis',rework:'Rework disposition',sticker:'Missing / damaged sticker report'},subtitles={hourly:'Actual output for each production hour and shift',day:'Totals by production date',month:'Totals grouped by calendar month',shift:'Totals for each date, shift and line',model:'Compare production by model number',product:'Compare production by product',brand:'Compare production by brand',rejection:'Rejected quantity by recorded category',rework:'Rework pending, completed and finally rejected',sticker:'Missing sticker quantities by production entry'};
  document.getElementById('reportTableTitle').textContent=titles[type]||titles.hourly;document.getElementById('reportTableSubtitle').textContent=subtitles[type]||'';document.getElementById('reportTableCount').textContent=rows.length+' rows';document.getElementById('reportFilterSummary').textContent=filtered.length+' plans matched';renderReportRows(rows,type);
