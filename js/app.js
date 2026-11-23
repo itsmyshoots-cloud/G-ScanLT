@@ -1214,7 +1214,7 @@ function updateOverviewKpis(filteredPlans){
   set('overviewKpiStickers',totals.stickers.toLocaleString('en-IN'));
   set('overviewKpiPlannedFoot',f.length+' published / completed plans');
   set('overviewKpiActualFoot',Math.max(0,totals.planned-totals.actual).toLocaleString('en-IN')+' units remaining');
-  set('overviewKpiAcceptedFoot','Accepted output after recorded rejection');
+  set('overviewKpiAcceptedFoot','Includes completed rework; excludes unresolved / finally rejected units');
   set('overviewKpiRejectionFoot',totals.rejected+' originally rejected · '+totals.reworked+' reworked · '+totals.pendingRework+' pending'+(totals.finalRejected?' · '+totals.finalRejected+' final reject':''));
   set('overviewKpiReworkFoot',totals.pendingRework?'Requires resolution':'No pending rework');
   set('overviewKpiStickersFoot',totals.stickers?'Needs serial-level follow-up':'No sticker exceptions');
