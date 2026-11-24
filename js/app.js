@@ -163,10 +163,10 @@ function getHourlyReworked(p,h){
 function getHourlyActual(p,h){return Math.max(0,getHourlyGrossProduced(p,h)-getHourlyRejected(p,h)+getHourlyReworked(p,h));}
 function getHourlyAccepted(p,h){return getHourlyActual(p,h);}
 function getPlanGrossProduced(p){return Number(p.actual)||0}
+function getPlanReworkCompleted(p){return Math.min(Number(p.rejection)||0,sumRework(p,'Completed'));}
 function getPlanAccepted(p){
   var gross=getPlanGrossProduced(p),rejected=Number(p.rejection)||0;
-  var reworked=Math.min(rejected,sumRework(p,'Completed'));
-  return Math.max(0,gross-rejected+reworked);
+  return Math.max(0,gross-rejected+getPlanReworkCompleted(p));
 }
 function getPlanActual(p){return getPlanAccepted(p);}
 function planHourTargets(p){
@@ -245,7 +245,7 @@ function renderPlans(){
       return formatTime12(x.start_time||x.start)+'–'+formatTime12(x.end_time||x.end);
     }).join(', ');
     return '<div class="plan"><h3>'+escapeHtml(p.line)+' · '+escapeHtml(p.brand||'Unbranded')+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model||p.product)+'</h3>'+
-      '<div class="planmeta">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+'<br>Target: '+p.qty+' units · '+getPlanActual(p)+' actual · '+p.rejection+' rejected<br>'+
+      '<div class="planmeta">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+'<br>Target: '+p.qty+' units · '+getPlanActual(p)+' actual · '+getPlanGrossProduced(p)+' gross · '+p.rejection+' originally rejected · '+getPlanReworkCompleted(p)+' rework completed<br>'+
       escapeHtml(formatTime12(p.start))+'–'+escapeHtml(formatTime12(p.end))+' · '+escapeHtml(p.supervisor||'Unassigned')+
       (breakText?'<br><span class="plan-break-visible">Breaks: '+escapeHtml(breakText)+'</span>':'')+'</div>'+
       '<div class="planbottom"><span class="pill '+(p.status==='Draft'?'warn':'')+'">'+escapeHtml(p.status)+'</span><div class="filters">'+
@@ -273,7 +273,7 @@ function renderOperator(){
       '<div class="planmeta">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+'<br>Target: '+p.qty+' units · '+escapeHtml(formatTime12(p.start))+'–'+escapeHtml(formatTime12(p.end))+
       (breakText?'<br><span class="plan-break-visible">Breaks: '+escapeHtml(breakText)+'</span>':'')+'</div>'+
       '<div class="progress"><i style="width:'+Math.min(100,percentage)+'%"></i></div>'+
-      '<div class="linemeta"><span>'+netActual+' actual / '+p.qty+' planned · Rejected '+p.rejection+'</span><span>'+percentage+'%</span></div>'+
+      '<div class="linemeta"><span>'+netActual+' actual / '+p.qty+' planned · '+getPlanReworkCompleted(p)+' rework completed</span><span>'+percentage+'%</span></div>'+
       '<div class="planbottom"><span class="pill">Published</span><button class="btn primary" onclick="openExecution(\''+p.id+'\')">Open plan</button></div></div>';
   }).join('')||'<div class="panel"><div class="sub">No published production plans are scheduled for today ('+today+').</div></div>';
 }
@@ -292,7 +292,7 @@ function hourCards(p){
     var action=saved?(admin?'Updated / Edit':'Updated'):'Record hour';
     return '<div class="'+cls+'"><strong>'+escapeHtml(label)+'</strong><small>Plan: '+target+' units</small>'+
       '<div class="actual">'+(saved?accepted+' actual':'—')+'</div>'+
-      '<small>'+(saved?q+' gross produced · '+r+' rejected'+(reworked?' · '+reworked+' reworked':''):'Pending')+'</small>'+
+      '<small>'+(saved?q+' gross produced · '+r+' originally rejected · '+reworked+' rework completed':'Pending')+'</small>'+
       (missing?'<small>Missing serial labels: '+missing+'</small>':'')+
       '<small class="hour-status">'+(saved?'✓ Updated':'Not recorded')+'</small>'+
       '<button class="btn" style="margin-top:10px;width:100%" '+(canOpen?'':'disabled')+
@@ -316,13 +316,16 @@ function openExecution(id){
     '<button class="btn execution-back" type="button" onclick="closeExecution(\''+safeId+'\')">← Back to plans</button></div>'+
     '<div class="detailgrid"><div class="detailbox"><div class="klabel">Planned</div><div class="num">'+p.qty+'</div></div>'+
     '<div class="detailbox"><div class="klabel">Gross produced</div><div class="num">'+getPlanGrossProduced(p)+'</div></div>'+
-    '<div class="detailbox"><div class="klabel">Actual output</div><div class="num">'+getPlanActual(p)+'</div></div></div>'+
+    '<div class="detailbox"><div class="klabel">Actual output</div><div class="num">'+getPlanActual(p)+'</div></div>'+
+    '<div class="detailbox"><div class="klabel">Originally rejected</div><div class="num">'+p.rejection+'</div></div>'+
+    '<div class="detailbox"><div class="klabel">Rework completed</div><div class="num">'+getPlanReworkCompleted(p)+'</div></div></div>'+
     '<div class="paneltitle"><h3>Hourly Production Entries</h3><span>'+(admin?'Saved hours may be corrected by Admin or Super Admin':'Saved hours are locked after submission')+'</span></div>'+
     '<div class="hourgrid">'+hourCards(p)+'</div>'+
     '<div class="paneltitle" style="margin-top:18px"><h3>Shift Closing</h3><span>'+(allRecorded?'All scheduled hourly intervals completed':'Record every scheduled interval to enable closing')+'</span></div>'+
     '<div class="detailgrid"><div class="detailbox"><div class="klabel">Actual output</div><div class="num">'+getPlanActual(p)+'</div></div>'+
-    '<div class="detailbox"><div class="klabel">Total rejected</div><div class="num">'+p.rejection+'</div></div>'+
-    '<div class="detailbox"><div class="klabel">Gross produced</div><div class="num">'+getPlanGrossProduced(p)+'</div></div></div>'+
+    '<div class="detailbox"><div class="klabel">Gross produced</div><div class="num">'+getPlanGrossProduced(p)+'</div></div>'+
+    '<div class="detailbox"><div class="klabel">Originally rejected</div><div class="num">'+p.rejection+'</div></div>'+
+    '<div class="detailbox"><div class="klabel">Rework completed</div><div class="num">'+getPlanReworkCompleted(p)+'</div></div></div>'+
     '<div class="modalactions"><button class="btn primary" '+(allRecorded&&p.status!=='Completed'?'':'disabled')+' onclick="closeShift(\''+safeId+'\')">Close Shift</button></div></div>';
   var host=document.getElementById('execution');host.innerHTML=content;host.classList.remove('hidden');
   host.scrollIntoView({behavior:'smooth',block:'start'});
@@ -968,7 +971,7 @@ function viewPlan(id){
   }).join(', ');
   var body=planHourTargets(p).map(function(_,i){
     var e=p.entries&&p.entries[i]||{};
-    return '<tr><td>'+escapeHtml(labels[i]||'Hour '+(i+1))+'</td><td>'+planHourTargets(p)[i]+'</td><td>'+getHourlyGrossProduced(p,i)+'</td><td>'+getHourlyActual(p,i)+'</td><td>'+getHourlyRejected(p,i)+'</td><td>'+Number(e.missingSerialQty||0)+'</td></tr>';
+    return '<tr><td>'+escapeHtml(labels[i]||'Hour '+(i+1))+'</td><td>'+planHourTargets(p)[i]+'</td><td>'+getHourlyGrossProduced(p,i)+'</td><td>'+getHourlyActual(p,i)+'</td><td>'+getHourlyRejected(p,i)+'</td><td>'+getHourlyReworked(p,i)+'</td><td>'+Number(e.missingSerialQty||0)+'</td></tr>';
   }).join('');
   var modal=document.getElementById('modal');
   modal.innerHTML='<div class="modal" style="width:min(900px,100%);max-height:90vh;overflow:auto">'+
@@ -976,8 +979,8 @@ function viewPlan(id){
     '<h3>'+escapeHtml(p.line)+' · '+escapeHtml(p.brand)+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model||'—')+'</h3>'+
     '<div class="sub">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+' · '+escapeHtml(formatTime12(p.start))+'–'+escapeHtml(formatTime12(p.end))+' · '+escapeHtml(p.supervisor||'Unassigned')+
     (breakText?' · Breaks: '+escapeHtml(breakText):'')+'</div>'+
-    '<div class="detailgrid"><div class="detailbox"><div class="klabel">Planned</div><div class="num">'+p.qty+'</div></div><div class="detailbox"><div class="klabel">Gross produced</div><div class="num">'+getPlanGrossProduced(p)+'</div></div><div class="detailbox"><div class="klabel">Actual output</div><div class="num">'+getPlanActual(p)+'</div></div></div>'+
-    '<div class="panel"><div class="paneltitle"><h3>Hourly Plan & Production</h3></div><div class="report-table-scroll"><table><thead><tr><th>Hour</th><th>Plan</th><th>Gross produced</th><th>Actual output</th><th>Rejected</th><th>Missing serial qty</th></tr></thead><tbody>'+body+'</tbody></table></div></div>'+
+    '<div class="detailgrid"><div class="detailbox"><div class="klabel">Planned</div><div class="num">'+p.qty+'</div></div><div class="detailbox"><div class="klabel">Gross produced</div><div class="num">'+getPlanGrossProduced(p)+'</div></div><div class="detailbox"><div class="klabel">Actual output</div><div class="num">'+getPlanActual(p)+'</div></div><div class="detailbox"><div class="klabel">Originally rejected</div><div class="num">'+p.rejection+'</div></div><div class="detailbox"><div class="klabel">Rework completed</div><div class="num">'+getPlanReworkCompleted(p)+'</div></div></div>'+
+    '<div class="panel"><div class="paneltitle"><h3>Hourly Plan & Production</h3></div><div class="report-table-scroll"><table><thead><tr><th>Hour</th><th>Plan</th><th>Gross produced</th><th>Actual output</th><th>Originally rejected</th><th>Rework completed</th><th>Missing serial qty</th></tr></thead><tbody>'+body+'</tbody></table></div></div>'+
     '<div class="modalactions"><button class="btn" onclick="closePlanModal()">Close</button></div></div>';
   modal.classList.remove('hidden');
 }
@@ -1114,9 +1117,9 @@ function renderRework(){
   const finalRejected=allUnits.filter(x=>x.unit.status==='Finally Rejected').length;
   const k=doc.querySelector('#reworkKpis'),count=doc.querySelector('#reworkCount'),table=doc.querySelector('#reworkTable');
   if(!k||!count||!table)return;
-  k.innerHTML=[['Rejected units',rejectedTotal],['Pending resolution',pending],['Rework completed',completed],['Finally rejected',finalRejected]].map(([label,value])=>`<div class="card"><div class="klabel">${label}</div><div class="kvalue">${value}</div></div>`).join('');
+  k.innerHTML=[['Originally rejected',rejectedTotal],['Pending rework',pending],['Rework completed',completed],['Finally rejected',finalRejected]].map(([label,value])=>`<div class="card"><div class="klabel">${label}</div><div class="kvalue">${value}</div></div>`).join('');
   count.textContent=`${filtered.length} plans · ${rejectedTotal} rejected units`;
-  table.querySelector('thead').innerHTML='<tr><th>PRODUCTION</th><th>PRODUCT / MODEL</th><th>OUTPUT</th><th>REJECTED</th><th>PENDING</th><th>REWORKED</th><th>FINAL REJECT</th><th>ACTION</th></tr>';
+  table.querySelector('thead').innerHTML='<tr><th>PRODUCTION</th><th>PRODUCT / MODEL</th><th>OUTPUT</th><th>ORIGINALLY REJECTED</th><th>PENDING REWORK</th><th>REWORK COMPLETED</th><th>FINALLY REJECTED</th><th>ACTION</th></tr>';
   table.querySelector('tbody').innerHTML=filtered.map(p=>{
     const units=planReworkUnits(p),rej=units.length,pend=units.filter(x=>(x.unit.status||'Pending')==='Pending').length,done=units.filter(x=>x.unit.status==='Completed').length,final=units.filter(x=>x.unit.status==='Finally Rejected').length;
     return `<tr><td><div class="rw-production-cell"><strong>${escapeHtml(p.date||'—')}</strong><span>${escapeHtml(p.line||'—')} · ${escapeHtml(p.brand||'—')}</span><small>${escapeHtml(p.status||'—')}</small></div></td><td><div class="rw-product-cell"><strong>${escapeHtml(p.product||'—')}</strong><span>${escapeHtml(p.model||'—')}</span></div></td><td><div class="rw-output-cell"><strong>${getPlanActual(p)}</strong><span>of ${Number(p.qty)||0} planned · gross ${getPlanGrossProduced(p)}</span></div></td><td><span class="rw-count-pill rejected">${rej}</span></td><td><span class="rw-count-pill pending">${pend}</span></td><td><span class="rw-count-pill completed">${done}</span></td><td><span class="rw-count-pill final">${final}</span></td><td><button class="btn primary" onclick="openReworkPlan('${p.id}')">Resolve</button></td></tr>`;
@@ -1133,7 +1136,7 @@ function resetReworkFilters(){
   if(details)details.open=false;
   renderRework();
 }
-function reworkStatusLabel(status){return status==='Completed'?'Reworked / Completed':status==='Finally Rejected'?'Finally Rejected':'Pending';}
+function reworkStatusLabel(status){return status==='Completed'?'Rework completed':status==='Finally Rejected'?'Finally rejected':'Pending rework';}
 function openReworkPlan(id){
   var p=plans.find(function(x){return String(x.id)===String(id);});
   if(!p)return;
@@ -1151,7 +1154,7 @@ function openReworkPlan(id){
       var status=unit.status||'Pending';
       var inputId='rw-'+p.id+'-'+h+'-'+u;
       var statusCell=editable
-        ?'<select class="rw-status-select" id="'+inputId+'-status"><option value="Pending" selected>Pending</option><option value="Completed">Reworked / Completed</option><option value="Finally Rejected">Finally Rejected</option></select>'
+        ?'<select class="rw-status-select" id="'+inputId+'-status"><option value="Pending" selected>Pending</option><option value="Completed">Rework completed</option><option value="Finally Rejected">Finally Rejected</option></select>'
         :'<span class="rw-status-locked '+(status==='Completed'?'completed':'rejected')+'">'+reworkStatusLabel(status)+'</span>';
       var remarkCell=editable
         ?'<input class="rw-remark-input" id="'+inputId+'-remark" value="'+remark+'" placeholder="Add resolution remark">'
@@ -1168,7 +1171,7 @@ function openReworkPlan(id){
   modal.classList.add('modalback-rework');
   modal.innerHTML='<div class="modal rework-modal"><div class="rw-modal-header"><div><h2>Rework Resolution</h2><div class="sub">'+escapeHtml(p.line)+' · '+escapeHtml(p.brand)+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model||'—')+'</div></div><button class="btn rw-modal-close" onclick="closePlanModal()" aria-label="Close">×</button></div>'+
     '<div class="rw-plan-context">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+' · '+escapeHtml(p.status||'—')+' <span>Planned <b>'+Number(p.qty||0)+'</b></span><span>Gross <b>'+getPlanGrossProduced(p)+'</b></span><span>Actual <b>'+getPlanActual(p)+'</b></span></div>'+
-    '<div class="rework-summary rw-summary-cards"><span class="rw-summary-total"><b>'+rows.length+'</b><small>Total rejected</small></span><span class="rw-summary-pending"><b>'+pendingRows.length+'</b><small>Pending</small></span><span class="rw-summary-completed"><b>'+completed+'</b><small>Reworked</small></span><span class="rw-summary-final"><b>'+finalRejected+'</b><small>Final rejected</small></span></div>'+
+    '<div class="rework-summary rw-summary-cards"><span class="rw-summary-total"><b>'+rows.length+'</b><small>Total rejected</small></span><span class="rw-summary-pending"><b>'+pendingRows.length+'</b><small>Pending</small></span><span class="rw-summary-completed"><b>'+completed+'</b><small>Rework completed</small></span><span class="rw-summary-final"><b>'+finalRejected+'</b><small>Final rejected</small></span></div>'+
     '<section class="rw-pending-section"><div class="rw-section-title"><div><h3>Pending resolution</h3><p>Choose a final disposition and enter a remark for each unit.</p></div><span class="rw-pending-badge">'+pendingRows.length+' remaining</span></div>'+
     '<div class="report-table-scroll"><table class="rw-unit-table"><thead><tr><th>Hour</th><th>Unit / serial</th><th>Original reason</th><th>Disposition</th><th>Resolution remark</th><th>Save</th></tr></thead><tbody>'+
     (pendingBody||'<tr><td colspan="6" class="rework-empty">No pending rejected units. All units have been resolved.</td></tr>')+'</tbody></table></div></section>'+
@@ -1202,7 +1205,7 @@ async function saveReworkUnit(id,h,unitIndex){
     await pmReloadProductionData();
     renderReports();
     openReworkPlan(id);
-    toast(status==='Completed'?'Rejected unit marked reworked in Supabase':'Rejected unit marked finally rejected in Supabase');
+    toast(status==='Completed'?'Rework marked completed in Supabase':'Unit marked finally rejected in Supabase');
   }catch(error){
     toast('Could not save rework resolution: '+error.message);
   }
