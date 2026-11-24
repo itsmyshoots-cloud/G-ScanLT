@@ -152,7 +152,7 @@ async function pmReloadProductionData(){
 }
 
 function sumEntries(p,key){return Object.values(p.entries||{}).reduce((a,e)=>a+(Number(e[key])||0),0)}
-function getHourlyActual(p,h){return Number(p.entries?.[h]?.actual)||0}
+function getHourlyGrossProduced(p,h){return Number(p.entries?.[h]?.actual)||0}
 function getHourlyRejected(p,h){return Number(p.entries?.[h]?.rejected)||0}
 function getHourlyReworked(p,h){
   var entry=p.entries&&p.entries[h];
@@ -160,14 +160,15 @@ function getHourlyReworked(p,h){
   var completed=units.filter(function(unit){return unit.status==='Completed';}).length;
   return Math.min(getHourlyRejected(p,h),completed);
 }
-function getHourlyAccepted(p,h){
-  return Math.max(0,getHourlyActual(p,h)-getHourlyRejected(p,h)+getHourlyReworked(p,h));
-}
+function getHourlyActual(p,h){return Math.max(0,getHourlyGrossProduced(p,h)-getHourlyRejected(p,h)+getHourlyReworked(p,h));}
+function getHourlyAccepted(p,h){return getHourlyActual(p,h);}
+function getPlanGrossProduced(p){return Number(p.actual)||0}
 function getPlanAccepted(p){
-  var actual=Number(p.actual)||0,rejected=Number(p.rejection)||0;
+  var gross=getPlanGrossProduced(p),rejected=Number(p.rejection)||0;
   var reworked=Math.min(rejected,sumRework(p,'Completed'));
-  return Math.max(0,actual-rejected+reworked);
+  return Math.max(0,gross-rejected+reworked);
 }
+function getPlanActual(p){return getPlanAccepted(p);}
 function planHourTargets(p){
   if(Array.isArray(p.hourTargets))return p.hourTargets;
   return timeSlots(p.start,p.end).map(function(){return 0;});
@@ -244,7 +245,7 @@ function renderPlans(){
       return formatTime12(x.start_time||x.start)+'–'+formatTime12(x.end_time||x.end);
     }).join(', ');
     return '<div class="plan"><h3>'+escapeHtml(p.line)+' · '+escapeHtml(p.brand||'Unbranded')+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model||p.product)+'</h3>'+
-      '<div class="planmeta">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+'<br>Target: '+p.qty+' units · '+p.actual+' actual · '+p.rejection+' rejected<br>'+
+      '<div class="planmeta">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+'<br>Target: '+p.qty+' units · '+getPlanActual(p)+' actual · '+p.rejection+' rejected<br>'+
       escapeHtml(formatTime12(p.start))+'–'+escapeHtml(formatTime12(p.end))+' · '+escapeHtml(p.supervisor||'Unassigned')+
       (breakText?'<br><span class="plan-break-visible">Breaks: '+escapeHtml(breakText)+'</span>':'')+'</div>'+
       '<div class="planbottom"><span class="pill '+(p.status==='Draft'?'warn':'')+'">'+escapeHtml(p.status)+'</span><div class="filters">'+
@@ -264,7 +265,7 @@ function renderOperator(){
   var today=todayLocalDate();
   var visible=plans.filter(function(p){return p.status==='Published'&&p.date===today;});
   el.innerHTML=visible.map(function(p){
-    var percentage=Math.round(p.qty?p.actual/p.qty*100:0);
+    var netActual=getPlanActual(p),percentage=Math.round(p.qty?netActual/p.qty*100:0);
     var breakText=(p.breakTimes||[]).map(function(x){
       return formatTime12(x.start_time||x.start)+'–'+formatTime12(x.end_time||x.end);
     }).join(', ');
@@ -272,7 +273,7 @@ function renderOperator(){
       '<div class="planmeta">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+'<br>Target: '+p.qty+' units · '+escapeHtml(formatTime12(p.start))+'–'+escapeHtml(formatTime12(p.end))+
       (breakText?'<br><span class="plan-break-visible">Breaks: '+escapeHtml(breakText)+'</span>':'')+'</div>'+
       '<div class="progress"><i style="width:'+Math.min(100,percentage)+'%"></i></div>'+
-      '<div class="linemeta"><span>'+p.actual+' / '+p.qty+' units · Rejected '+p.rejection+'</span><span>'+percentage+'%</span></div>'+
+      '<div class="linemeta"><span>'+netActual+' actual / '+p.qty+' planned · Rejected '+p.rejection+'</span><span>'+percentage+'%</span></div>'+
       '<div class="planbottom"><span class="pill">Published</span><button class="btn primary" onclick="openExecution(\''+p.id+'\')">Open plan</button></div></div>';
   }).join('')||'<div class="panel"><div class="sub">No published production plans are scheduled for today ('+today+').</div></div>';
 }
@@ -290,8 +291,8 @@ function hourCards(p){
     var cls='hour '+(saved?'recorded':'pending')+(saved&&!admin?' locked':'')+(saved&&admin?' admin-editable':'');
     var action=saved?(admin?'Updated / Edit':'Updated'):'Record hour';
     return '<div class="'+cls+'"><strong>'+escapeHtml(label)+'</strong><small>Plan: '+target+' units</small>'+
-      '<div class="actual">'+(saved?q+' produced':'—')+'</div>'+
-      '<small>'+(saved?r+' originally rejected · '+accepted+' accepted'+(reworked?' · '+reworked+' reworked':''):'Pending')+'</small>'+
+      '<div class="actual">'+(saved?accepted+' actual':'—')+'</div>'+
+      '<small>'+(saved?q+' gross produced · '+r+' rejected'+(reworked?' · '+reworked+' reworked':''):'Pending')+'</small>'+
       (missing?'<small>Missing serial labels: '+missing+'</small>':'')+
       '<small class="hour-status">'+(saved?'✓ Updated':'Not recorded')+'</small>'+
       '<button class="btn" style="margin-top:10px;width:100%" '+(canOpen?'':'disabled')+
@@ -1118,7 +1119,7 @@ function renderRework(){
   table.querySelector('thead').innerHTML='<tr><th>PRODUCTION</th><th>PRODUCT / MODEL</th><th>OUTPUT</th><th>REJECTED</th><th>PENDING</th><th>REWORKED</th><th>FINAL REJECT</th><th>ACTION</th></tr>';
   table.querySelector('tbody').innerHTML=filtered.map(p=>{
     const units=planReworkUnits(p),rej=units.length,pend=units.filter(x=>(x.unit.status||'Pending')==='Pending').length,done=units.filter(x=>x.unit.status==='Completed').length,final=units.filter(x=>x.unit.status==='Finally Rejected').length;
-    return `<tr><td><div class="rw-production-cell"><strong>${escapeHtml(p.date||'—')}</strong><span>${escapeHtml(p.line||'—')} · ${escapeHtml(p.brand||'—')}</span><small>${escapeHtml(p.status||'—')}</small></div></td><td><div class="rw-product-cell"><strong>${escapeHtml(p.product||'—')}</strong><span>${escapeHtml(p.model||'—')}</span></div></td><td><div class="rw-output-cell"><strong>${Number(p.actual)||0}</strong><span>of ${Number(p.qty)||0} planned</span></div></td><td><span class="rw-count-pill rejected">${rej}</span></td><td><span class="rw-count-pill pending">${pend}</span></td><td><span class="rw-count-pill completed">${done}</span></td><td><span class="rw-count-pill final">${final}</span></td><td><button class="btn primary" onclick="openReworkPlan('${p.id}')">Resolve</button></td></tr>`;
+    return `<tr><td><div class="rw-production-cell"><strong>${escapeHtml(p.date||'—')}</strong><span>${escapeHtml(p.line||'—')} · ${escapeHtml(p.brand||'—')}</span><small>${escapeHtml(p.status||'—')}</small></div></td><td><div class="rw-product-cell"><strong>${escapeHtml(p.product||'—')}</strong><span>${escapeHtml(p.model||'—')}</span></div></td><td><div class="rw-output-cell"><strong>${getPlanActual(p)}</strong><span>of ${Number(p.qty)||0} planned · gross ${getPlanGrossProduced(p)}</span></div></td><td><span class="rw-count-pill rejected">${rej}</span></td><td><span class="rw-count-pill pending">${pend}</span></td><td><span class="rw-count-pill completed">${done}</span></td><td><span class="rw-count-pill final">${final}</span></td><td><button class="btn primary" onclick="openReworkPlan('${p.id}')">Resolve</button></td></tr>`;
   }).join('')||'<tr><td colspan="8" class="rework-empty">No rejected production matches these filters.</td></tr>'
   var advanced=document.getElementById('reworkAdvancedCount');
   if(advanced){var active=[brandForProducts!=='all',selectedProduct!=='all',selectedModel!=='all',shift!=='all'].filter(Boolean).length;advanced.textContent=active?active+' active':'Optional filters';}
