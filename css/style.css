@@ -2416,3 +2416,12 @@ html,body{max-width:100%;overflow-x:hidden}
   .hourly-overproduction-actions{flex-direction:column-reverse}
   .hourly-overproduction-actions .btn,.hourly-overproduction-actions .btn.primary{width:100%;min-width:0}
 }
+
+
+/* Hourly report serial range display */
+#reports .serial-report-value{
+  white-space:nowrap;
+  font-family:ui-monospace,SFMono-Regular,Consolas,monospace;
+  font-size:11px;
+  font-variant-numeric:tabular-nums;
+}
