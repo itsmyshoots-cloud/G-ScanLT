@@ -1286,8 +1286,8 @@ function updateOverviewKpis(filteredPlans){
   set('overviewKpiPlannedFoot',f.length+' published / completed plans');
   set('overviewKpiActualFoot',Math.max(0,totals.planned-totals.actual).toLocaleString('en-IN')+' units remaining after rejection / rework');
   set('overviewKpiAcceptedFoot','Total hourly quantity recorded before rejection adjustment');
-  set('overviewKpiRejectionFoot',totals.rejected+' originally rejected / '+totals.grossProduced+' gross produced · '+totals.reworked+' reworked · '+totals.pendingRework+' pending'+(totals.finalRejected?' · '+totals.finalRejected+' final reject':''));
-  set('overviewKpiReworkFoot',totals.pendingRework?'Requires resolution':'No pending rework');
+  set('overviewKpiRejectionFoot',totals.rejected+' originally rejected · '+totals.reworked+' rework completed · '+totals.pendingRework+' pending rework'+(totals.finalRejected?' · '+totals.finalRejected+' finally rejected':''));
+  set('overviewKpiReworkFoot',totals.reworked+' rework completed · '+totals.pendingRework+' pending');
   set('overviewKpiStickersFoot',totals.stickers?'Needs serial-level follow-up':'No sticker exceptions');
   var ftr=getOverviewPlanFilters(),filterText=ftr.date?('Production date: '+ftr.date):'All production dates';
   if(ftr.shift!=='All shifts')filterText+=' · '+ftr.shift;
@@ -1308,8 +1308,8 @@ function renderOverviewPlanStatusCards(){
   if(count)count.textContent=rows.length+' plans';
   if(!rows.length){host.innerHTML='<div class="overview-empty">No plans match these filters.</div>';return;}
   host.innerHTML=rows.map(function(p){
-    var status=getPlanStatusLabel(p),actual=getPlanActual(p),pct=Number(p.qty)?Math.min(100,Math.round(actual/Number(p.qty)*100)):0;
-    return '<article class="overview-plan-status-row"><div class="overview-plan-status-main"><strong>'+escapeHtml(p.line)+' · '+escapeHtml(p.shift)+'</strong><span>'+escapeHtml(p.product||'—')+' / '+escapeHtml(p.model||'—')+'</span></div><span class="overview-state '+status.toLowerCase().replace(/\s+/g,'-')+'">'+escapeHtml(status)+'</span><div class="overview-mini-progress"><i style="width:'+pct+'%"></i></div><small>'+pct+'% · '+actual+' actual / '+(Number(p.qty)||0)+' planned</small></article>';
+    var status=getPlanStatusLabel(p),actual=getPlanActual(p),completed=getPlanReworkCompleted(p),pct=Number(p.qty)?Math.min(100,Math.round(actual/Number(p.qty)*100)):0;
+    return '<article class="overview-plan-status-row"><div class="overview-plan-status-main"><strong>'+escapeHtml(p.line)+' · '+escapeHtml(p.shift)+'</strong><span>'+escapeHtml(p.product||'—')+' / '+escapeHtml(p.model||'—')+'</span></div><span class="overview-state '+status.toLowerCase().replace(/\s+/g,'-')+'">'+escapeHtml(status)+'</span><div class="overview-mini-progress"><i style="width:'+pct+'%"></i></div><small>'+pct+'% · '+actual+' actual / '+(Number(p.qty)||0)+' planned · '+completed+' rework completed</small></article>';
   }).join('');
 }
 function renderOverviewSummary(filteredPlans){
@@ -1318,17 +1318,17 @@ function renderOverviewSummary(filteredPlans){
   var groups=new Map();
   filteredPlans.forEach(function(p){
     var key=p.line||'Unassigned',g=groups.get(key);
-    if(!g){g={line:key,plans:0,planned:0,grossProduced:0,actual:0,rejected:0,completed:0};groups.set(key,g);}
+    if(!g){g={line:key,plans:0,planned:0,grossProduced:0,actual:0,rejected:0,reworkCompleted:0,completed:0};groups.set(key,g);}
     var gross=getPlanGrossProduced(p),actual=getPlanActual(p),rejected=Number(p.rejection)||0;
-    g.plans++;g.planned+=Number(p.qty)||0;g.grossProduced+=gross;g.actual+=actual;g.rejected+=rejected;if(p.status==='Completed')g.completed++;
+    g.plans++;g.planned+=Number(p.qty)||0;g.grossProduced+=gross;g.actual+=actual;g.rejected+=rejected;g.reworkCompleted+=getPlanReworkCompleted(p);if(p.status==='Completed')g.completed++;
   });
   var rows=Array.from(groups.values()).sort(function(a,b){return a.line.localeCompare(b.line);});
   if(count)count.textContent=rows.length+' lines';
   body.innerHTML=rows.map(function(g){
     var pct=g.planned?Math.round(g.actual/g.planned*100):0;
     var status=g.completed===g.plans?'Completed':(g.actual?'In progress':'Awaiting entries');
-    return '<tr><td><strong>'+escapeHtml(g.line)+'</strong></td><td>'+g.plans+'</td><td>'+g.planned+'</td><td>'+g.grossProduced+'</td><td>'+g.actual+'</td><td>'+g.rejected+'</td><td><div class="overview-achievement"><b>'+pct+'%</b><span><i style="width:'+Math.min(100,Math.max(0,pct))+'%"></i></span></div></td><td><span class="overview-state '+status.toLowerCase().replace(/\s+/g,'-')+'">'+status+'</span></td></tr>';
-  }).join('')||'<tr><td colspan="8" class="overview-table-empty">No published or completed production plans for these filters.</td></tr>';
+    return '<tr><td><strong>'+escapeHtml(g.line)+'</strong></td><td>'+g.plans+'</td><td>'+g.planned+'</td><td>'+g.grossProduced+'</td><td>'+g.actual+'</td><td>'+g.rejected+'</td><td>'+g.reworkCompleted+'</td><td><div class="overview-achievement"><b>'+pct+'%</b><span><i style="width:'+Math.min(100,Math.max(0,pct))+'%"></i></span></div></td><td><span class="overview-state '+status.toLowerCase().replace(/\s+/g,'-')+'">'+status+'</span></td></tr>';
+  }).join('')||'<tr><td colspan="9" class="overview-table-empty">No published or completed production plans for these filters.</td></tr>';
 }
 function renderOverviewAttention(filteredPlans){
   var host=document.getElementById('overviewAttentionList'),count=document.getElementById('overviewAttentionCount');
@@ -1362,15 +1362,15 @@ function renderOverviewHourlyDetails(filteredPlans){
   filteredPlans.forEach(function(p){
     var targets=planHourTargets(p),labels=p.hourLabels||[];
     targets.forEach(function(target,i){
-      var entry=p.entries&&p.entries[i],grossProduced=entry?getHourlyGrossProduced(p,i):0,actual=entry?getHourlyActual(p,i):0,rejected=entry?Number(entry.rejected)||0:0;
-      rows.push({date:p.date,line:p.line,shift:p.shift,brand:p.brand,product:p.product,model:p.model,hour:labels[i]||hours[i]||('Hour '+(i+1)),target:Number(target)||0,grossProduced:grossProduced,actual:actual,rejected:rejected,recorded:!!entry});
+      var entry=p.entries&&p.entries[i],grossProduced=entry?getHourlyGrossProduced(p,i):0,actual=entry?getHourlyActual(p,i):0,rejected=entry?Number(entry.rejected)||0:0,reworkCompleted=entry?getHourlyReworked(p,i):0;
+      rows.push({date:p.date,line:p.line,shift:p.shift,brand:p.brand,product:p.product,model:p.model,hour:labels[i]||hours[i]||('Hour '+(i+1)),target:Number(target)||0,grossProduced:grossProduced,actual:actual,rejected:rejected,reworkCompleted:reworkCompleted,recorded:!!entry});
     });
   });
   rows.sort(function(a,b){return String(a.date).localeCompare(String(b.date))||String(a.line).localeCompare(String(b.line))||String(a.shift).localeCompare(String(b.shift))||String(a.hour).localeCompare(String(b.hour));});
   if(count)count.textContent=rows.length+' scheduled hours';
   body.innerHTML=rows.map(function(r){
-    return '<tr><td>'+escapeHtml(r.date)+'</td><td><strong>'+escapeHtml(r.line)+'</strong><small class="overview-cell-sub">'+escapeHtml(r.shift)+'</small></td><td>'+escapeHtml([r.brand,r.product,r.model].filter(Boolean).join(' · '))+'</td><td>'+escapeHtml(r.hour)+'</td><td>'+r.target+'</td><td>'+r.grossProduced+'</td><td>'+r.actual+'</td><td>'+r.rejected+'</td><td><span class="overview-entry-state '+(r.recorded?'recorded':'not-recorded')+'">'+(r.recorded?'Recorded':'Not recorded')+'</span></td></tr>';
-  }).join('')||'<tr><td colspan="9" class="overview-table-empty">No scheduled hours match the selected filters.</td></tr>';
+    return '<tr><td>'+escapeHtml(r.date)+'</td><td><strong>'+escapeHtml(r.line)+'</strong><small class="overview-cell-sub">'+escapeHtml(r.shift)+'</small></td><td>'+escapeHtml([r.brand,r.product,r.model].filter(Boolean).join(' · '))+'</td><td>'+escapeHtml(r.hour)+'</td><td>'+r.target+'</td><td>'+r.grossProduced+'</td><td>'+r.actual+'</td><td>'+r.rejected+'</td><td>'+r.reworkCompleted+'</td><td><span class="overview-entry-state '+(r.recorded?'recorded':'not-recorded')+'">'+(r.recorded?'Recorded':'Not recorded')+'</span></td></tr>';
+  }).join('')||'<tr><td colspan="10" class="overview-table-empty">No scheduled hours match the selected filters.</td></tr>';
 }
 function renderOverviewChart(filteredPlans){
   var host=document.getElementById('overviewBarChart');if(!host)return;
@@ -1403,7 +1403,7 @@ function renderOverviewChart(filteredPlans){
     var planActual=getPlanActual(p),pct=p.qty?Math.round(planActual/p.qty*100):0;
     var breakText=(p.breakTimes||[]).map(function(x){return formatTime12(x.start_time||x.start)+'–'+formatTime12(x.end_time||x.end);}).join(', ');
     return '<article class="plan-hour-chart-card"><div class="plan-hour-chart-heading"><div><strong>'+escapeHtml(p.line)+' · '+escapeHtml(p.shift)+'</strong><small>'+escapeHtml(p.brand)+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model)+'</small></div><span>'+escapeHtml(getPlanStatusLabel(p))+'</span></div>'+
-      '<div class="plan-hour-chart-meta"><span>Planned <b>'+p.qty+'</b></span><span>Gross <b>'+getPlanGrossProduced(p)+'</b></span><span>Actual <b>'+planActual+'</b></span><span>'+pct+'% complete</span></div>'+
+      '<div class="plan-hour-chart-meta"><span>Planned <b>'+p.qty+'</b></span><span>Gross <b>'+getPlanGrossProduced(p)+'</b></span><span>Actual <b>'+planActual+'</b></span><span>Originally rejected <b>'+p.rejection+'</b></span><span>Rework completed <b>'+getPlanReworkCompleted(p)+'</b></span><span>'+pct+'% complete</span></div>'+
       (breakText?'<div class="plan-break-visible plan-chart-breaks">Breaks: '+escapeHtml(breakText)+'</div>':'')+
       '<div class="plan-hour-chart-svg">'+svg.join('')+'</div></article>';
   }
@@ -1434,11 +1434,12 @@ function makeOverviewReportCanvas(){
     rr(48,y,W-96,chartCard,14,'#fff','#e4eaf2');
     txt(p.line+' · '+p.shift+' · '+p.date,74,y+32,18,'#172438','700');
     txt((p.brand||'—')+' · '+(p.product||'—')+' · Model '+(p.model||'—'),74,y+58,14,'#526277');
-    txt('Planned '+p.qty+'   Gross produced '+getPlanGrossProduced(p)+'   Actual '+getPlanActual(p)+'   Rejected '+p.rejection+'   Status '+getPlanStatusLabel(p),74,y+86,14,'#334155','600');
+    txt('Planned '+p.qty+'   Gross '+getPlanGrossProduced(p)+'   Actual '+getPlanActual(p),74,y+86,14,'#334155','600');
+    txt('Originally rejected '+p.rejection+'   Rework completed '+getPlanReworkCompleted(p)+'   Status '+getPlanStatusLabel(p),74,y+106,13,'#526277','600');
     var labels=p.hourLabels||timeSlots(p.start,p.end),targets=planHourTargets(p);
     var actual=labels.map(function(_,i){return getHourlyActual(p,i);});
     var planned=labels.map(function(_,i){return Number(targets[i])||0;});
-    var chartX=95,chartY=y+122,chartW=W-170,chartH=170,max=Math.max(1,...planned,...actual),ceil=Math.max(1,Math.ceil(max/5)*5);
+    var chartX=95,chartY=y+132,chartW=W-170,chartH=160,max=Math.max(1,...planned,...actual),ceil=Math.max(1,Math.ceil(max/5)*5);
     ctx.strokeStyle='#e8edf4';ctx.lineWidth=1;
     for(var j=0;j<=4;j++){
       var gy=chartY+chartH-(chartH*j/4);ctx.beginPath();ctx.moveTo(chartX,gy);ctx.lineTo(chartX+chartW,gy);ctx.stroke();
