@@ -1359,14 +1359,14 @@ function renderOverviewHourlyDetails(filteredPlans){
   filteredPlans.forEach(function(p){
     var targets=planHourTargets(p),labels=p.hourLabels||[];
     targets.forEach(function(target,i){
-      var entry=p.entries&&p.entries[i],actual=entry?Number(entry.actual)||0:0,rejected=entry?Number(entry.rejected)||0:0;
-      rows.push({date:p.date,line:p.line,shift:p.shift,brand:p.brand,product:p.product,model:p.model,hour:labels[i]||hours[i]||('Hour '+(i+1)),target:Number(target)||0,actual:actual,accepted:getHourlyAccepted(p,i),rejected:rejected,recorded:!!entry});
+      var entry=p.entries&&p.entries[i],grossProduced=entry?getHourlyGrossProduced(p,i):0,actual=entry?getHourlyActual(p,i):0,rejected=entry?Number(entry.rejected)||0:0;
+      rows.push({date:p.date,line:p.line,shift:p.shift,brand:p.brand,product:p.product,model:p.model,hour:labels[i]||hours[i]||('Hour '+(i+1)),target:Number(target)||0,grossProduced:grossProduced,actual:actual,rejected:rejected,recorded:!!entry});
     });
   });
   rows.sort(function(a,b){return String(a.date).localeCompare(String(b.date))||String(a.line).localeCompare(String(b.line))||String(a.shift).localeCompare(String(b.shift))||String(a.hour).localeCompare(String(b.hour));});
   if(count)count.textContent=rows.length+' scheduled hours';
   body.innerHTML=rows.map(function(r){
-    return '<tr><td>'+escapeHtml(r.date)+'</td><td><strong>'+escapeHtml(r.line)+'</strong><small class="overview-cell-sub">'+escapeHtml(r.shift)+'</small></td><td>'+escapeHtml([r.brand,r.product,r.model].filter(Boolean).join(' · '))+'</td><td>'+escapeHtml(r.hour)+'</td><td>'+r.target+'</td><td>'+r.actual+'</td><td>'+r.accepted+'</td><td>'+r.rejected+'</td><td><span class="overview-entry-state '+(r.recorded?'recorded':'not-recorded')+'">'+(r.recorded?'Recorded':'Not recorded')+'</span></td></tr>';
+    return '<tr><td>'+escapeHtml(r.date)+'</td><td><strong>'+escapeHtml(r.line)+'</strong><small class="overview-cell-sub">'+escapeHtml(r.shift)+'</small></td><td>'+escapeHtml([r.brand,r.product,r.model].filter(Boolean).join(' · '))+'</td><td>'+escapeHtml(r.hour)+'</td><td>'+r.target+'</td><td>'+r.grossProduced+'</td><td>'+r.actual+'</td><td>'+r.rejected+'</td><td><span class="overview-entry-state '+(r.recorded?'recorded':'not-recorded')+'">'+(r.recorded?'Recorded':'Not recorded')+'</span></td></tr>';
   }).join('')||'<tr><td colspan="9" class="overview-table-empty">No scheduled hours match the selected filters.</td></tr>';
 }
 function renderOverviewChart(filteredPlans){
@@ -1397,10 +1397,10 @@ function renderOverviewChart(filteredPlans){
       svg.push('<text x="'+cx+'" y="'+(H-13)+'" text-anchor="middle" font-size="10" fill="#7b8798">'+escapeHtml(shortLabel)+'</text>');
     });
     svg.push('</svg>');
-    var pct=p.qty?Math.round(p.actual/p.qty*100):0;
+    var planActual=getPlanActual(p),pct=p.qty?Math.round(planActual/p.qty*100):0;
     var breakText=(p.breakTimes||[]).map(function(x){return formatTime12(x.start_time||x.start)+'–'+formatTime12(x.end_time||x.end);}).join(', ');
     return '<article class="plan-hour-chart-card"><div class="plan-hour-chart-heading"><div><strong>'+escapeHtml(p.line)+' · '+escapeHtml(p.shift)+'</strong><small>'+escapeHtml(p.brand)+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model)+'</small></div><span>'+escapeHtml(getPlanStatusLabel(p))+'</span></div>'+
-      '<div class="plan-hour-chart-meta"><span>Planned <b>'+p.qty+'</b></span><span>Actual <b>'+p.actual+'</b></span><span>'+pct+'% complete</span></div>'+
+      '<div class="plan-hour-chart-meta"><span>Planned <b>'+p.qty+'</b></span><span>Gross <b>'+getPlanGrossProduced(p)+'</b></span><span>Actual <b>'+planActual+'</b></span><span>'+pct+'% complete</span></div>'+
       (breakText?'<div class="plan-break-visible plan-chart-breaks">Breaks: '+escapeHtml(breakText)+'</div>':'')+
       '<div class="plan-hour-chart-svg">'+svg.join('')+'</div></article>';
   }
@@ -1431,7 +1431,7 @@ function makeOverviewReportCanvas(){
     rr(48,y,W-96,chartCard,14,'#fff','#e4eaf2');
     txt(p.line+' · '+p.shift+' · '+p.date,74,y+32,18,'#172438','700');
     txt((p.brand||'—')+' · '+(p.product||'—')+' · Model '+(p.model||'—'),74,y+58,14,'#526277');
-    txt('Planned '+p.qty+'   Actual '+p.actual+'   Accepted '+getPlanAccepted(p)+'   Rejected '+p.rejection+'   Status '+getPlanStatusLabel(p),74,y+86,14,'#334155','600');
+    txt('Planned '+p.qty+'   Gross produced '+getPlanGrossProduced(p)+'   Actual '+getPlanActual(p)+'   Rejected '+p.rejection+'   Status '+getPlanStatusLabel(p),74,y+86,14,'#334155','600');
     var labels=p.hourLabels||timeSlots(p.start,p.end),targets=planHourTargets(p);
     var actual=labels.map(function(_,i){return getHourlyActual(p,i);});
     var planned=labels.map(function(_,i){return Number(targets[i])||0;});
@@ -1452,7 +1452,7 @@ function makeOverviewReportCanvas(){
     });
     y+=chartCard+gap;
   });
-  txt('Blue: Planned · Green: Actual',58,H-48,13,'#526277');
+  txt('Blue: Planned · Green: Actual output after rework disposition',58,H-48,13,'#526277');
   return canvas;
 }
 function downloadOverviewReport(){
