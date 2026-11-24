@@ -1264,27 +1264,26 @@ function getPlanStatusLabel(p){
 function updateOverviewKpis(filteredPlans){
   var f=filteredPlans||getOverviewPlans();
   var totals=f.reduce(function(a,p){
-    var actual=Number(p.actual)||0,rejected=Number(p.rejection)||0;
-    a.planned+=Number(p.qty)||0;a.actual+=actual;a.rejected+=rejected;
-    a.accepted+=getPlanAccepted(p);
+    var gross=getPlanGrossProduced(p),rejected=Number(p.rejection)||0;
+    a.planned+=Number(p.qty)||0;a.grossProduced+=gross;a.actual+=getPlanActual(p);a.rejected+=rejected;
     a.pendingRework+=sumRework(p,'Pending');
     a.reworked+=sumRework(p,'Completed');
     a.finalRejected+=sumRework(p,'Finally Rejected');
     a.stickers+=sumMissingSticker(p);
     return a;
-  },{planned:0,actual:0,accepted:0,rejected:0,pendingRework:0,reworked:0,finalRejected:0,stickers:0});
-  var rate=totals.actual?totals.rejected/totals.actual*100:0;
+  },{planned:0,grossProduced:0,actual:0,rejected:0,pendingRework:0,reworked:0,finalRejected:0,stickers:0});
+  var rate=totals.grossProduced?totals.rejected/totals.grossProduced*100:0;
   function set(id,value){var el=document.getElementById(id);if(el)el.textContent=String(value);}
   set('overviewKpiPlanned',totals.planned.toLocaleString('en-IN'));
   set('overviewKpiActual',totals.actual.toLocaleString('en-IN'));
-  set('overviewKpiAccepted',totals.accepted.toLocaleString('en-IN'));
+  set('overviewKpiAccepted',totals.grossProduced.toLocaleString('en-IN'));
   set('overviewKpiRejection',rate.toFixed(1)+'%');
   set('overviewKpiRework',totals.pendingRework.toLocaleString('en-IN'));
   set('overviewKpiStickers',totals.stickers.toLocaleString('en-IN'));
   set('overviewKpiPlannedFoot',f.length+' published / completed plans');
-  set('overviewKpiActualFoot',Math.max(0,totals.planned-totals.actual).toLocaleString('en-IN')+' units remaining');
-  set('overviewKpiAcceptedFoot','Includes completed rework; excludes unresolved / finally rejected units');
-  set('overviewKpiRejectionFoot',totals.rejected+' originally rejected · '+totals.reworked+' reworked · '+totals.pendingRework+' pending'+(totals.finalRejected?' · '+totals.finalRejected+' final reject':''));
+  set('overviewKpiActualFoot',Math.max(0,totals.planned-totals.actual).toLocaleString('en-IN')+' units remaining after rejection / rework');
+  set('overviewKpiAcceptedFoot','Total hourly quantity recorded before rejection adjustment');
+  set('overviewKpiRejectionFoot',totals.rejected+' originally rejected / '+totals.grossProduced+' gross produced · '+totals.reworked+' reworked · '+totals.pendingRework+' pending'+(totals.finalRejected?' · '+totals.finalRejected+' final reject':''));
   set('overviewKpiReworkFoot',totals.pendingRework?'Requires resolution':'No pending rework');
   set('overviewKpiStickersFoot',totals.stickers?'Needs serial-level follow-up':'No sticker exceptions');
   var ftr=getOverviewPlanFilters(),filterText=ftr.date?('Production date: '+ftr.date):'All production dates';
@@ -1306,8 +1305,8 @@ function renderOverviewPlanStatusCards(){
   if(count)count.textContent=rows.length+' plans';
   if(!rows.length){host.innerHTML='<div class="overview-empty">No plans match these filters.</div>';return;}
   host.innerHTML=rows.map(function(p){
-    var status=getPlanStatusLabel(p),pct=Number(p.qty)?Math.min(100,Math.round((Number(p.actual)||0)/Number(p.qty)*100)):0;
-    return '<article class="overview-plan-status-row"><div class="overview-plan-status-main"><strong>'+escapeHtml(p.line)+' · '+escapeHtml(p.shift)+'</strong><span>'+escapeHtml(p.product||'—')+' / '+escapeHtml(p.model||'—')+'</span></div><span class="overview-state '+status.toLowerCase().replace(/\s+/g,'-')+'">'+escapeHtml(status)+'</span><div class="overview-mini-progress"><i style="width:'+pct+'%"></i></div><small>'+pct+'% · '+(Number(p.actual)||0)+' / '+(Number(p.qty)||0)+' units</small></article>';
+    var status=getPlanStatusLabel(p),actual=getPlanActual(p),pct=Number(p.qty)?Math.min(100,Math.round(actual/Number(p.qty)*100)):0;
+    return '<article class="overview-plan-status-row"><div class="overview-plan-status-main"><strong>'+escapeHtml(p.line)+' · '+escapeHtml(p.shift)+'</strong><span>'+escapeHtml(p.product||'—')+' / '+escapeHtml(p.model||'—')+'</span></div><span class="overview-state '+status.toLowerCase().replace(/\s+/g,'-')+'">'+escapeHtml(status)+'</span><div class="overview-mini-progress"><i style="width:'+pct+'%"></i></div><small>'+pct+'% · '+actual+' actual / '+(Number(p.qty)||0)+' planned</small></article>';
   }).join('');
 }
 function renderOverviewSummary(filteredPlans){
@@ -1316,16 +1315,16 @@ function renderOverviewSummary(filteredPlans){
   var groups=new Map();
   filteredPlans.forEach(function(p){
     var key=p.line||'Unassigned',g=groups.get(key);
-    if(!g){g={line:key,plans:0,planned:0,actual:0,accepted:0,rejected:0,completed:0};groups.set(key,g);}
-    var actual=Number(p.actual)||0,rejected=Number(p.rejection)||0;
-    g.plans++;g.planned+=Number(p.qty)||0;g.actual+=actual;g.rejected+=rejected;g.accepted+=getPlanAccepted(p);if(p.status==='Completed')g.completed++;
+    if(!g){g={line:key,plans:0,planned:0,grossProduced:0,actual:0,rejected:0,completed:0};groups.set(key,g);}
+    var gross=getPlanGrossProduced(p),actual=getPlanActual(p),rejected=Number(p.rejection)||0;
+    g.plans++;g.planned+=Number(p.qty)||0;g.grossProduced+=gross;g.actual+=actual;g.rejected+=rejected;if(p.status==='Completed')g.completed++;
   });
   var rows=Array.from(groups.values()).sort(function(a,b){return a.line.localeCompare(b.line);});
   if(count)count.textContent=rows.length+' lines';
   body.innerHTML=rows.map(function(g){
     var pct=g.planned?Math.round(g.actual/g.planned*100):0;
     var status=g.completed===g.plans?'Completed':(g.actual?'In progress':'Awaiting entries');
-    return '<tr><td><strong>'+escapeHtml(g.line)+'</strong></td><td>'+g.plans+'</td><td>'+g.planned+'</td><td>'+g.actual+'</td><td>'+g.accepted+'</td><td>'+g.rejected+'</td><td><div class="overview-achievement"><b>'+pct+'%</b><span><i style="width:'+Math.min(100,Math.max(0,pct))+'%"></i></span></div></td><td><span class="overview-state '+status.toLowerCase().replace(/\s+/g,'-')+'">'+status+'</span></td></tr>';
+    return '<tr><td><strong>'+escapeHtml(g.line)+'</strong></td><td>'+g.plans+'</td><td>'+g.planned+'</td><td>'+g.grossProduced+'</td><td>'+g.actual+'</td><td>'+g.rejected+'</td><td><div class="overview-achievement"><b>'+pct+'%</b><span><i style="width:'+Math.min(100,Math.max(0,pct))+'%"></i></span></div></td><td><span class="overview-state '+status.toLowerCase().replace(/\s+/g,'-')+'">'+status+'</span></td></tr>';
   }).join('')||'<tr><td colspan="8" class="overview-table-empty">No published or completed production plans for these filters.</td></tr>';
 }
 function renderOverviewAttention(filteredPlans){
@@ -1337,12 +1336,12 @@ function renderOverviewAttention(filteredPlans){
     var pending=units.filter(function(row){return (row.unit.status||'Pending')==='Pending';}).length;
     var rejected=Number(p.rejection)||0;
     var untracked=Math.max(0,rejected-units.length);
-    var missing=sumMissingSticker(p),actual=Number(p.actual)||0;
+    var missing=sumMissingSticker(p),actual=getPlanActual(p),gross=getPlanGrossProduced(p);
     if(untracked)items.push({rank:1,icon:'!',title:untracked+' rejected unit'+(untracked===1?'':'s')+' missing disposition',detail:p.line+' · '+p.product+' · '+p.shift+' · Review the individual rejection records',kind:'danger'});
     if(pending)items.push({rank:2,icon:'↻',title:pending+' rejected unit'+(pending===1?'':'s')+' awaiting rework resolution',detail:p.line+' · '+p.product+' · '+p.shift,kind:'warning'});
     if(missing)items.push({rank:3,icon:'▣',title:missing+' missing / damaged sticker'+(missing===1?'':'s'),detail:p.line+' · '+p.product+' · '+p.shift,kind:'warning'});
     if(p.status==='Completed'&&actual<Number(p.qty||0))items.push({rank:4,icon:'◷',title:'Plan closed below target',detail:p.line+' · '+p.product+' · '+Math.max(0,Number(p.qty||0)-actual)+' units short',kind:'info'});
-    if(p.status==='Published'&&!actual)items.push({rank:5,icon:'○',title:'No hourly output recorded yet',detail:p.line+' · '+p.product+' · '+p.shift,kind:'info'});
+    if(p.status==='Published'&&!gross)items.push({rank:5,icon:'○',title:'No hourly output recorded yet',detail:p.line+' · '+p.product+' · '+p.shift,kind:'info'});
   });
   var drafts=getOverviewStatusPlans().filter(function(p){return p.status==='Draft';});
   drafts.forEach(function(p){items.push({rank:6,icon:'✎',title:'Draft plan not published',detail:p.line+' · '+p.product+' · '+p.shift,kind:'info'});});
