@@ -315,14 +315,14 @@ function openExecution(id){
     '<div class="sub">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+' · Plan '+p.qty+' units · '+escapeHtml(formatTime12(p.start))+'–'+escapeHtml(formatTime12(p.end))+'</div></div>'+
     '<button class="btn execution-back" type="button" onclick="closeExecution(\''+safeId+'\')">← Back to plans</button></div>'+
     '<div class="detailgrid"><div class="detailbox"><div class="klabel">Planned</div><div class="num">'+p.qty+'</div></div>'+
-    '<div class="detailbox"><div class="klabel">Actual recorded</div><div class="num">'+p.actual+'</div></div>'+
-    '<div class="detailbox"><div class="klabel">Accepted · Rejected</div><div class="num">'+getPlanAccepted(p)+' · '+p.rejection+'</div></div></div>'+
+    '<div class="detailbox"><div class="klabel">Gross produced</div><div class="num">'+getPlanGrossProduced(p)+'</div></div>'+
+    '<div class="detailbox"><div class="klabel">Actual output</div><div class="num">'+getPlanActual(p)+'</div></div></div>'+
     '<div class="paneltitle"><h3>Hourly Production Entries</h3><span>'+(admin?'Saved hours may be corrected by Admin or Super Admin':'Saved hours are locked after submission')+'</span></div>'+
     '<div class="hourgrid">'+hourCards(p)+'</div>'+
     '<div class="paneltitle" style="margin-top:18px"><h3>Shift Closing</h3><span>'+(allRecorded?'All scheduled hourly intervals completed':'Record every scheduled interval to enable closing')+'</span></div>'+
-    '<div class="detailgrid"><div class="detailbox"><div class="klabel">Total actual</div><div class="num">'+p.actual+'</div></div>'+
+    '<div class="detailgrid"><div class="detailbox"><div class="klabel">Actual output</div><div class="num">'+getPlanActual(p)+'</div></div>'+
     '<div class="detailbox"><div class="klabel">Total rejected</div><div class="num">'+p.rejection+'</div></div>'+
-    '<div class="detailbox"><div class="klabel">Accepted</div><div class="num">'+getPlanAccepted(p)+'</div></div></div>'+
+    '<div class="detailbox"><div class="klabel">Gross produced</div><div class="num">'+getPlanGrossProduced(p)+'</div></div></div>'+
     '<div class="modalactions"><button class="btn primary" '+(allRecorded&&p.status!=='Completed'?'':'disabled')+' onclick="closeShift(\''+safeId+'\')">Close Shift</button></div></div>';
   var host=document.getElementById('execution');host.innerHTML=content;host.classList.remove('hidden');
   host.scrollIntoView({behavior:'smooth',block:'start'});
@@ -968,7 +968,7 @@ function viewPlan(id){
   }).join(', ');
   var body=planHourTargets(p).map(function(_,i){
     var e=p.entries&&p.entries[i]||{};
-    return '<tr><td>'+escapeHtml(labels[i]||'Hour '+(i+1))+'</td><td>'+planHourTargets(p)[i]+'</td><td>'+getHourlyActual(p,i)+'</td><td>'+getHourlyRejected(p,i)+'</td><td>'+getHourlyAccepted(p,i)+'</td><td>'+Number(e.missingSerialQty||0)+'</td></tr>';
+    return '<tr><td>'+escapeHtml(labels[i]||'Hour '+(i+1))+'</td><td>'+planHourTargets(p)[i]+'</td><td>'+getHourlyGrossProduced(p,i)+'</td><td>'+getHourlyActual(p,i)+'</td><td>'+getHourlyRejected(p,i)+'</td><td>'+Number(e.missingSerialQty||0)+'</td></tr>';
   }).join('');
   var modal=document.getElementById('modal');
   modal.innerHTML='<div class="modal" style="width:min(900px,100%);max-height:90vh;overflow:auto">'+
@@ -976,8 +976,8 @@ function viewPlan(id){
     '<h3>'+escapeHtml(p.line)+' · '+escapeHtml(p.brand)+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model||'—')+'</h3>'+
     '<div class="sub">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+' · '+escapeHtml(formatTime12(p.start))+'–'+escapeHtml(formatTime12(p.end))+' · '+escapeHtml(p.supervisor||'Unassigned')+
     (breakText?' · Breaks: '+escapeHtml(breakText):'')+'</div>'+
-    '<div class="detailgrid"><div class="detailbox"><div class="klabel">Planned</div><div class="num">'+p.qty+'</div></div><div class="detailbox"><div class="klabel">Actual</div><div class="num">'+p.actual+'</div></div><div class="detailbox"><div class="klabel">Rejected · Accepted</div><div class="num">'+p.rejection+' · '+accepted+'</div></div></div>'+
-    '<div class="panel"><div class="paneltitle"><h3>Hourly Plan & Production</h3></div><div class="report-table-scroll"><table><thead><tr><th>Hour</th><th>Plan</th><th>Actual</th><th>Rejected</th><th>Accepted</th><th>Missing serial qty</th></tr></thead><tbody>'+body+'</tbody></table></div></div>'+
+    '<div class="detailgrid"><div class="detailbox"><div class="klabel">Planned</div><div class="num">'+p.qty+'</div></div><div class="detailbox"><div class="klabel">Gross produced</div><div class="num">'+getPlanGrossProduced(p)+'</div></div><div class="detailbox"><div class="klabel">Actual output</div><div class="num">'+getPlanActual(p)+'</div></div></div>'+
+    '<div class="panel"><div class="paneltitle"><h3>Hourly Plan & Production</h3></div><div class="report-table-scroll"><table><thead><tr><th>Hour</th><th>Plan</th><th>Gross produced</th><th>Actual output</th><th>Rejected</th><th>Missing serial qty</th></tr></thead><tbody>'+body+'</tbody></table></div></div>'+
     '<div class="modalactions"><button class="btn" onclick="closePlanModal()">Close</button></div></div>';
   modal.classList.remove('hidden');
 }
@@ -1167,7 +1167,7 @@ function openReworkPlan(id){
   var modal=document.getElementById('modal');
   modal.classList.add('modalback-rework');
   modal.innerHTML='<div class="modal rework-modal"><div class="rw-modal-header"><div><h2>Rework Resolution</h2><div class="sub">'+escapeHtml(p.line)+' · '+escapeHtml(p.brand)+' · '+escapeHtml(p.product)+' · '+escapeHtml(p.model||'—')+'</div></div><button class="btn rw-modal-close" onclick="closePlanModal()" aria-label="Close">×</button></div>'+
-    '<div class="rw-plan-context">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+' · '+escapeHtml(p.status||'—')+' <span>Planned <b>'+Number(p.qty||0)+'</b></span><span>Actual <b>'+Number(p.actual||0)+'</b></span></div>'+
+    '<div class="rw-plan-context">'+escapeHtml(p.date)+' · '+escapeHtml(p.shift)+' · '+escapeHtml(p.status||'—')+' <span>Planned <b>'+Number(p.qty||0)+'</b></span><span>Gross <b>'+getPlanGrossProduced(p)+'</b></span><span>Actual <b>'+getPlanActual(p)+'</b></span></div>'+
     '<div class="rework-summary rw-summary-cards"><span class="rw-summary-total"><b>'+rows.length+'</b><small>Total rejected</small></span><span class="rw-summary-pending"><b>'+pendingRows.length+'</b><small>Pending</small></span><span class="rw-summary-completed"><b>'+completed+'</b><small>Reworked</small></span><span class="rw-summary-final"><b>'+finalRejected+'</b><small>Final rejected</small></span></div>'+
     '<section class="rw-pending-section"><div class="rw-section-title"><div><h3>Pending resolution</h3><p>Choose a final disposition and enter a remark for each unit.</p></div><span class="rw-pending-badge">'+pendingRows.length+' remaining</span></div>'+
     '<div class="report-table-scroll"><table class="rw-unit-table"><thead><tr><th>Hour</th><th>Unit / serial</th><th>Original reason</th><th>Disposition</th><th>Resolution remark</th><th>Save</th></tr></thead><tbody>'+
