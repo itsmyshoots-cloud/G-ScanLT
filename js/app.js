@@ -1262,6 +1262,9 @@ function reworkTypeLabel(value){
 function reworkMaterialLabel(list){
   return Array.isArray(list)&&list.length?list.map(function(x){return x.component_name||x.name||'Component';}).join(', '):'—';
 }
+function reworkMaterialDisplay(unit){
+  return unit&&unit.reworkDetails==='adjusted'?'Reworked':reworkMaterialLabel(unit&&unit.materialChanged);
+}
 function canManageReworkLists(){
   return window.pmCurrentRole==='admin'||!!window.pmIsSuperAdmin;
 }
@@ -1282,7 +1285,7 @@ function openReworkPlan(id){
       ?(unit.serial?'<td><input type="checkbox" class="rw-bulk-unit" data-hour="'+row.hourIndex+'" data-unit="'+row.unitIndex+'" aria-label="Select '+escapeHtml(unit.serial)+' for batch rework" onchange="updateReworkBulkSelection()"/></td>':'<td><span class="rw-bulk-serial-required">Serial needed</span></td>')
       :'<td>—</td>';
     var details=unit.reworkDetails?reworkDetailsLabel(unit.reworkDetails):'Not recorded';
-    var materials=reworkMaterialLabel(unit.materialChanged);
+    var materials=reworkMaterialDisplay(unit);
     var outcome=status==='Completed'?'Rework completed':status==='Finally Rejected'?'Finally rejected':'Pending rework';
     var savedAt=unit.reworkSavedAt||unit.resolvedAt;
     var actionLabel=resolved?(canManageReworkLists()?'View / correct':'View details'):'Record rework';
@@ -1290,7 +1293,7 @@ function openReworkPlan(id){
       '<td><strong>'+escapeHtml(row.hour)+'</strong><small class="rw-cell-sub">'+escapeHtml(p.date||'—')+'</small></td>'+
       '<td><strong>'+escapeHtml(label)+'</strong><small class="rw-cell-sub">Unit '+(unit.unitNumber||row.unitIndex+1)+'</small></td>'+
       '<td>'+escapeHtml(unit.problemType||'Not recorded')+'</td>'+
-      '<td>'+escapeHtml(details)+(unit.reworkDetails==='component_changed'?'<small class="rw-cell-sub">'+escapeHtml(materials)+'</small>':'')+'</td>'+
+      '<td>'+escapeHtml(details)+(unit.reworkDetails?'<small class="rw-cell-sub">'+escapeHtml(materials)+'</small>':'')+'</td>'+
       '<td>'+escapeHtml(reworkTypeLabel(unit.reworkType))+'</td>'+
       '<td>'+escapeHtml(unit.operatorName||'—')+'</td>'+
       '<td><span class="rw-status-locked '+(status==='Completed'?'completed':status==='Finally Rejected'?'rejected':'')+'">'+outcome+'</span></td>'+
@@ -1970,7 +1973,7 @@ function renderReports(){
     var reworkRows=filtered.flatMap(function(p){
       return planReworkUnits(p).filter(function(x){return hourFilter==='all'||String(x.hour)===hourFilter;}).map(function(x){
         var unit=x.unit;
-        var materials=reworkMaterialLabel(unit.materialChanged);
+        var materials=reworkMaterialDisplay(unit);
         return {
           date:p.date,shift:p.shift,line:p.line,brand:p.brand,product:p.product,model:p.model,
           hour:x.hour,serial:unit.serial||'Legacy — serial not captured',
@@ -1982,9 +1985,7 @@ function renderReports(){
           operatorName:unit.operatorName||'—',
           reworkDateTime:unit.reworkSavedAt||unit.resolvedAt?reworkDateTimeLabel(unit.reworkSavedAt||unit.resolvedAt):'Pending',
           status:unit.status||'Pending',
-          resolutionRemark:unit.remark||'—',
-          correctionNote:unit.correctionNote||'—',
-          correctedAt:unit.correctedAt?reworkDateTimeLabel(unit.correctedAt):'—'
+
         };
       });
     });
@@ -2021,7 +2022,7 @@ function renderReworkReportRows(rows){
   var headers=[
     'Production date','Rework date / time','Shift','Line','Brand','Product','Model','Hour','Unit / serial',
     'Original rejection record','Problem type','Rework details','Material changed','Rework type',
-    'Operator name','Outcome','Resolution remark','Correction reason','Corrected at'
+    'Operator name','Outcome'
   ];
   document.getElementById('reportTable').querySelector('thead').innerHTML='<tr>'+headers.map(function(x){return '<th>'+x.toUpperCase()+'</th>';}).join('')+'</tr>';
   document.getElementById('reportTable').querySelector('tbody').innerHTML=rows.map(function(r){
@@ -2033,8 +2034,7 @@ function renderReworkReportRows(rows){
       '<td>'+escapeHtml(r.originalRejection)+'</td><td>'+escapeHtml(r.problemType)+'</td>'+
       '<td>'+escapeHtml(r.reworkDetails)+'</td><td>'+escapeHtml(r.materials)+'</td>'+
       '<td>'+escapeHtml(r.reworkType)+'</td><td>'+escapeHtml(r.operatorName)+'</td>'+
-      '<td>'+escapeHtml(reworkStatusLabel(r.status))+'</td><td>'+escapeHtml(r.resolutionRemark)+'</td>'+
-      '<td>'+escapeHtml(r.correctionNote)+'</td><td>'+escapeHtml(r.correctedAt)+'</td></tr>';
+      '<td>'+escapeHtml(reworkStatusLabel(r.status))+'</td></tr>';
   }).join('')||'<tr><td colspan="'+headers.length+'" class="report-empty">No rejection / rework records found for these filters.</td></tr>';
   document.getElementById('reportCards').innerHTML='';
   window.currentReportRows=rows;
