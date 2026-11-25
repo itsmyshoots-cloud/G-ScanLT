@@ -2464,10 +2464,19 @@ html,body{max-width:100%;overflow-x:hidden}
 .rw-form-grid .field input:focus,.rw-form-grid .field select:focus,.rw-form-grid .field textarea:focus{outline:2px solid #dce8ff;border-color:#8fb2ff}
 .rw-material-field,.rw-remark-field,.rw-correction-note-field{grid-column:1/-1}
 .rw-required{font-size:9px;font-weight:650;color:#ac5b1c}
-.rw-component-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
-.rw-component-option{display:flex;align-items:center;gap:8px;min-height:38px;padding:8px 10px;background:#fbfcfe;border:1px solid var(--line);border-radius:8px;font-size:11px!important;color:var(--ink)!important}
+.rw-material-dropdown{position:relative;width:100%}
+.rw-material-dropdown-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:42px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);cursor:pointer;list-style:none;font-size:12px}
+.rw-material-dropdown-summary::-webkit-details-marker{display:none}
+.rw-material-dropdown-summary::marker{content:""}
+.rw-material-dropdown[open] .rw-material-dropdown-summary{border-color:#8fb2ff;outline:2px solid #dce8ff;border-bottom-left-radius:0;border-bottom-right-radius:0}
+.rw-material-dropdown-value{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rw-material-dropdown-caret{flex:0 0 auto;color:var(--muted);font-size:15px;transition:transform .15s ease}
+.rw-material-dropdown[open] .rw-material-dropdown-caret{transform:rotate(180deg)}
+.rw-component-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:9px;border:1px solid #8fb2ff;border-top:0;border-radius:0 0 9px 9px;background:#fff;max-height:230px;overflow:auto;box-shadow:0 8px 20px rgba(20,35,60,.08)}
+.rw-component-option{display:flex;align-items:center;gap:8px;min-height:36px;padding:7px 9px;background:#fbfcfe;border:1px solid var(--line);border-radius:8px;font-size:11px!important;color:var(--ink)!important;cursor:pointer}
 .rw-component-option input{width:15px!important;min-width:15px!important;height:15px;min-height:15px!important;margin:0;padding:0;accent-color:var(--blue)}
 .rw-component-option small{margin-left:auto;font-size:9px;color:var(--muted)}
+.rw-component-option span{min-width:0;overflow-wrap:anywhere}
 .rw-no-options{padding:11px;border:1px dashed #d8e0ea;border-radius:8px;color:var(--muted);font-size:11px;line-height:1.5}
 .rw-configuration-notice{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .rw-audit-section{margin-top:18px;border-top:1px solid var(--line);padding-top:12px}
