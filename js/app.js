@@ -1569,33 +1569,30 @@ async function saveReworkUnitV2(id,h,unitIndex){
   var serial=document.getElementById('rwUnitSerial')?.value.trim()||'';
   var problem=document.getElementById('rwProblemType')?.value||'';
   var details=document.getElementById('rwReworkDetails')?.value||'';
+  var materialValue=document.getElementById('rwMaterialChanged')?.value||'';
   var reworkType=document.getElementById('rwReworkType')?.value||'';
-  var operatorId=document.getElementById('rwOperator')?.value||'';
-  var operator=pmReworkOperators.find(function(x){return x.id===operatorId;});
-  var remark=document.getElementById('rwResolutionRemark')?.value.trim()||'';
-  var correctionNote=document.getElementById('rwCorrectionNote')?.value.trim()||'';
+  var operatorName=document.getElementById('rwOperatorName')?.value.trim()||'';
+  var matchedOperator=pmReworkOperators.find(function(x){return String(x.full_name||'').trim().toLocaleLowerCase()===operatorName.toLocaleLowerCase();});
   var material=[];
   if(details==='component_changed'){
-    material=Array.from(document.querySelectorAll('.rw-material-checkbox:checked')).map(function(input){
-      var component=pmReworkComponents.find(function(x){return x.id===input.value;});
-      if(!component){
-        var old=(unit.materialChanged||[]).find(function(x){return (x.component_id||x.id)===input.value;});
-        if(old)return {component_id:input.value,component_name:old.component_name||old.name||''};
-        return null;
+    if(materialValue==='__preserve_existing__')material=Array.isArray(unit.materialChanged)?unit.materialChanged:[];
+    else{
+      var component=pmReworkComponents.find(function(x){return x.id===materialValue;});
+      if(component)material=[{component_id:component.id,component_name:component.name}];
+      else{
+        var old=(unit.materialChanged||[]).find(function(x){return (x.component_id||x.id)===materialValue;});
+        if(old)material=[{component_id:materialValue,component_name:old.component_name||old.name||''}];
       }
-      return {component_id:component.id,component_name:component.name};
-    }).filter(Boolean);
+    }
   }
   var status=(unit.status||'Pending')==='Pending'?'pending':(unit.status==='Completed'?'completed':'finally_rejected');
   if(!serial)return toast('Enter or scan the rejected unit serial number.');
   if(!problem)return toast('Select a Problem Type.');
   if(!details)return toast('Select Adjusted or Component Changed.');
-  if(details==='adjusted'&&material.length)return toast('Material Changed must be empty when Adjusted is selected.');
-  if(details==='component_changed'&&!material.length)return toast('Select at least one component that was changed.');
+  if(details==='component_changed'&&!material.length)return toast('Select the component that was changed.');
+  if(details==='adjusted'&&materialValue!=='__reworked__')return toast('Adjusted rework must show Reworked in Material Changed.');
   if(!reworkType)return toast('Select Incoming Rejection or Process Rejection.');
-  if(!operatorId||!operator)return toast('Select the operator who performed the rework.');
-  if(!remark)return toast('Enter a Resolution Remark.');
-  if(isResolved&&!correctionNote)return toast('Enter a correction reason to preserve the audit history.');
+  if(!operatorName)return toast('Enter the operator name.');
   if(!isResolved){
     var outcome=document.getElementById('rwOutcome')?.value||'';
     if(outcome!=='completed'&&outcome!=='finally_rejected')return toast('Select the final outcome.');
@@ -1607,11 +1604,11 @@ async function saveReworkUnitV2(id,h,unitIndex){
     rework_details:details,
     material_changed:material,
     rework_type:reworkType,
-    operator_profile_id:operatorId,
-    operator_name:operator.full_name,
-    resolution_remark:remark,
+    operator_profile_id:matchedOperator?matchedOperator.id:null,
+    operator_name:operatorName,
+    resolution_remark:null,
     status:status==='pending'?'completed':status,
-    correction_note:isResolved?correctionNote:null
+    correction_note:isResolved?'Admin correction made through Rework Workspace':null
   };
   var button=document.querySelector('#modal .rw-unit-modal .modalactions .btn.primary');
   if(button){button.disabled=true;button.textContent='Saving…';}
