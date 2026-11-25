@@ -1406,34 +1406,6 @@ function toggleReworkMaterialControls(materialId,detailsId,typeId){
   }
 }
 
-function reworkComponentCheckboxes(selected,disabled){
-  var chosen=new Set((selected||[]).map(function(x){return x.component_id||x.id;}));
-  var list=pmReworkComponents.slice();
-  (selected||[]).forEach(function(x){
-    var id=x.component_id||x.id;
-    if(id&&!list.some(function(c){return c.id===id;}))list.push({id:id,name:x.component_name||x.name||'Previously selected component',is_active:false});
-  });
-  if(!list.length)return '<div class="rw-no-options">No components are configured. An Admin can add components in Rework Settings.</div>';
-  var selectedNames=list.filter(function(c){return chosen.has(c.id);}).map(function(c){return c.name;});
-  var summary=selectedNames.length?selectedNames.join(', '):'Select component(s)';
-  return '<details class="rw-material-dropdown">'+
-    '<summary class="rw-material-dropdown-summary"><span class="rw-material-dropdown-value">'+escapeHtml(summary)+'</span><span class="rw-material-dropdown-caret" aria-hidden="true">▾</span></summary>'+
-    '<div class="rw-component-list">'+list.map(function(c){
-      return '<label class="rw-component-option"><input type="checkbox" class="rw-material-checkbox" value="'+escapeHtml(c.id)+'" '+(chosen.has(c.id)?'checked':'')+' '+(disabled?'disabled':'')+' onchange="updateReworkMaterialDropdown(this)"/>'+
-        '<span>'+escapeHtml(c.name)+'</span>'+(c.is_active?'':'<small>Inactive</small>')+'</label>';
-    }).join('')+'</div></details>';
-}
-function updateReworkMaterialDropdown(input){
-  var dropdown=input&&input.closest('.rw-material-dropdown');
-  if(!dropdown)return;
-  var names=Array.from(dropdown.querySelectorAll('.rw-material-checkbox:checked')).map(function(item){
-    var label=item.closest('.rw-component-option');
-    var name=label&&label.querySelector('span');
-    return name?name.textContent.trim():'';
-  }).filter(Boolean);
-  var value=dropdown.querySelector('.rw-material-dropdown-value');
-  if(value)value.textContent=names.length?names.join(', '):'Select component(s)';
-}
 async function openReworkBulkModal(id){
   var p=plans.find(function(x){return String(x.id)===String(id);});
   var selection=window.pmReworkBulkSelection||[];
@@ -1980,7 +1952,7 @@ function renderReports(){
           originalRejection:unit.reason||x.entry.reason||'Not recorded',
           problemType:unit.problemType||'Not recorded',
           reworkDetails:reworkDetailsLabel(unit.reworkDetails),
-          materials:unit.reworkDetails==='component_changed'?materials:'—',
+          materials:materials,
           reworkType:reworkTypeLabel(unit.reworkType),
           operatorName:unit.operatorName||'—',
           reworkDateTime:unit.reworkSavedAt||unit.resolvedAt?reworkDateTimeLabel(unit.reworkSavedAt||unit.resolvedAt):'Pending',
@@ -2009,15 +1981,13 @@ function renderReworkReportRows(rows){
   var counts={
     completed:rows.filter(function(r){return r.status==='Completed';}).length,
     pending:rows.filter(function(r){return r.status==='Pending';}).length,
-    final:rows.filter(function(r){return r.status==='Finally Rejected';}).length,
-    corrections:rows.filter(function(r){return r.correctionNote&&r.correctionNote!=='—';}).length
+    final:rows.filter(function(r){return r.status==='Finally Rejected';}).length
   };
   document.getElementById('reportKpis').innerHTML=[
     ['Originally rejected',rows.length],
     ['Rework completed',counts.completed],
     ['Pending rework',counts.pending],
-    ['Finally rejected',counts.final],
-    ['Admin corrections',counts.corrections]
+    ['Finally rejected',counts.final]
   ].map(function(x){return '<article class="report-kpi"><div class="klabel">'+x[0]+'</div><div class="kvalue">'+x[1]+'</div></article>';}).join('');
   var headers=[
     'Production date','Rework date / time','Shift','Line','Brand','Product','Model','Hour','Unit / serial',
