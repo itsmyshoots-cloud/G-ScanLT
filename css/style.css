@@ -2592,3 +2592,139 @@ html,body{max-width:100%;overflow-x:hidden}
   #modal.modalback-rework .rw-form-grid .field input,
   #modal.modalback-rework .rw-form-grid .field select{min-height:35px;padding:6px;font-size:12px}
 }
+
+
+/* Rework plan / rejected-unit popup: compact table, no nested scrolling. */
+#modal.modalback-rework:not(.hidden){
+  position:fixed!important;inset:0!important;display:flex!important;
+  align-items:center!important;justify-content:center!important;
+  padding:10px!important;overflow:hidden!important;overscroll-behavior:none!important;
+}
+#modal.modalback-rework .rw-plan-modal{
+  display:flex!important;flex-direction:column!important;gap:0!important;
+  width:min(1180px,calc(100vw - 28px))!important;max-width:1180px!important;
+  max-height:calc(100vh - 20px)!important;max-height:calc(100dvh - 20px)!important;
+  height:auto!important;margin:auto!important;padding:12px 14px!important;
+  overflow:hidden!important;overscroll-behavior:none!important;
+}
+#modal.modalback-rework .rw-plan-modal>.pm-popup-back{display:none!important}
+#modal.modalback-rework .rw-plan-modal .rw-modal-header{flex:0 0 auto;margin:0 0 6px}
+#modal.modalback-rework .rw-plan-modal .rw-modal-header h2{font-size:18px;margin:2px 0 3px}
+#modal.modalback-rework .rw-plan-modal .rw-plan-context{flex:0 0 auto;margin:0 0 7px;padding:7px 9px;gap:5px 10px;font-size:11px}
+#modal.modalback-rework .rw-plan-modal .rw-summary-cards{
+  flex:0 0 auto;grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:7px;margin:0 0 8px!important;
+}
+#modal.modalback-rework .rw-plan-modal .rw-summary-card{padding:7px 9px;gap:3px;border-radius:8px}
+#modal.modalback-rework .rw-plan-modal .rw-summary-card span{font-size:10px}
+#modal.modalback-rework .rw-plan-modal .rw-summary-card strong{font-size:19px}
+#modal.modalback-rework .rw-plan-modal .rw-legacy-notice{
+  flex:0 0 auto;margin:0 0 8px!important;padding:7px 10px!important;
+  font-size:10px;line-height:1.35;
+}
+#modal.modalback-rework .rw-plan-modal .rw-legacy-notice strong{margin-bottom:2px}
+#modal.modalback-rework .rw-plan-modal .rw-section-title{
+  flex:0 0 auto;margin:2px 0 7px;gap:8px;
+}
+#modal.modalback-rework .rw-plan-modal .rw-section-title h3{font-size:14px}
+#modal.modalback-rework .rw-plan-modal .rw-section-title p{font-size:10px;line-height:1.3;margin-top:2px}
+#modal.modalback-rework .rw-plan-modal .rw-pending-badge{font-size:10px;padding:4px 7px}
+#modal.modalback-rework .rw-plan-modal .rw-bulk-toolbar{
+  flex:0 0 auto;margin:0 0 7px!important;padding:7px 9px;gap:8px;
+}
+#modal.modalback-rework .rw-plan-modal .rw-bulk-toolbar strong{font-size:11px}
+#modal.modalback-rework .rw-plan-modal .rw-bulk-toolbar small{font-size:9px;line-height:1.25}
+#modal.modalback-rework .rw-plan-modal .rw-bulk-toolbar .btn{min-height:32px;padding:5px 9px;font-size:10px}
+#modal.modalback-rework .rw-plan-modal .report-table-scroll{
+  flex:1 1 auto;min-height:0;overflow:visible!important;width:100%;max-width:100%;
+}
+#modal.modalback-rework .rw-plan-modal table.rw-modern-unit-table{
+  width:100%!important;min-width:0!important;table-layout:fixed!important;
+  border-collapse:collapse;
+}
+#modal.modalback-rework .rw-plan-modal .rw-unit-table{min-width:0!important}
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th{
+  padding:6px 4px;font-size:9px;line-height:1.1;white-space:normal;
+}
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td{
+  padding:6px 4px;font-size:10px;line-height:1.18;vertical-align:middle;
+  overflow-wrap:anywhere;word-break:normal;
+}
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td strong{font-size:10px}
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table .rw-cell-sub{margin-top:2px;font-size:8px;line-height:1.15}
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table .rw-status-locked{
+  white-space:normal;font-size:9px;padding:4px 6px;
+}
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table .btn{
+  white-space:normal;min-height:29px;padding:4px 6px;font-size:9px;line-height:1.1;
+}
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(1),
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(1){width:30px}
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(2),
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(2){width:94px}
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(3),
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(3){width:135px}
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(4),
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(4){width:112px}
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(5),
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(5){width:110px}
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(6),
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(6){width:105px}
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(7),
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(7){width:90px}
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(8),
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(8){width:104px}
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(9),
+#modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(9){width:88px}
+#modal.modalback-rework .rw-plan-modal .modalactions{
+  position:static!important;flex:0 0 auto;margin:7px 0 0!important;padding:7px 0 0!important;
+  border-top:1px solid #edf1f6;background:#fff;
+}
+@media(max-width:900px){
+  #modal.modalback-rework .rw-plan-modal{padding:10px!important}
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th,
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td{padding:5px 3px;font-size:9px}
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(2),
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(2){width:76px}
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(3),
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(3){width:115px}
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(4),
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(4){width:90px}
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(5),
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(5){width:90px}
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(6),
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(6){width:88px}
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(7),
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(7){width:75px}
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(8),
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(8){width:90px}
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(9),
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(9){width:75px}
+}
+@media(max-width:620px){
+  #modal.modalback-rework .rw-plan-modal{width:calc(100vw - 14px)!important;max-width:calc(100vw - 14px)!important;padding:8px!important}
+  #modal.modalback-rework .rw-plan-modal .rw-summary-cards{gap:4px}
+  #modal.modalback-rework .rw-plan-modal .rw-summary-card{padding:5px}
+  #modal.modalback-rework .rw-plan-modal .rw-summary-card span{font-size:8px}
+  #modal.modalback-rework .rw-plan-modal .rw-summary-card strong{font-size:16px}
+  #modal.modalback-rework .rw-plan-modal .rw-section-title p{display:none}
+  #modal.modalback-rework .rw-plan-modal .rw-bulk-toolbar small{display:none}
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th,
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td{padding:4px 2px;font-size:8px}
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(2),
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(2){width:55px}
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(3),
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(3){width:84px}
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(4),
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(4){width:65px}
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(5),
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(5){width:65px}
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(6),
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(6){width:60px}
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(7),
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(7){width:55px}
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(8),
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(8){width:65px}
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table th:nth-child(9),
+  #modal.modalback-rework .rw-plan-modal .rw-modern-unit-table td:nth-child(9){width:60px}
+}
