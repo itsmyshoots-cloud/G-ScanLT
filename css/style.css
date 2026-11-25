@@ -2503,3 +2503,6 @@ html,body{max-width:100%;overflow-x:hidden}
   .rw-configuration-notice{align-items:flex-start;flex-direction:column}
   .rw-history-item{flex-direction:column}
 }
+
+.pm-admin-fullname{display:block;width:100%;min-width:170px;min-height:36px;padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);font:inherit;font-size:12px;font-weight:650}
+.pm-admin-fullname:focus{outline:2px solid #dce8ff;border-color:#8fb2ff}
