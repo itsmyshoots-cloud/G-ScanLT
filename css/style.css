@@ -2506,3 +2506,29 @@ html,body{max-width:100%;overflow-x:hidden}
 
 .pm-admin-fullname{display:block;width:100%;min-width:170px;min-height:36px;padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);font:inherit;font-size:12px;font-weight:650}
 .pm-admin-fullname:focus{outline:2px solid #dce8ff;border-color:#8fb2ff}
+
+
+/* Rework batch selection and shared repair action */
+.rw-bulk-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;margin:0 0 10px;border:1px solid #dbe6f6;background:#f7faff;border-radius:10px}
+.rw-bulk-toolbar>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.rw-bulk-toolbar strong{font-size:12px;color:#294b79}
+.rw-bulk-toolbar small{font-size:10px;color:#637894;line-height:1.4}
+.rw-bulk-toolbar .btn{white-space:nowrap}
+.rw-bulk-toolbar .btn:disabled{opacity:.45;cursor:not-allowed}
+.rw-bulk-unit,.rw-modern-unit-table thead input[type="checkbox"]{width:16px;height:16px;accent-color:var(--blue);cursor:pointer}
+.rw-modern-unit-table th:first-child,.rw-modern-unit-table td:first-child{width:36px;text-align:center}
+.rw-bulk-serial-required{display:inline-block;padding:4px 6px;border-radius:6px;background:#fff5e6;color:#9c6511;font-size:9px;font-weight:700;white-space:nowrap}
+.rw-bulk-unit-preview{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0;padding:11px;border:1px solid var(--line);background:#f8fafc;border-radius:9px}
+.rw-bulk-unit-preview span{display:inline-flex;padding:5px 8px;border-radius:6px;border:1px solid #dbe4f0;background:#fff;color:#29415f;font-size:10px;font-weight:700;font-family:ui-monospace,Consolas,monospace}
+.rw-bulk-explain{margin:0 0 12px;color:var(--muted);font-size:11px;line-height:1.5}
+.rw-history-diff{margin-top:8px}
+.rw-history-diff summary{cursor:pointer;color:var(--blue);font-size:10px;font-weight:700}
+.rw-history-diff-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:8px}
+.rw-history-diff-grid>div{min-width:0;padding:8px;border:1px solid var(--line);border-radius:7px;background:#fff}
+.rw-history-diff-grid b{font-size:10px;color:var(--ink)}
+.rw-history-diff-grid pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:6px 0 0;color:var(--muted);font:10px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;max-height:180px;overflow:auto}
+@media(max-width:560px){
+  .rw-bulk-toolbar{align-items:stretch;flex-direction:column}
+  .rw-bulk-toolbar .btn{width:100%}
+  .rw-history-diff-grid{grid-template-columns:1fr}
+}
