@@ -181,6 +181,9 @@ GRANT SELECT ON TABLE public.pm_rework_operator_options TO authenticated;
 
 -- Rework unit updates remain guarded by the existing trigger, with new
 -- per-unit repair fields and explicit admin-only correction of resolved units.
+GRANT UPDATE (rejected_serials)
+ON TABLE public.pm_hourly_production TO authenticated;
+
 GRANT UPDATE (
   serial_number,
   problem_type,
