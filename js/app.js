@@ -1353,6 +1353,56 @@ function reworkOperatorOptions(selectedId,selectedName){
     return '<option value="'+escapeHtml(x.id)+'" '+(x.id===selectedId?'selected':'')+'>'+escapeHtml(x.full_name)+(x.legacy?' (inactive / legacy)':'')+'</option>';
   }).join('');
 }
+function reworkMaterialSelectMarkup(id,selected,details,disabled){
+  var chosen=Array.isArray(selected)?selected:[];
+  var list=pmReworkComponents.slice();
+  chosen.forEach(function(item){
+    var componentId=item.component_id||item.id;
+    if(componentId&&!list.some(function(component){return component.id===componentId;})){
+      list.push({id:componentId,name:item.component_name||item.name||'Previously selected component',is_active:false});
+    }
+  });
+  var selectedValue=details==='adjusted'?'__reworked__':'';
+  if(details==='component_changed'){
+    if(chosen.length===1)selectedValue=chosen[0].component_id||chosen[0].id||'';
+    else if(chosen.length>1)selectedValue='__preserve_existing__';
+  }
+  var options='<option value="">Select component</option>'+
+    '<option value="__reworked__" '+(selectedValue==='__reworked__'?'selected':'')+'>Reworked</option>';
+  if(chosen.length>1){
+    var names=chosen.map(function(item){return item.component_name||item.name||'Component';}).join(', ');
+    options+='<option value="__preserve_existing__" selected>Existing selection: '+escapeHtml(names)+'</option>';
+  }
+  options+=list.map(function(component){
+    return '<option value="'+escapeHtml(component.id)+'" '+(selectedValue===component.id?'selected':'')+'>'+
+      escapeHtml(component.name)+(component.is_active?'':' (inactive / saved)')+'</option>';
+  }).join('');
+  var detailsId=id==='rwBulkMaterialChanged'?'rwBulkDetails':'rwReworkDetails';
+  var typeId=id==='rwBulkMaterialChanged'?'rwBulkType':'rwReworkType';
+  return '<select id="'+id+'" data-editable="'+(disabled?'false':'true')+'" onchange="toggleReworkMaterialControls(\\''+id+'\\',\\''+detailsId+'\\',\\''+typeId+'\\')">'+options+'</select>';
+}
+function toggleReworkMaterialControls(materialId,detailsId,typeId){
+  var details=document.getElementById(detailsId),material=document.getElementById(materialId),type=document.getElementById(typeId);
+  if(!details||!material)return;
+  var editable=material.dataset.editable==='true';
+  if(details.value==='adjusted'){
+    material.value='__reworked__';
+    material.disabled=true;
+  }else if(details.value==='component_changed'){
+    if(material.value==='__reworked__')material.value='';
+    var reworked=material.querySelector('option[value="__reworked__"]');
+    if(reworked)reworked.disabled=true;
+    material.disabled=!editable;
+  }else{
+    material.value='';
+    material.disabled=true;
+  }
+  if(type){
+    type.disabled=!editable||details.value===''||
+      (details.value==='component_changed'&&!material.value);
+  }
+}
+
 function reworkComponentCheckboxes(selected,disabled){
   var chosen=new Set((selected||[]).map(function(x){return x.component_id||x.id;}));
   var list=pmReworkComponents.slice();
@@ -1478,30 +1528,8 @@ async function openReworkUnit(id,h,unitIndex){
     await pmLoadReworkLookups();
   }catch(error){return toast('Could not load rework dropdowns: '+error.message);}
   var status=unit.status||'Pending',isResolved=status!=='Pending',canCorrect=isResolved&&canManageReworkLists();
-  if(isResolved&&!canCorrect){
-    // Resolved records are view-only for non-admin users.
-  }
-  var history=[];
-  if(unit.dbId){
-    var result=await pmRequireDb().from('pm_rework_unit_history')
-      .select('event_type,before_values,after_values,changed_by_name,changed_at,change_reason')
-      .eq('source_rework_unit_id',unit.dbId)
-      .order('changed_at',{ascending:false});
-    if(result.error)return toast('Could not load rework history: '+result.error.message);
-    history=result.data||[];
-  }
   var editable=!isResolved||canCorrect;
-  var componentVisible=unit.reworkDetails==='component_changed';
   var savedTime=unit.reworkSavedAt||unit.resolvedAt;
-  var historyHtml=history.length
-    ?'<div class="rw-history-list">'+history.map(function(item){
-       var label=item.event_type==='resolved'?'Rework resolved':item.event_type==='corrected'?'Record corrected':item.event_type==='serial_updated'?'Serial corrected':item.event_type==='removed_pending'?'Pending unit removed':'Rework unit created';
-       var before=item.before_values?escapeHtml(JSON.stringify(item.before_values,null,2)):'No previous values';
-       var after=item.after_values?escapeHtml(JSON.stringify(item.after_values,null,2)):'No after snapshot';
-       return '<article class="rw-history-item"><div><strong>'+escapeHtml(label)+'</strong><small>'+escapeHtml(reworkDateTimeLabel(item.changed_at))+' · '+escapeHtml(item.changed_by_name||'System')+'</small>'+(item.change_reason?'<p>'+escapeHtml(item.change_reason)+'</p>':'')+
-         '<details class="rw-history-diff"><summary>View before / after values</summary><div class="rw-history-diff-grid"><div><b>Before</b><pre>'+before+'</pre></div><div><b>After</b><pre>'+after+'</pre></div></div></details></div></article>';
-     }).join('')+'</div>'
-    :'<div class="rw-no-options">No correction history has been recorded for this unit yet.</div>';
   var modal=document.getElementById('modal');
   modal.classList.add('modalback-rework');
   modal.innerHTML=
@@ -1513,32 +1541,24 @@ async function openReworkUnit(id,h,unitIndex){
         '<div><span>Unit / serial</span><strong>'+(unit.serial?escapeHtml(unit.serial):'<em>Legacy — serial not captured</em>')+'</strong></div>'+
         '<div><span>Original rejection record</span><strong>'+escapeHtml(unit.reason||entry.reason||'—')+'</strong></div>'+
       '</div>'+
-      (isResolved?'<div class="rw-outcome-locked">Outcome: <strong>'+escapeHtml(reworkStatusLabel(status))+'</strong> · Final disposition is locked; correction does not reopen the unit.</div>':'')+
+      (isResolved?'<div class="rw-outcome-locked">Outcome: <strong>'+escapeHtml(reworkStatusLabel(status))+'</strong> · Final disposition is locked; corrections are admin-only.</div>':'')+
       '<div class="rw-form-grid">'+
         '<div class="field"><label for="rwUnitSerial">Rejected unit serial number</label><input id="rwUnitSerial" value="'+escapeHtml(unit.serial||'')+'" '+(editable?'':'disabled')+' placeholder="Scan or enter the exact serial number"/></div>'+
         '<div class="field"><label for="rwProblemType">Problem Type</label><select id="rwProblemType" '+(editable?'':'disabled')+'>'+reworkProblemOptions(unit.problemType||'')+'</select></div>'+
         '<div class="field"><label for="rwReworkDetails">Rework Details</label><select id="rwReworkDetails" '+(editable?'':'disabled')+' onchange="toggleReworkMaterialVisibility()"><option value="">Select repair performed</option><option value="adjusted" '+(unit.reworkDetails==='adjusted'?'selected':'')+'>Adjusted</option><option value="component_changed" '+(unit.reworkDetails==='component_changed'?'selected':'')+'>Component Changed</option></select></div>'+
+        '<div class="field rw-material-field" id="rwMaterialField"><label for="rwMaterialChanged">Material Changed</label>'+reworkMaterialSelectMarkup('rwMaterialChanged',unit.materialChanged,unit.reworkDetails,!editable)+'</div>'+
         '<div class="field rw-rework-type-field"><label for="rwReworkType">Rework Type</label><select id="rwReworkType" '+(editable?'':'disabled')+'><option value="">Select rework type</option><option value="incoming_rejection" '+(unit.reworkType==='incoming_rejection'?'selected':'')+'>Incoming Rejection</option><option value="process_rejection" '+(unit.reworkType==='process_rejection'?'selected':'')+'>Process Rejection</option></select></div>'+
-        '<div class="field rw-material-field" id="rwMaterialField" '+(componentVisible?'':'hidden')+'><label>Material Changed <span class="rw-required">Required for Component Changed</span></label><div class="rw-component-list">'+reworkComponentCheckboxes(unit.materialChanged,!editable)+'</div></div>'+
-        '<div class="field"><label for="rwOperator">Operator Name</label><select id="rwOperator" '+(editable?'':'disabled')+'>'+reworkOperatorOptions(unit.operatorProfileId||'',unit.operatorName||'')+'</select></div>'+
+        '<div class="field"><label for="rwOperatorName">Operator Name</label><input id="rwOperatorName" value="'+escapeHtml(unit.operatorName||'')+'" '+(editable?'':'disabled')+' maxlength="120" placeholder="Enter operator name"/></div>'+
         (isResolved&&!canCorrect?'':'<div class="field rw-outcome-field"><label for="rwOutcome">Final outcome</label><select id="rwOutcome" '+(isResolved?'disabled':'')+'><option value="">Select outcome</option><option value="completed" '+(status==='Completed'?'selected':'')+'>Rework completed</option><option value="finally_rejected" '+(status==='Finally Rejected'?'selected':'')+'>Finally rejected</option></select></div>')+
-        '<div class="field rw-remark-field"><label for="rwResolutionRemark">Resolution Remark</label><textarea id="rwResolutionRemark" rows="3" '+(editable?'':'disabled')+' placeholder="Describe the repair or final rejection reason">'+escapeHtml(unit.remark||'')+'</textarea></div>'+
-        (canCorrect?'<div class="field rw-correction-note-field"><label for="rwCorrectionNote">Correction reason <span class="rw-required">Required for audit</span></label><textarea id="rwCorrectionNote" rows="2" placeholder="Why is this saved rework record being corrected?">'+escapeHtml(unit.correctionNote||'')+'</textarea></div>':'')+
       '</div>'+
-      (editable&&(!pmReworkProblemTypes.length||!pmReworkOperators.some(function(x){return x.role==='operator';}))?'<div class="rw-configuration-notice">'+(!pmReworkProblemTypes.length?'Problem Type list is empty. Add problem types in Rework Settings. ':'')+(!pmReworkOperators.some(function(x){return x.role==='operator';})?'No active named operator is available. Update operator names in User Access.':'')+(canManageReworkLists()?'<button class="btn" type="button" onclick="openReworkSettings()">Open Rework Settings</button>':'')+'</div>':'')+
-      '<section class="rw-audit-section"><div class="rw-section-title"><div><h3>Correction history</h3><p>Saved actions are logged with user and timestamp.</p></div><span class="rw-history-meta">'+history.length+' events</span></div>'+historyHtml+'</section>'+
-      '<div class="modalactions"><button class="btn" type="button" onclick="openReworkPlan(\''+p.id+'\')">← Back to units</button>'+(editable?'<button class="btn primary" type="button" onclick="saveReworkUnitV2(\''+p.id+'\','+h+','+unitIndex+')">'+(isResolved?'Save correction':'Save rework')+'</button>':'')+'</div>'+
+      '<div class="modalactions"><button class="btn" type="button" onclick="openReworkPlan(\\''+p.id+'\\')">← Back to units</button>'+(editable?'<button class="btn primary" type="button" onclick="saveReworkUnitV2(\\''+p.id+'\\','+h+','+unitIndex+')">'+(isResolved?'Save correction':'Save rework')+'</button>':'')+'</div>'+
     '</div>';
   modal.classList.remove('hidden');
   toggleReworkMaterialVisibility();
-}
-function rowLabelForHour(plan,h){
+}function rowLabelForHour(plan,h){
   return (plan.hourLabels||hours)[h]||('Hour '+(h+1));
 }
-function toggleReworkMaterialVisibility(){
-  var details=document.getElementById('rwReworkDetails'),field=document.getElementById('rwMaterialField');
-  if(field)field.hidden=!details||details.value!=='component_changed';
-}
+function toggleReworkMaterialVisibility(){toggleReworkMaterialControls('rwMaterialChanged','rwReworkDetails','rwReworkType');}
 async function saveReworkUnitV2(id,h,unitIndex){
   var p=plans.find(function(x){return String(x.id)===String(id);});
   var entry=p&&p.entries&&p.entries[h],unit=normalizeReworkItems(entry)[unitIndex];
