@@ -1447,7 +1447,7 @@ async function saveReworkBulkUnits(id){
   var materialValue=document.getElementById('rwBulkMaterialChanged')?.value||'';
   var reworkType=document.getElementById('rwBulkType')?.value||'';
   var operatorName=document.getElementById('rwBulkOperatorName')?.value.trim()||'';
-  var matchedOperator=pmReworkOperators.find(function(x){return String(x.full_name||'').trim().toLocaleLowerCase()===operatorName.toLocaleLowerCase();});
+  var matchedOperator=pmReworkOperators.find(function(x){return String(x.full_name||'').trim()===operatorName;});
   var outcome=document.getElementById('rwBulkOutcome')?.value||'';
   var material=[];
   if(details==='component_changed'){
@@ -1542,7 +1542,7 @@ async function saveReworkUnitV2(id,h,unitIndex){
   var materialValue=document.getElementById('rwMaterialChanged')?.value||'';
   var reworkType=document.getElementById('rwReworkType')?.value||'';
   var operatorName=document.getElementById('rwOperatorName')?.value.trim()||'';
-  var matchedOperator=pmReworkOperators.find(function(x){return String(x.full_name||'').trim().toLocaleLowerCase()===operatorName.toLocaleLowerCase();});
+  var matchedOperator=pmReworkOperators.find(function(x){return String(x.full_name||'').trim()===operatorName;});
   var material=[];
   if(details==='component_changed'){
     if(materialValue==='__preserve_existing__')material=Array.isArray(unit.materialChanged)?unit.materialChanged:[];
