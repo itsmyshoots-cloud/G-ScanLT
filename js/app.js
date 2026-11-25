@@ -224,7 +224,7 @@ function showPage(page){
   if(page==='operator')renderOperator();
   if(page==='rework'){
     renderRework();
-    pmLoadReworkLookups().then(function(){renderRework();}).catch(function(error){toast('Could not load rework lists: '+error.message);});
+    pmLoadReworkLookups(true).then(function(){renderRework();}).catch(function(error){toast('Could not load rework lists: '+error.message);});
   }
   if(page==='overview'){requestAnimationFrame(refreshOverview);setTimeout(refreshOverview,80);}
   if(window.pmProductionDataLoaded&&window.pmReloadProductionData){
