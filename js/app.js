@@ -7,6 +7,10 @@ const productModels={};
 let pmBrandNames=[];
 let pmProductNames=[];
 let pmModelNumbers=[];
+let pmReworkProblemTypes=[];
+let pmReworkComponents=[];
+let pmReworkOperators=[];
+let pmReworkLookupsLoaded=false;
 const hours=['09:00 AM–10:00 AM','10:00 AM–11:00 AM','11:00 AM–12:00 PM','12:00 PM–01:00 PM','01:00 PM–02:00 PM','02:00 PM–03:00 PM','03:00 PM–04:00 PM','04:00 PM–05:00 PM'];
 let plans=[];
 let editingPlanId=null;
@@ -83,7 +87,17 @@ async function pmLoadProductionData(client){
       status:unit.status==='completed'?'Completed':unit.status==='finally_rejected'?'Finally Rejected':'Pending',
       remark:unit.resolution_remark||'',
       resolvedAt:unit.resolved_at||null,
-      resolvedBy:unit.resolved_by||null
+      resolvedBy:unit.resolved_by||null,
+      problemType:unit.problem_type||'',
+      reworkDetails:unit.rework_details||'',
+      materialChanged:Array.isArray(unit.material_changed)?unit.material_changed:[],
+      reworkType:unit.rework_type||'',
+      operatorProfileId:unit.operator_profile_id||'',
+      operatorName:unit.operator_name||'',
+      reworkSavedAt:unit.rework_saved_at||null,
+      correctionNote:unit.correction_note||'',
+      correctedAt:unit.corrected_at||null,
+      correctedBy:unit.corrected_by||null
     }));
     const entry={
       dbId:record.id,
@@ -99,6 +113,7 @@ async function pmLoadProductionData(client){
       alternateSerialStart:record.alternate_serial_start||'',
       alternateSerialEnd:record.alternate_serial_end||'',
       serialExceptions:Array.isArray(record.serial_exceptions)?record.serial_exceptions:[],
+      rejectedSerials:Array.isArray(record.rejected_serials)?record.rejected_serials:[],
       recordedAt:record.recorded_at,
       recordedBy:record.recorded_by,
       reworkItems:units,
@@ -146,6 +161,23 @@ async function pmLoadProductionData(client){
   return {brands:brands.length,products:products.length,models:models.length,plans:plans.length};
 }
 window.pmLoadProductionData=pmLoadProductionData;
+async function pmLoadReworkLookups(force){
+  if(pmReworkLookupsLoaded&&!force)return {
+    problemTypes:pmReworkProblemTypes,components:pmReworkComponents,operators:pmReworkOperators
+  };
+  var db=pmRequireDb();
+  var results=await Promise.all([
+    db.from('pm_rework_problem_types').select('id,name,is_active,sort_order').eq('is_active',true).order('sort_order').order('name'),
+    db.from('pm_rework_components').select('id,name,component_code,is_active,sort_order').eq('is_active',true).order('sort_order').order('name'),
+    db.from('pm_rework_operator_options').select('id,full_name,role').order('full_name')
+  ]);
+  results.forEach(function(r){if(r.error)throw r.error;});
+  pmReworkProblemTypes=results[0].data||[];
+  pmReworkComponents=results[1].data||[];
+  pmReworkOperators=results[2].data||[];
+  pmReworkLookupsLoaded=true;
+  return {problemTypes:pmReworkProblemTypes,components:pmReworkComponents,operators:pmReworkOperators};
+}
 async function pmReloadProductionData(){
   const result=await pmLoadProductionData();
   return result;
@@ -186,7 +218,10 @@ function showPage(page){
   var crumb=document.getElementById('crumb');if(crumb)crumb.textContent=labels[page]||page;
   if(page==='plans')renderPlans();
   if(page==='operator')renderOperator();
-  if(page==='rework')renderRework();
+  if(page==='rework'){
+    renderRework();
+    pmLoadReworkLookups().then(function(){renderRework();}).catch(function(error){toast('Could not load rework lists: '+error.message);});
+  }
   if(page==='overview'){requestAnimationFrame(refreshOverview);setTimeout(refreshOverview,80);}
   if(window.pmProductionDataLoaded&&window.pmReloadProductionData){
     window.pmReloadProductionData().catch(function(error){toast('Could not refresh shared data: '+error.message);});
