@@ -1382,7 +1382,7 @@ function reworkMaterialSelectMarkup(id,selected,details,disabled){
   }).join('');
   var detailsId=id==='rwBulkMaterialChanged'?'rwBulkDetails':'rwReworkDetails';
   var typeId=id==='rwBulkMaterialChanged'?'rwBulkType':'rwReworkType';
-  return '<select id="'+id+'" data-editable="'+(disabled?'false':'true')+'" onchange="toggleReworkMaterialControls(\\''+id+'\\',\\''+detailsId+'\\',\\''+typeId+'\\')">'+options+'</select>';
+  return '<select id="'+id+'" data-editable="'+(disabled?'false':'true')+'" onchange="toggleReworkMaterialControls(\''+id+'\',\''+detailsId+'\',\''+typeId+'\')">'+options+'</select>';
 }
 function toggleReworkMaterialControls(materialId,detailsId,typeId){
   var details=document.getElementById(detailsId),material=document.getElementById(materialId),type=document.getElementById(typeId);
@@ -1420,7 +1420,7 @@ async function openReworkBulkModal(id){
   var modal=document.getElementById('modal');
   modal.innerHTML=
     '<div class="modal rework-modal rw-unit-modal rw-bulk-modal">'+
-      '<div class="rw-modal-header"><div><span class="workspace-eyebrow">BATCH REWORK</span><h2>Apply the same repair to selected units</h2><div class="sub">'+escapeHtml(p.line)+' · '+escapeHtml(p.product)+' · '+selectedRows.length+' selected units</div></div><button class="btn rw-modal-close" type="button" onclick="openReworkPlan(\\''+p.id+'\\')">×</button></div>'+
+      '<div class="rw-modal-header"><div><span class="workspace-eyebrow">BATCH REWORK</span><h2>Apply the same repair to selected units</h2><div class="sub">'+escapeHtml(p.line)+' · '+escapeHtml(p.product)+' · '+selectedRows.length+' selected units</div></div><button class="btn rw-modal-close" type="button" onclick="openReworkPlan(\''+p.id+'\')">×</button></div>'+
       '<div class="rw-bulk-unit-preview">'+selectedRows.map(function(x){return '<span>'+escapeHtml(x.unit.serial)+'</span>';}).join('')+'</div>'+
       '<div class="rw-form-grid">'+
         '<div class="field"><label for="rwBulkProblem">Problem Type</label><select id="rwBulkProblem">'+reworkProblemOptions('')+'</select></div>'+
@@ -1430,7 +1430,7 @@ async function openReworkBulkModal(id){
         '<div class="field"><label for="rwBulkOperatorName">Operator Name</label><input id="rwBulkOperatorName" maxlength="120" placeholder="Enter operator name"/></div>'+
         '<div class="field"><label for="rwBulkOutcome">Final outcome</label><select id="rwBulkOutcome"><option value="">Select outcome</option><option value="completed">Rework completed</option><option value="finally_rejected">Finally rejected</option></select></div>'+
       '</div>'+
-      '<div class="modalactions"><button class="btn" type="button" onclick="openReworkPlan(\\''+p.id+'\\')">Back to units</button><button class="btn primary" type="button" onclick="saveReworkBulkUnits(\\''+p.id+'\\')">Save '+selectedRows.length+' unit(s)</button></div>'+
+      '<div class="modalactions"><button class="btn" type="button" onclick="openReworkPlan(\''+p.id+'\')">Back to units</button><button class="btn primary" type="button" onclick="saveReworkBulkUnits(\''+p.id+'\')">Save '+selectedRows.length+' unit(s)</button></div>'+
     '</div>';
   modal.classList.remove('hidden');
   toggleReworkBulkMaterialVisibility();
@@ -1521,7 +1521,7 @@ async function openReworkUnit(id,h,unitIndex){
         '<div class="field"><label for="rwOperatorName">Operator Name</label><input id="rwOperatorName" value="'+escapeHtml(unit.operatorName||'')+'" '+(editable?'':'disabled')+' maxlength="120" placeholder="Enter operator name"/></div>'+
         (isResolved&&!canCorrect?'':'<div class="field rw-outcome-field"><label for="rwOutcome">Final outcome</label><select id="rwOutcome" '+(isResolved?'disabled':'')+'><option value="">Select outcome</option><option value="completed" '+(status==='Completed'?'selected':'')+'>Rework completed</option><option value="finally_rejected" '+(status==='Finally Rejected'?'selected':'')+'>Finally rejected</option></select></div>')+
       '</div>'+
-      '<div class="modalactions"><button class="btn" type="button" onclick="openReworkPlan(\\''+p.id+'\\')">← Back to units</button>'+(editable?'<button class="btn primary" type="button" onclick="saveReworkUnitV2(\\''+p.id+'\\','+h+','+unitIndex+')">'+(isResolved?'Save correction':'Save rework')+'</button>':'')+'</div>'+
+      '<div class="modalactions"><button class="btn" type="button" onclick="openReworkPlan(\''+p.id+'\')">← Back to units</button>'+(editable?'<button class="btn primary" type="button" onclick="saveReworkUnitV2(\''+p.id+'\','+h+','+unitIndex+')">'+(isResolved?'Save correction':'Save rework')+'</button>':'')+'</div>'+
     '</div>';
   modal.classList.remove('hidden');
   toggleReworkMaterialVisibility();
