@@ -79,7 +79,8 @@ async function pmLoadProductionData(client){
   });
   const entriesByPlan=new Map();
   hourly.forEach(record=>{
-    const units=(reworkByHour.get(record.id)||[]).map(unit=>({
+    const dbUnits=reworkByHour.get(record.id)||[];
+    const units=dbUnits.map(unit=>({
       dbId:unit.id,
       unitNumber:unit.unit_number,
       serial:unit.serial_number||'',
@@ -114,7 +115,9 @@ async function pmLoadProductionData(client){
       alternateSerialStart:record.alternate_serial_start||'',
       alternateSerialEnd:record.alternate_serial_end||'',
       serialExceptions:Array.isArray(record.serial_exceptions)?record.serial_exceptions:[],
-      rejectedSerials:Array.isArray(record.rejected_serials)?record.rejected_serials:[],
+      rejectedSerials:units.length
+        ?units.slice().sort((a,b)=>Number(a.unitNumber)-Number(b.unitNumber)).map(unit=>unit.serial||'')
+        :(Array.isArray(record.rejected_serials)?record.rejected_serials:[]),
       recordedAt:record.recorded_at,
       recordedBy:record.recorded_by,
       reworkItems:units,
