@@ -1445,25 +1445,23 @@ async function openReworkBulkModal(id){
   var modal=document.getElementById('modal');
   modal.innerHTML=
     '<div class="modal rework-modal rw-unit-modal rw-bulk-modal">'+
-      '<div class="rw-modal-header"><div><span class="workspace-eyebrow">BATCH REWORK</span><h2>Apply the same repair to selected units</h2><div class="sub">'+escapeHtml(p.line)+' · '+escapeHtml(p.product)+' · '+selectedRows.length+' selected units</div></div><button class="btn rw-modal-close" type="button" onclick="openReworkPlan(\''+p.id+'\')">×</button></div>'+
+      '<div class="rw-modal-header"><div><span class="workspace-eyebrow">BATCH REWORK</span><h2>Apply the same repair to selected units</h2><div class="sub">'+escapeHtml(p.line)+' · '+escapeHtml(p.product)+' · '+selectedRows.length+' selected units</div></div><button class="btn rw-modal-close" type="button" onclick="openReworkPlan(\\''+p.id+'\\')">×</button></div>'+
       '<div class="rw-bulk-unit-preview">'+selectedRows.map(function(x){return '<span>'+escapeHtml(x.unit.serial)+'</span>';}).join('')+'</div>'+
-      '<p class="rw-bulk-explain">The repair details below will be saved separately for every selected serial. Each unit gets its own timestamp and audit-history entry.</p>'+
       '<div class="rw-form-grid">'+
         '<div class="field"><label for="rwBulkProblem">Problem Type</label><select id="rwBulkProblem">'+reworkProblemOptions('')+'</select></div>'+
         '<div class="field"><label for="rwBulkDetails">Rework Details</label><select id="rwBulkDetails" onchange="toggleReworkBulkMaterialVisibility()"><option value="">Select repair performed</option><option value="adjusted">Adjusted</option><option value="component_changed">Component Changed</option></select></div>'+
-        '<div class="field"><label for="rwBulkType">Rework Type</label><select id="rwBulkType"><option value="">Select rework type</option><option value="incoming_rejection">Incoming Rejection</option><option value="process_rejection">Process Rejection</option></select></div>'+
-        '<div class="field"><label for="rwBulkOperator">Operator Name</label><select id="rwBulkOperator">'+reworkOperatorOptions('','')+'</select></div>'+
-        '<div class="field rw-material-field" id="rwBulkMaterialField" hidden><label>Material Changed <span class="rw-required">Required for Component Changed</span></label><div class="rw-component-list">'+reworkComponentCheckboxes([],false)+'</div></div>'+
+        '<div class="field rw-material-field"><label for="rwBulkMaterialChanged">Material Changed</label>'+reworkMaterialSelectMarkup('rwBulkMaterialChanged',[],'',false)+'</div>'+
+        '<div class="field rw-rework-type-field"><label for="rwBulkType">Rework Type</label><select id="rwBulkType" disabled><option value="">Select rework type</option><option value="incoming_rejection">Incoming Rejection</option><option value="process_rejection">Process Rejection</option></select></div>'+
+        '<div class="field"><label for="rwBulkOperatorName">Operator Name</label><input id="rwBulkOperatorName" maxlength="120" placeholder="Enter operator name"/></div>'+
         '<div class="field"><label for="rwBulkOutcome">Final outcome</label><select id="rwBulkOutcome"><option value="">Select outcome</option><option value="completed">Rework completed</option><option value="finally_rejected">Finally rejected</option></select></div>'+
-        '<div class="field rw-remark-field"><label for="rwBulkRemark">Resolution Remark</label><textarea id="rwBulkRemark" rows="3" placeholder="Describe the repair performed on all selected units"></textarea></div>'+
       '</div>'+
-      '<div class="modalactions"><button class="btn" type="button" onclick="openReworkPlan(\''+p.id+'\')">Back to units</button><button class="btn primary" type="button" onclick="saveReworkBulkUnits(\''+p.id+'\')">Save '+selectedRows.length+' unit(s)</button></div>'+
+      '<div class="modalactions"><button class="btn" type="button" onclick="openReworkPlan(\\''+p.id+'\\')">Back to units</button><button class="btn primary" type="button" onclick="saveReworkBulkUnits(\\''+p.id+'\\')">Save '+selectedRows.length+' unit(s)</button></div>'+
     '</div>';
   modal.classList.remove('hidden');
+  toggleReworkBulkMaterialVisibility();
 }
 function toggleReworkBulkMaterialVisibility(){
-  var details=document.getElementById('rwBulkDetails'),field=document.getElementById('rwBulkMaterialField');
-  if(field)field.hidden=!details||details.value!=='component_changed';
+  toggleReworkMaterialControls('rwBulkMaterialChanged','rwBulkDetails','rwBulkType');
 }
 async function saveReworkBulkUnits(id){
   var p=plans.find(function(x){return String(x.id)===String(id);});
@@ -1471,26 +1469,23 @@ async function saveReworkBulkUnits(id){
   if(!p||!selection.length)return toast('Select at least one unit.');
   var problem=document.getElementById('rwBulkProblem')?.value||'';
   var details=document.getElementById('rwBulkDetails')?.value||'';
+  var materialValue=document.getElementById('rwBulkMaterialChanged')?.value||'';
   var reworkType=document.getElementById('rwBulkType')?.value||'';
-  var operatorId=document.getElementById('rwBulkOperator')?.value||'';
-  var operator=pmReworkOperators.find(function(x){return x.id===operatorId;});
+  var operatorName=document.getElementById('rwBulkOperatorName')?.value.trim()||'';
+  var matchedOperator=pmReworkOperators.find(function(x){return String(x.full_name||'').trim().toLocaleLowerCase()===operatorName.toLocaleLowerCase();});
   var outcome=document.getElementById('rwBulkOutcome')?.value||'';
-  var remark=document.getElementById('rwBulkRemark')?.value.trim()||'';
   var material=[];
   if(details==='component_changed'){
-    material=Array.from(document.querySelectorAll('#modal .rw-material-checkbox:checked')).map(function(input){
-      var component=pmReworkComponents.find(function(x){return x.id===input.value;});
-      return component?{component_id:component.id,component_name:component.name}:null;
-    }).filter(Boolean);
+    var component=pmReworkComponents.find(function(x){return x.id===materialValue;});
+    if(component)material=[{component_id:component.id,component_name:component.name}];
   }
   if(!problem)return toast('Select a Problem Type.');
   if(!details)return toast('Select Adjusted or Component Changed.');
-  if(details==='component_changed'&&!material.length)return toast('Select at least one component that was changed.');
-  if(details==='adjusted'&&material.length)return toast('Material Changed must be empty when Adjusted is selected.');
+  if(details==='component_changed'&&!material.length)return toast('Select the component that was changed.');
+  if(details==='adjusted'&&materialValue!=='__reworked__')return toast('Adjusted rework must show Reworked in Material Changed.');
   if(!reworkType)return toast('Select Incoming Rejection or Process Rejection.');
-  if(!operatorId||!operator)return toast('Select the operator who performed the rework.');
+  if(!operatorName)return toast('Enter the operator name.');
   if(outcome!=='completed'&&outcome!=='finally_rejected')return toast('Select the final outcome.');
-  if(!remark)return toast('Enter a Resolution Remark.');
   var button=document.querySelector('#modal .rw-bulk-modal .modalactions .btn.primary');
   if(button){button.disabled=true;button.textContent='Saving…';}
   var saved=0,failed=[];
@@ -1499,8 +1494,8 @@ async function saveReworkBulkUnits(id){
     if(!unit||!unit.dbId||unit.status!=='Pending'||!unit.serial){failed.push(unit&&unit.serial||'Unit '+(i+1));continue;}
     var payload={
       problem_type:problem,rework_details:details,material_changed:material,
-      rework_type:reworkType,operator_profile_id:operatorId,operator_name:operator.full_name,
-      resolution_remark:remark,status:outcome,correction_note:null
+      rework_type:reworkType,operator_profile_id:matchedOperator?matchedOperator.id:null,operator_name:operatorName,
+      resolution_remark:null,status:outcome,correction_note:null
     };
     try{
       var result=await pmRequireDb().from('pm_rework_units').update(payload)
@@ -1516,7 +1511,7 @@ async function saveReworkBulkUnits(id){
   renderRework();
   openReworkPlan(id);
   if(failed.length)toast(saved+' unit(s) saved; '+failed.length+' failed. Review the remaining pending units.');
-  else toast(saved+' unit(s) saved with individual rework histories.');
+  else toast(saved+' unit(s) saved successfully.');
 }
 
 async function openReworkUnit(id,h,unitIndex){
