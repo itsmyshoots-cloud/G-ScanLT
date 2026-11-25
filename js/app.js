@@ -1278,12 +1278,15 @@ function openReworkPlan(id){
   var tableRows=rows.map(function(row){
     var unit=row.unit,status=unit.status||'Pending',resolved=status!=='Pending';
     var label=unit.serial||'Legacy — serial not captured';
+    var bulkCell=status==='Pending'
+      ?(unit.serial?'<td><input type="checkbox" class="rw-bulk-unit" data-hour="'+row.hourIndex+'" data-unit="'+row.unitIndex+'" aria-label="Select '+escapeHtml(unit.serial)+' for batch rework" onchange="updateReworkBulkSelection()"/></td>':'<td><span class="rw-bulk-serial-required">Serial needed</span></td>')
+      :'<td>—</td>';
     var details=unit.reworkDetails?reworkDetailsLabel(unit.reworkDetails):'Not recorded';
     var materials=reworkMaterialLabel(unit.materialChanged);
     var outcome=status==='Completed'?'Rework completed':status==='Finally Rejected'?'Finally rejected':'Pending rework';
     var savedAt=unit.reworkSavedAt||unit.resolvedAt;
     var actionLabel=resolved?(canManageReworkLists()?'View / correct':'View details'):'Record rework';
-    return '<tr>'+
+    return '<tr>'+bulkCell+
       '<td><strong>'+escapeHtml(row.hour)+'</strong><small class="rw-cell-sub">'+escapeHtml(p.date||'—')+'</small></td>'+
       '<td><strong>'+escapeHtml(label)+'</strong><small class="rw-cell-sub">Unit '+(unit.unitNumber||row.unitIndex+1)+'</small></td>'+
       '<td>'+escapeHtml(unit.problemType||'Not recorded')+'</td>'+
@@ -1305,13 +1308,36 @@ function openReworkPlan(id){
         '<div class="rw-summary-card final"><span>Finally rejected</span><strong>'+finalRejected.length+'</strong></div>'+
       '</div>'+
       (legacy?'<div class="rw-legacy-notice"><strong>'+legacy+' legacy unit(s) have no serial number.</strong> Their original serial was not captured in the previous hourly entry. Enter the correct serial when recording or correcting their rework; no serials have been guessed.</div>':'')+
-      '<div class="rw-section-title"><div><h3>Rejected units</h3><p>Open a unit to record its problem, repair action, changed components and operator.</p></div><span class="rw-pending-badge">'+pending.length+' pending</span></div>'+
-      '<div class="report-table-scroll"><table class="rw-unit-table rw-modern-unit-table"><thead><tr><th>Production hour</th><th>Unit / serial</th><th>Problem type</th><th>Rework details</th><th>Rework type</th><th>Operator</th><th>Outcome</th><th>Action</th></tr></thead><tbody>'+
-      (tableRows||'<tr><td colspan="8" class="rework-empty">No rejected units are recorded for this plan.</td></tr>')+
+      '<div class="rw-section-title"><div><h3>Rejected units</h3><p>Open a unit to record its problem, repair action, changed components and operator. Select serialised units to apply the same repair.</p></div><span class="rw-pending-badge">'+pending.length+' pending</span></div>'+
+      '<div class="rw-bulk-toolbar"><div><strong id="rwBulkSelectedCount">0 units selected</strong><small>Batch rework applies the same problem and repair details to each selected unit.</small></div><button class="btn primary" id="rwBulkOpenBtn" type="button" disabled onclick="openReworkBulkModal(\''+p.id+'\')">Apply same repair to selected</button></div>'+
+      '<div class="report-table-scroll"><table class="rw-unit-table rw-modern-unit-table"><thead><tr><th><input type="checkbox" id="rwBulkSelectAll" aria-label="Select pending serialised units" onchange="toggleAllReworkUnits(this)"/></th><th>Production hour</th><th>Unit / serial</th><th>Problem type</th><th>Rework details</th><th>Rework type</th><th>Operator</th><th>Outcome</th><th>Action</th></tr></thead><tbody>'+
+      (tableRows||'<tr><td colspan="9" class="rework-empty">No rejected units are recorded for this plan.</td></tr>')+
       '</tbody></table></div>'+
       '<div class="modalactions"><button class="btn" type="button" onclick="closePlanModal()">Close</button></div>'+
     '</div>';
   modal.classList.remove('hidden');
+  window.pmReworkBulkPlanId=String(p.id);
+  window.pmReworkBulkSelection=[];
+  updateReworkBulkSelection();
+}
+function updateReworkBulkSelection(){
+  var selected=Array.from(document.querySelectorAll('#modal .rw-bulk-unit:checked')).map(function(input){
+    return {hourIndex:Number(input.dataset.hour),unitIndex:Number(input.dataset.unit)};
+  });
+  window.pmReworkBulkSelection=selected;
+  var count=document.getElementById('rwBulkSelectedCount'),button=document.getElementById('rwBulkOpenBtn');
+  if(count)count.textContent=selected.length+' unit'+(selected.length===1?'':'s')+' selected';
+  if(button)button.disabled=!selected.length;
+  var all=Array.from(document.querySelectorAll('#modal .rw-bulk-unit'));
+  var master=document.getElementById('rwBulkSelectAll');
+  if(master){
+    master.checked=all.length>0&&all.every(function(input){return input.checked;});
+    master.indeterminate=all.some(function(input){return input.checked;})&&!master.checked;
+  }
+}
+function toggleAllReworkUnits(master){
+  document.querySelectorAll('#modal .rw-bulk-unit').forEach(function(input){input.checked=!!master.checked;});
+  updateReworkBulkSelection();
 }
 function reworkProblemOptions(selected){
   var list=pmReworkProblemTypes.slice();
@@ -1340,6 +1366,94 @@ function reworkComponentCheckboxes(selected,disabled){
       '<span>'+escapeHtml(c.name)+'</span>'+(c.is_active?'':'<small>Inactive</small>')+'</label>';
   }).join('');
 }
+async function openReworkBulkModal(id){
+  var p=plans.find(function(x){return String(x.id)===String(id);});
+  var selection=window.pmReworkBulkSelection||[];
+  if(!p||!selection.length)return toast('Select at least one pending unit with a serial number.');
+  var selectedRows=selection.map(function(item){
+    var unit=normalizeReworkItems(p.entries&&p.entries[item.hourIndex])[item.unitIndex];
+    return {item:item,unit:unit};
+  });
+  if(selectedRows.some(function(x){return !x.unit||x.unit.status!=='Pending'||!x.unit.serial;}))
+    return toast('Only pending rejected units with a captured serial can be batch processed.');
+  await pmLoadReworkLookups();
+  var modal=document.getElementById('modal');
+  modal.innerHTML=
+    '<div class="modal rework-modal rw-unit-modal rw-bulk-modal">'+
+      '<div class="rw-modal-header"><div><span class="workspace-eyebrow">BATCH REWORK</span><h2>Apply the same repair to selected units</h2><div class="sub">'+escapeHtml(p.line)+' · '+escapeHtml(p.product)+' · '+selectedRows.length+' selected units</div></div><button class="btn rw-modal-close" type="button" onclick="openReworkPlan(\''+p.id+'\')">×</button></div>'+
+      '<div class="rw-bulk-unit-preview">'+selectedRows.map(function(x){return '<span>'+escapeHtml(x.unit.serial)+'</span>';}).join('')+'</div>'+
+      '<p class="rw-bulk-explain">The repair details below will be saved separately for every selected serial. Each unit gets its own timestamp and audit-history entry.</p>'+
+      '<div class="rw-form-grid">'+
+        '<div class="field"><label for="rwBulkProblem">Problem Type</label><select id="rwBulkProblem">'+reworkProblemOptions('')+'</select></div>'+
+        '<div class="field"><label for="rwBulkDetails">Rework Details</label><select id="rwBulkDetails" onchange="toggleReworkBulkMaterialVisibility()"><option value="">Select repair performed</option><option value="adjusted">Adjusted</option><option value="component_changed">Component Changed</option></select></div>'+
+        '<div class="field"><label for="rwBulkType">Rework Type</label><select id="rwBulkType"><option value="">Select rework type</option><option value="incoming_rejection">Incoming Rejection</option><option value="process_rejection">Process Rejection</option></select></div>'+
+        '<div class="field"><label for="rwBulkOperator">Operator Name</label><select id="rwBulkOperator">'+reworkOperatorOptions('','')+'</select></div>'+
+        '<div class="field rw-material-field" id="rwBulkMaterialField" hidden><label>Material Changed <span class="rw-required">Required for Component Changed</span></label><div class="rw-component-list">'+reworkComponentCheckboxes([],false)+'</div></div>'+
+        '<div class="field"><label for="rwBulkOutcome">Final outcome</label><select id="rwBulkOutcome"><option value="">Select outcome</option><option value="completed">Rework completed</option><option value="finally_rejected">Finally rejected</option></select></div>'+
+        '<div class="field rw-remark-field"><label for="rwBulkRemark">Resolution Remark</label><textarea id="rwBulkRemark" rows="3" placeholder="Describe the repair performed on all selected units"></textarea></div>'+
+      '</div>'+
+      '<div class="modalactions"><button class="btn" type="button" onclick="openReworkPlan(\''+p.id+'\')">Back to units</button><button class="btn primary" type="button" onclick="saveReworkBulkUnits(\''+p.id+'\')">Save '+selectedRows.length+' unit(s)</button></div>'+
+    '</div>';
+  modal.classList.remove('hidden');
+}
+function toggleReworkBulkMaterialVisibility(){
+  var details=document.getElementById('rwBulkDetails'),field=document.getElementById('rwBulkMaterialField');
+  if(field)field.hidden=!details||details.value!=='component_changed';
+}
+async function saveReworkBulkUnits(id){
+  var p=plans.find(function(x){return String(x.id)===String(id);});
+  var selection=window.pmReworkBulkSelection||[];
+  if(!p||!selection.length)return toast('Select at least one unit.');
+  var problem=document.getElementById('rwBulkProblem')?.value||'';
+  var details=document.getElementById('rwBulkDetails')?.value||'';
+  var reworkType=document.getElementById('rwBulkType')?.value||'';
+  var operatorId=document.getElementById('rwBulkOperator')?.value||'';
+  var operator=pmReworkOperators.find(function(x){return x.id===operatorId;});
+  var outcome=document.getElementById('rwBulkOutcome')?.value||'';
+  var remark=document.getElementById('rwBulkRemark')?.value.trim()||'';
+  var material=[];
+  if(details==='component_changed'){
+    material=Array.from(document.querySelectorAll('#modal .rw-material-checkbox:checked')).map(function(input){
+      var component=pmReworkComponents.find(function(x){return x.id===input.value;});
+      return component?{component_id:component.id,component_name:component.name}:null;
+    }).filter(Boolean);
+  }
+  if(!problem)return toast('Select a Problem Type.');
+  if(!details)return toast('Select Adjusted or Component Changed.');
+  if(details==='component_changed'&&!material.length)return toast('Select at least one component that was changed.');
+  if(details==='adjusted'&&material.length)return toast('Material Changed must be empty when Adjusted is selected.');
+  if(!reworkType)return toast('Select Incoming Rejection or Process Rejection.');
+  if(!operatorId||!operator)return toast('Select the operator who performed the rework.');
+  if(outcome!=='completed'&&outcome!=='finally_rejected')return toast('Select the final outcome.');
+  if(!remark)return toast('Enter a Resolution Remark.');
+  var button=document.querySelector('#modal .rw-bulk-modal .modalactions .btn.primary');
+  if(button){button.disabled=true;button.textContent='Saving…';}
+  var saved=0,failed=[];
+  for(var i=0;i<selection.length;i++){
+    var selected=selection[i],unit=normalizeReworkItems(p.entries&&p.entries[selected.hourIndex])[selected.unitIndex];
+    if(!unit||!unit.dbId||unit.status!=='Pending'||!unit.serial){failed.push(unit&&unit.serial||'Unit '+(i+1));continue;}
+    var payload={
+      problem_type:problem,rework_details:details,material_changed:material,
+      rework_type:reworkType,operator_profile_id:operatorId,operator_name:operator.full_name,
+      resolution_remark:remark,status:outcome,correction_note:null
+    };
+    try{
+      var result=await pmRequireDb().from('pm_rework_units').update(payload)
+        .eq('id',unit.dbId).eq('status','pending').select('id').single();
+      if(result.error)throw result.error;
+      saved++;
+    }catch(error){
+      failed.push((unit.serial||'Unit')+': '+error.message);
+    }
+  }
+  await pmReloadProductionData();
+  renderReports();
+  renderRework();
+  openReworkPlan(id);
+  if(failed.length)toast(saved+' unit(s) saved; '+failed.length+' failed. Review the remaining pending units.');
+  else toast(saved+' unit(s) saved with individual rework histories.');
+}
+
 async function openReworkUnit(id,h,unitIndex){
   var p=plans.find(function(x){return String(x.id)===String(id);});
   var entry=p&&p.entries&&p.entries[h];
