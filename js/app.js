@@ -347,26 +347,19 @@ function hourEntry(id,h){
   };
 
   var modal=document.getElementById('modal');
-  var options=['IQC Rejection','LQC Rejection'].map(function(x){
-    return '<option value="'+x+'" '+(entry.reason===x?'selected':'')+'>'+x+'</option>';
-  }).join('');
-
   modal.innerHTML='<div class="modal hourly-entry-modal hourly-entry-wizard">'+
     '<div class="hourly-modal-heading"><div><h2>'+(saved?'Correct hourly production':'Record hourly production')+'</h2>'+
       '<div class="sub">'+escapeHtml(p.line)+' · '+escapeHtml(p.product)+' · '+escapeHtml(label)+'</div></div>'+
       (saved?'<span class="hourly-admin-badge">Admin edit</span>':'')+'</div>'+
-    '<div class="hourly-admin-note">'+(saved?'Admin correction mode. Operators cannot change this saved entry.':'Complete the hourly production details. Once saved, the record is locked for operators.')+'</div>'+
     '<section id="hourlyInitialStep">'+
       '<div class="hourly-entry-grid">'+
         '<div class="field"><label>Planned quantity</label><input value="'+planHourTargets(p)[h]+'" disabled/></div>'+
         '<div class="field"><label>Actual quantity</label><input id="ha" type="number" min="0" inputmode="numeric" value="'+(entry.actual==null?'':entry.actual)+'" placeholder="Actual produced"/></div>'+
         '<div class="field"><label>Rejected quantity</label><input id="hr" type="number" min="0" inputmode="numeric" value="'+(entry.rejected==null?0:entry.rejected)+'" placeholder="0"/></div>'+
-        '<div class="field"><label>Rejection category</label><select id="hreason"><option value="">Select IQC / LQC</option>'+options+'</select></div>'+
         '<div class="field"><label>Starting serial number</label><input id="hs" value="'+escapeHtml(entry.startSerial||'')+'" placeholder="First production serial"/></div>'+
         '<div class="field"><label>Ending serial number</label><input id="he" value="'+escapeHtml(entry.endSerial||'')+'" placeholder="Last production serial"/></div>'+
         '<div class="field"><label>Missing / damaged sticker quantity</label><input id="hmissqty" type="number" min="0" inputmode="numeric" value="'+(entry.missingSerialQty||0)+'" placeholder="0"/></div>'+
       '</div>'+
-      '<div class="hourly-flow-hint">Enter the normal serial range first. If any serial stickers are missing or damaged, enter the quantity and continue to record each missing serial and its replacement.</div>'+
       '<div class="modalactions hourly-step-actions"><button class="btn" type="button" onclick="closePlanModal()">← Back to plan</button>'+
         '<button class="btn primary" type="button" onclick="continueHourlyEntry()">Continue</button></div>'+
     '</section>'+
@@ -456,16 +449,13 @@ async function continueHourlyEntry(){
   var rejected=Number(document.getElementById('hr').value||0);
   var serialStart=document.getElementById('hs').value.trim();
   var serialEnd=document.getElementById('he').value.trim();
-  var reason=document.getElementById('hreason').value;
   var missingQty=Number(document.getElementById('hmissqty').value||0);
   if(!Number.isInteger(q)||q<0||!Number.isInteger(rejected)||rejected<0||rejected>q)return toast('Rejected quantity must be a whole number between zero and actual quantity.');
   if(!await confirmHourlyOverproduction(p,draft.hourIndex,q,draft))return;
   if(q>0&&(!serialStart||!serialEnd))return toast('Enter the starting and ending production serial numbers.');
-  if(rejected>0&&!['IQC Rejection','LQC Rejection'].includes(reason))return toast('Choose IQC Rejection or LQC Rejection.');
-  if(rejected===0)document.getElementById('hreason').value='';
   if(!Number.isInteger(missingQty)||missingQty<0||missingQty>q)return toast('Missing sticker quantity must be a whole number between zero and actual quantity.');
   draft.actualQty=q;draft.rejectedQty=rejected;draft.serialStart=serialStart;draft.serialEnd=serialEnd;
-  draft.rejectionReason=rejected?reason:null;draft.missingQty=missingQty;
+  draft.rejectionReason=rejected&&draft.saved?(draft.previous?.reason||null):null;draft.missingQty=missingQty;
 
   if(missingQty>0){
     openHourlySerialPopup(missingQty,draft.serialPairs||[]);
@@ -556,7 +546,6 @@ async function submitHour(id,h){
   if(missingQty<0||missingQty>q)return toast('Missing sticker quantity must be between zero and actual produced quantity.');
   if(!await confirmHourlyOverproduction(p,h,q,draft))return;
   if(q>0&&(!serialStart||!serialEnd))return toast('Enter the normal serial range.');
-  if(rejected>0&&!['IQC Rejection','LQC Rejection'].includes(reason))return toast('Choose IQC Rejection or LQC Rejection.');
   if(pairs.length!==missingQty)return toast('Enter the missing and replacement serial numbers first.');
   if(pairs.some(function(x){return !x.missing_serial_number||!x.alternate_serial_number;}))return toast('Complete every missing / replacement serial pair.');
 
