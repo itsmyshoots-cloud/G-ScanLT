@@ -97,7 +97,8 @@ async function pmLoadProductionData(client){
       reworkSavedAt:unit.rework_saved_at||null,
       correctionNote:unit.correction_note||'',
       correctedAt:unit.corrected_at||null,
-      correctedBy:unit.corrected_by||null
+      correctedBy:unit.corrected_by||null,
+      createdAt:unit.created_at||null
     }));
     const entry={
       dbId:record.id,
@@ -1173,6 +1174,8 @@ function renderRework(){
   const model=doc.querySelector('#reworkModel')?.value||'all';
   const shift=doc.querySelector('#reworkShift')?.value||'all';
   const resolution=doc.querySelector('#reworkResolutionStatus')?.value||'all';
+  const settingsButton=doc.querySelector('#reworkSettingsBtn');
+  if(settingsButton)settingsButton.hidden=!canManageReworkLists();
   const allWithRejection=plans.filter(p=>planReworkUnits(p).length>0);
   reworkSelectOptions(doc.querySelector('#reworkLine'),allWithRejection.map(p=>p.line),'All lines',line);
   reworkSelectOptions(doc.querySelector('#reworkBrand'),allWithRejection.map(p=>p.brand),'All brands',brand);
@@ -1794,7 +1797,35 @@ function filteredReportPlans(){
 function renderReports(){
  var hourSelect=document.getElementById('reportHour');if(hourSelect){var keepHour=hourSelect.value||'all';hourSelect.innerHTML='<option value="all">All hours</option>'+hours.map(function(h){return '<option value="'+escapeHtml(h)+'">'+escapeHtml(h)+'</option>';}).join('');hourSelect.value=hours.includes(keepHour)?keepHour:'all';}
  var filtered=filteredReportPlans(),type=document.getElementById('reportType')?.value||'hourly',hourFilter=document.getElementById('reportHour')?.value||'all',groups=new Map();
-  if(type==='rework'){var reworkRows=filtered.flatMap(function(p){return planReworkUnits(p).filter(function(x){return hourFilter==='all'||String(x.hour)===hourFilter;}).map(function(x){return {date:p.date,shift:p.shift,line:p.line,brand:p.brand,product:p.product,model:p.model,hour:x.hour,serial:x.unit.serial||('Unit #'+(x.unit.unitNumber||x.unitIndex+1)),reason:x.unit.reason||x.entry.reason||'—',status:x.unit.status||'Pending',resolutionRemark:x.unit.remark||'—'};});});document.getElementById('reportTableTitle').textContent='Individual rejection & rework detail';document.getElementById('reportTableSubtitle').textContent='Every originally rejected unit with its final disposition and resolution remark';document.getElementById('reportTableCount').textContent=reworkRows.length+' units';document.getElementById('reportFilterSummary').textContent=filtered.length+' plans matched · '+reworkRows.length+' rejected units';renderReworkReportRows(reworkRows);return;}
+  if(type==='rework'){
+    var reworkRows=filtered.flatMap(function(p){
+      return planReworkUnits(p).filter(function(x){return hourFilter==='all'||String(x.hour)===hourFilter;}).map(function(x){
+        var unit=x.unit;
+        var materials=reworkMaterialLabel(unit.materialChanged);
+        return {
+          date:p.date,shift:p.shift,line:p.line,brand:p.brand,product:p.product,model:p.model,
+          hour:x.hour,serial:unit.serial||'Legacy — serial not captured',
+          originalRejection:unit.reason||x.entry.reason||'Not recorded',
+          problemType:unit.problemType||'Not recorded',
+          reworkDetails:reworkDetailsLabel(unit.reworkDetails),
+          materials:unit.reworkDetails==='component_changed'?materials:'—',
+          reworkType:reworkTypeLabel(unit.reworkType),
+          operatorName:unit.operatorName||'—',
+          reworkDateTime:unit.reworkSavedAt||unit.resolvedAt?reworkDateTimeLabel(unit.reworkSavedAt||unit.resolvedAt):'Pending',
+          status:unit.status||'Pending',
+          resolutionRemark:unit.remark||'—',
+          correctionNote:unit.correctionNote||'—',
+          correctedAt:unit.correctedAt?reworkDateTimeLabel(unit.correctedAt):'—'
+        };
+      });
+    });
+    document.getElementById('reportTableTitle').textContent='Individual rework and repair traceability';
+    document.getElementById('reportTableSubtitle').textContent='Unit serial, identified problem, repair action, components, rework type, operator and final outcome';
+    document.getElementById('reportTableCount').textContent=reworkRows.length+' units';
+    document.getElementById('reportFilterSummary').textContent=filtered.length+' plans matched · '+reworkRows.length+' rejected units';
+    renderReworkReportRows(reworkRows);
+    return;
+  }
  if(type==='sticker'){var stickerRows=[];filtered.forEach(function(p){Object.entries(p.entries||{}).forEach(function(pair){var h=pair[0],e=pair[1],qty=Number(e.missingSerialQty)||0,exceptions=Array.isArray(e.serialExceptions)?e.serialExceptions:[];if(!qty&&!exceptions.length)return;var labels=p.hourLabels||hours,hourLabel=labels[Number(h)]||('Hour '+(Number(h)+1));if(hourFilter!=='all'&&String(hourLabel)!==hourFilter)return;if(exceptions.length){exceptions.forEach(function(x,i){stickerRows.push({key:[p.date,p.shift,p.line,hourLabel,i+1].join(' · '),date:p.date,shift:p.shift,line:p.line,brand:p.brand,product:p.product,model:p.model,hour:hourLabel,missing:1,missingSerial:x.missing_serial_number||'',replacementSerial:x.alternate_serial_number||'',remarks:x.remark||x.remarks||e.remarks||''});});}else{stickerRows.push({key:[p.date,p.shift,p.line,hourLabel].join(' · '),date:p.date,shift:p.shift,line:p.line,brand:p.brand,product:p.product,model:p.model,hour:hourLabel,missing:qty,missingSerial:e.missingSerialStart||'',replacementSerial:e.alternateSerialStart||'',remarks:e.remarks||''});}});});document.getElementById('reportTableTitle').textContent='Missing / damaged sticker detail';document.getElementById('reportTableSubtitle').textContent='Missing sticker serials and replacement serial numbers';document.getElementById('reportTableCount').textContent=stickerRows.length+' rows';document.getElementById('reportFilterSummary').textContent=filtered.length+' plans matched';renderStickerReportRows(stickerRows);return;}
  function reasonQty(plan,reason){return Object.values(plan.entries||{}).reduce(function(n,e){return n+(e.reason===reason?(Number(e.rejected)||0):0);},0);}
  function makeKey(p,h){if(type==='hourly')return [p.date,p.shift,p.line,h].join(' · ');if(type==='day')return p.date;if(type==='month')return String(p.date||'').slice(0,7);if(type==='shift')return [p.date,p.shift,p.line].join(' · ');if(type==='model')return [p.brand,p.product,p.model].filter(Boolean).join(' · ');if(type==='product')return [p.brand,p.product].filter(Boolean).join(' · ');if(type==='brand')return p.brand||'—';if(type==='rejection')return [p.date,p.line,p.shift].join(' · ');if(type==='rework')return [p.date,p.line,p.shift,p.product,p.model].join(' · ');if(type==='sticker')return [p.date,p.line,p.shift,p.product,p.model].join(' · ');return p.id;}
@@ -1804,7 +1835,42 @@ function renderReports(){
  document.getElementById('reportTableTitle').textContent=titles[type]||titles.hourly;document.getElementById('reportTableSubtitle').textContent=subtitles[type]||'';document.getElementById('reportTableCount').textContent=rows.length+' rows';document.getElementById('reportFilterSummary').textContent=filtered.length+' plans matched';renderReportRows(rows,type);
 }
 function renderStickerReportRows(rows){var total=rows.reduce(function(n,r){return n+(Number(r.missing)||0);},0);document.getElementById('reportKpis').innerHTML=[['Missing / damaged units',total],['Serial exceptions',rows.length],['Replacement serials recorded',rows.filter(r=>r.replacementSerial).length],['Production records',rows.length],['Plans matched',document.getElementById('reportFilterSummary').textContent]].map(function(x){return '<article class="report-kpi"><div class="klabel">'+x[0]+'</div><div class="kvalue">'+x[1]+'</div></article>';}).join('');var headers=['Date','Shift','Line','Product / Model','Hour','Missing serial','Replacement serial','Remark'];document.getElementById('reportTable').querySelector('thead').innerHTML='<tr>'+headers.map(x=>'<th>'+x.toUpperCase()+'</th>').join('')+'</tr>';document.getElementById('reportTable').querySelector('tbody').innerHTML=rows.map(function(r){return '<tr><td>'+escapeHtml(r.date)+'</td><td>'+escapeHtml(r.shift)+'</td><td>'+escapeHtml(r.line)+'</td><td>'+escapeHtml((r.product||'—')+' / '+(r.model||'—'))+'</td><td>'+escapeHtml(r.hour)+'</td><td>'+escapeHtml(r.missingSerial||'—')+'</td><td>'+escapeHtml(r.replacementSerial||'—')+'</td><td>'+escapeHtml(r.remarks||'—')+'</td></tr>';}).join('')||'<tr><td colspan="8" class="report-empty">No missing or damaged sticker serials found for these filters.</td></tr>';document.getElementById('reportCards').innerHTML='';window.currentReportRows=rows;}
-function renderReworkReportRows(rows){var counts={completed:rows.filter(r=>r.status==='Completed').length,pending:rows.filter(r=>r.status==='Pending').length,final:rows.filter(r=>r.status==='Finally Rejected').length};document.getElementById('reportKpis').innerHTML=[['Originally rejected',rows.length],['Rework completed',counts.completed],['Pending rework',counts.pending],['Finally rejected',counts.final],['Remarks recorded',rows.filter(r=>r.resolutionRemark&&r.resolutionRemark!=='—').length]].map(function(x){return '<article class="report-kpi"><div class="klabel">'+x[0]+'</div><div class="kvalue">'+x[1]+'</div></article>';}).join('');var headers=['Date','Shift','Line','Brand','Product','Model','Hour','Unit / serial','Original rejection remark','Resolution','Rework remark'];document.getElementById('reportTable').querySelector('thead').innerHTML='<tr>'+headers.map(x=>'<th>'+x.toUpperCase()+'</th>').join('')+'</tr>';document.getElementById('reportTable').querySelector('tbody').innerHTML=rows.map(function(r){return '<tr><td>'+escapeHtml(r.date)+'</td><td>'+escapeHtml(r.shift)+'</td><td>'+escapeHtml(r.line)+'</td><td>'+escapeHtml(r.brand||'—')+'</td><td>'+escapeHtml(r.product||'—')+'</td><td>'+escapeHtml(r.model||'—')+'</td><td>'+escapeHtml(r.hour)+'</td><td>'+escapeHtml(r.serial)+'</td><td>'+escapeHtml(r.reason)+'</td><td>'+escapeHtml(reworkStatusLabel(r.status))+'</td><td>'+escapeHtml(r.resolutionRemark)+'</td></tr>';}).join('')||'<tr><td colspan="11" class="report-empty">No rejection / rework records found.</td></tr>';document.getElementById('reportCards').innerHTML='';window.currentReportRows=rows;}
+function renderReworkReportRows(rows){
+  var counts={
+    completed:rows.filter(function(r){return r.status==='Completed';}).length,
+    pending:rows.filter(function(r){return r.status==='Pending';}).length,
+    final:rows.filter(function(r){return r.status==='Finally Rejected';}).length,
+    corrections:rows.filter(function(r){return r.correctionNote&&r.correctionNote!=='—';}).length
+  };
+  document.getElementById('reportKpis').innerHTML=[
+    ['Originally rejected',rows.length],
+    ['Rework completed',counts.completed],
+    ['Pending rework',counts.pending],
+    ['Finally rejected',counts.final],
+    ['Admin corrections',counts.corrections]
+  ].map(function(x){return '<article class="report-kpi"><div class="klabel">'+x[0]+'</div><div class="kvalue">'+x[1]+'</div></article>';}).join('');
+  var headers=[
+    'Production date','Rework date / time','Shift','Line','Brand','Product','Model','Hour','Unit / serial',
+    'Original rejection record','Problem type','Rework details','Material changed','Rework type',
+    'Operator name','Outcome','Resolution remark','Correction reason','Corrected at'
+  ];
+  document.getElementById('reportTable').querySelector('thead').innerHTML='<tr>'+headers.map(function(x){return '<th>'+x.toUpperCase()+'</th>';}).join('')+'</tr>';
+  document.getElementById('reportTable').querySelector('tbody').innerHTML=rows.map(function(r){
+    return '<tr>'+
+      '<td>'+escapeHtml(r.date)+'</td><td>'+escapeHtml(r.reworkDateTime)+'</td>'+
+      '<td>'+escapeHtml(r.shift)+'</td><td>'+escapeHtml(r.line)+'</td>'+
+      '<td>'+escapeHtml(r.brand||'—')+'</td><td>'+escapeHtml(r.product||'—')+'</td><td>'+escapeHtml(r.model||'—')+'</td>'+
+      '<td>'+escapeHtml(r.hour)+'</td><td>'+escapeHtml(r.serial)+'</td>'+
+      '<td>'+escapeHtml(r.originalRejection)+'</td><td>'+escapeHtml(r.problemType)+'</td>'+
+      '<td>'+escapeHtml(r.reworkDetails)+'</td><td>'+escapeHtml(r.materials)+'</td>'+
+      '<td>'+escapeHtml(r.reworkType)+'</td><td>'+escapeHtml(r.operatorName)+'</td>'+
+      '<td>'+escapeHtml(reworkStatusLabel(r.status))+'</td><td>'+escapeHtml(r.resolutionRemark)+'</td>'+
+      '<td>'+escapeHtml(r.correctionNote)+'</td><td>'+escapeHtml(r.correctedAt)+'</td></tr>';
+  }).join('')||'<tr><td colspan="'+headers.length+'" class="report-empty">No rejection / rework records found for these filters.</td></tr>';
+  document.getElementById('reportCards').innerHTML='';
+  window.currentReportRows=rows;
+}
+
 function sumMissingSticker(p){return Object.values(p.entries||{}).reduce(function(n,e){return n+(Number(e.missingSerialQty)||0);},0);}
 function renderReportRows(rows,type){
   var totals=rows.reduce(function(a,r){
