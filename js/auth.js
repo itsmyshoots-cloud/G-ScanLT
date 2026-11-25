@@ -182,7 +182,7 @@
         ?'<span style="color:#188455">Email verified</span>'
         :'<span style="color:#b9770e">Email not verified</span>';
       return '<tr data-user-row="'+escapeHtml(u.id)+'">'+
-        '<td><div class="pm-admin-account">'+escapeHtml(u.full_name||'Name not provided')+'</div><small>'+escapeHtml(u.email||'No email')+'</small></td>'+
+        '<td><div class="pm-admin-account"><input class="pm-admin-fullname" type="text" value="'+escapeHtml(u.full_name==='Name not provided'?'':u.full_name||'')+'" placeholder="Enter full name"/><small>'+escapeHtml(u.email||'No email')+'</small></div></td>'+
         '<td><select class="pm-admin-role">'+roleOptions+'</select></td>'+
         '<td><div class="pm-admin-status"><label><input type="checkbox" class="pm-admin-active"'+(u.is_active?' checked':'')+(u.role==='pending'?' disabled':'')+'> Active</label>'+verified+'</div></td>'+
         '<td><div class="pm-admin-tabs">'+tabChecks+'</div></td>'+
@@ -199,7 +199,8 @@
     const role=row.querySelector('.pm-admin-role').value;
     const active=row.querySelector('.pm-admin-active').checked;
     const tabs=Array.from(row.querySelectorAll('.pm-admin-tab:checked')).map(function(x){return x.value;});
-    const name=row.querySelector('.pm-admin-account').textContent.trim();
+    const name=row.querySelector('.pm-admin-fullname')?.value.trim()||'';
+    if(!name){if(message)message.textContent='Enter the user full name before saving.';return;}
     button.disabled=true;
     button.textContent='Saving…';
     if(message) message.textContent='';
