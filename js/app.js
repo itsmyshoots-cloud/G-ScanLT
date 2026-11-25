@@ -378,7 +378,9 @@ function hourEntry(id,h){
   }):[];
   window.pmHourlyEntryDraft={
     id:String(id),hourIndex:h,saved:saved,previous:entry,
-    serialPairs:serialPairs,confirmedOverproductionQty:null
+    serialPairs:serialPairs,
+    rejectedSerials:Array.isArray(entry.rejectedSerials)?entry.rejectedSerials.slice():[],
+    confirmedOverproductionQty:null
   };
 
   var modal=document.getElementById('modal');
@@ -404,6 +406,7 @@ function hourEntry(id,h){
       '<div class="modalactions hourly-step-actions"><button class="btn" type="button" onclick="backToHourlyEntry()">← Back</button>'+
         '<button class="btn primary" type="button" onclick="submitHour(\''+String(p.id)+'\','+h+')">'+(saved?'Save correction':'Save hourly record')+'</button></div>'+
     '</section>'+
+    '<div id="hourlyRejectedSerialPopupHost"></div>'+
     '<div id="hourlySerialPopupHost"></div>'+
   '</div>';
   modal.classList.remove('hidden');
@@ -492,12 +495,61 @@ async function continueHourlyEntry(){
   draft.actualQty=q;draft.rejectedQty=rejected;draft.serialStart=serialStart;draft.serialEnd=serialEnd;
   draft.rejectionReason=rejected&&draft.saved?(draft.previous?.reason||null):null;draft.missingQty=missingQty;
 
+  if(rejected>0){
+    openRejectedSerialPopup(rejected,draft.rejectedSerials||[]);
+    return;
+  }
+  draft.rejectedSerials=[];
   if(missingQty>0){
     openHourlySerialPopup(missingQty,draft.serialPairs||[]);
     return;
   }
   draft.serialPairs=[];
   showHourlyFinalStep();
+}
+
+function openRejectedSerialPopup(quantity,existing){
+  var host=document.getElementById('hourlyRejectedSerialPopupHost');if(!host)return;
+  var existingValues=Array.isArray(existing)?existing:[];
+  var rows=Array.from({length:quantity},function(_,i){
+    var value=existingValues[i]||'';
+    return '<label class="hourly-rejected-serial-row"><span>Rejected unit '+(i+1)+'</span>'+
+      '<input class="pm-rejected-serial" data-index="'+i+'" value="'+escapeHtml(value)+'" autocomplete="off" placeholder="Scan or type rejected serial" required/>'+
+      '<small>Scan barcode or enter serial number</small></label>';
+  }).join('');
+  host.innerHTML='<div class="hourly-rejected-serial-overlay"><section class="hourly-rejected-serial-dialog" role="dialog" aria-modal="true" aria-labelledby="hourlyRejectedSerialTitle">'+
+    '<div class="hourly-rejected-serial-head"><div><h3 id="hourlyRejectedSerialTitle">Identify rejected units</h3><p>Enter one exact serial number for every rejected unit in this hour.</p></div><span class="hourly-admin-badge">'+quantity+' units</span></div>'+
+    '<div class="hourly-rejected-serial-list">'+rows+'</div>'+
+    '<div class="hourly-rejected-serial-note">The number of serials must match the rejected quantity. Duplicate serial numbers are not allowed.</div>'+
+    '<div class="modalactions hourly-rejected-serial-actions"><button class="btn" type="button" onclick="cancelRejectedSerialPopup()">Back</button><button class="btn primary" type="button" onclick="saveRejectedSerialMappings()">Save rejected serials</button></div>'+
+    '</section></div>';
+  var first=host.querySelector('.pm-rejected-serial');if(first)first.focus({preventScroll:true});
+}
+function cancelRejectedSerialPopup(){
+  var host=document.getElementById('hourlyRejectedSerialPopupHost');
+  if(host)host.innerHTML='';
+}
+function saveRejectedSerialMappings(){
+  var draft=window.pmHourlyEntryDraft;if(!draft)return;
+  var inputs=Array.from(document.querySelectorAll('.pm-rejected-serial'));
+  var serials=inputs.map(function(input){return input.value.trim();});
+  if(serials.length!==draft.rejectedQty)return toast('Enter one rejected serial for every rejected unit.');
+  if(serials.some(function(serial){return !serial;}))return toast('Complete every rejected serial number.');
+  var normalized=serials.map(function(serial){return serial.toLocaleLowerCase();});
+  if(new Set(normalized).size!==normalized.length)return toast('A rejected serial number cannot be entered more than once.');
+  var start=String(draft.serialStart||'').trim(),end=String(draft.serialEnd||'').trim();
+  var startNum=Number(start),endNum=Number(end);
+  if(start&&end&&!Number.isNaN(startNum)&&!Number.isNaN(endNum)){
+    var outOfRange=serials.find(function(serial){
+      var value=Number(serial);
+      return !Number.isNaN(value)&&(value<Math.min(startNum,endNum)||value>Math.max(startNum,endNum));
+    });
+    if(outOfRange)return toast('Rejected serial '+outOfRange+' is outside the recorded production serial range.');
+  }
+  draft.rejectedSerials=serials;
+  cancelRejectedSerialPopup();
+  if(Number(draft.missingQty)>0)openHourlySerialPopup(draft.missingQty,draft.serialPairs||[]);
+  else {draft.serialPairs=[];showHourlyFinalStep();}
 }
 
 function openHourlySerialPopup(quantity,existing){
@@ -551,10 +603,14 @@ function showHourlyFinalStep(){
   if(final)final.hidden=false;
   var summary=document.getElementById('hourlySerialSummary'),draft=window.pmHourlyEntryDraft;
   if(summary){
-    var pairs=draft?.serialPairs||[];
-    summary.innerHTML=pairs.length
-      ?'<strong>'+pairs.length+' serial replacement'+(pairs.length===1?'':'s')+' recorded</strong><div class="hourly-serial-summary-list">'+pairs.map(function(x,i){return '<span><small>#'+(i+1)+'</small>'+escapeHtml(x.missing_serial_number)+' <b>→</b> '+escapeHtml(x.alternate_serial_number)+'</span>';}).join('')+'</div>'
-      :'<strong>No missing serial stickers</strong><span>Normal serial range will be saved.</span>';
+    var pairs=draft?.serialPairs||[],rejected=draft?.rejectedSerials||[];
+    summary.innerHTML=
+      '<div class="hourly-serial-summary-block"><strong>'+rejected.length+' rejected serials captured</strong><div class="hourly-serial-summary-list">'+
+      rejected.map(function(serial,i){return '<span><small>Rejected '+(i+1)+'</small>'+escapeHtml(serial)+'</span>';}).join('')+
+      '</div></div>'+
+      (pairs.length
+        ?'<div class="hourly-serial-summary-block"><strong>'+pairs.length+' missing sticker replacement'+(pairs.length===1?'':'s')+' recorded</strong><div class="hourly-serial-summary-list">'+pairs.map(function(x,i){return '<span><small>#'+(i+1)+'</small>'+escapeHtml(x.missing_serial_number)+' <b>→</b> '+escapeHtml(x.alternate_serial_number)+'</span>';}).join('')+'</div></div>'
+        :'<div class="hourly-serial-summary-block"><strong>No missing serial stickers</strong></div>');
   }
 }
 
@@ -575,12 +631,16 @@ async function submitHour(id,h){
   var serialStart=draft.serialStart||'',serialEnd=draft.serialEnd||'';
   var reason=draft.rejectionReason||null,missingQty=Number(draft.missingQty)||0;
   var pairs=Array.isArray(draft.serialPairs)?draft.serialPairs:[];
+  var rejectedSerials=Array.isArray(draft.rejectedSerials)?draft.rejectedSerials:[];
   var remarks=document.getElementById('hrm')?.value.trim()||'';
 
   if(q<0||rejected<0||rejected>q)return toast('Rejected quantity must be between zero and actual produced quantity.');
   if(missingQty<0||missingQty>q)return toast('Missing sticker quantity must be between zero and actual produced quantity.');
   if(!await confirmHourlyOverproduction(p,h,q,draft))return;
   if(q>0&&(!serialStart||!serialEnd))return toast('Enter the normal serial range.');
+  if(rejectedSerials.length!==rejected)return toast('Enter one serial number for every rejected unit.');
+  if(rejectedSerials.some(function(x){return !String(x||'').trim();}))return toast('Complete every rejected serial number.');
+  if(new Set(rejectedSerials.map(function(x){return String(x).trim().toLowerCase();})).size!==rejectedSerials.length)return toast('Rejected serial numbers must be unique.');
   if(pairs.length!==missingQty)return toast('Enter the missing and replacement serial numbers first.');
   if(pairs.some(function(x){return !x.missing_serial_number||!x.alternate_serial_number;}))return toast('Complete every missing / replacement serial pair.');
 
@@ -594,7 +654,7 @@ async function submitHour(id,h){
   if(button){button.disabled=true;button.textContent='Saving…';}
   try{
     var values={
-      actual_qty:q,rejected_qty:rejected,
+      actual_qty:q,rejected_qty:rejected,rejected_serials:rejectedSerials,
       serial_start:serialStart||null,serial_end:serialEnd||null,
       rejection_reason:reason,remarks:remarks,
       missing_serial_qty:missingQty,
