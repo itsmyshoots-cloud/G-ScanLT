@@ -1361,10 +1361,25 @@ function reworkComponentCheckboxes(selected,disabled){
     if(id&&!list.some(function(c){return c.id===id;}))list.push({id:id,name:x.component_name||x.name||'Previously selected component',is_active:false});
   });
   if(!list.length)return '<div class="rw-no-options">No components are configured. An Admin can add components in Rework Settings.</div>';
-  return list.map(function(c){
-    return '<label class="rw-component-option"><input type="checkbox" class="rw-material-checkbox" value="'+escapeHtml(c.id)+'" '+(chosen.has(c.id)?'checked':'')+' '+(disabled?'disabled':'')+'/>'+
-      '<span>'+escapeHtml(c.name)+'</span>'+(c.is_active?'':'<small>Inactive</small>')+'</label>';
-  }).join('');
+  var selectedNames=list.filter(function(c){return chosen.has(c.id);}).map(function(c){return c.name;});
+  var summary=selectedNames.length?selectedNames.join(', '):'Select component(s)';
+  return '<details class="rw-material-dropdown">'+
+    '<summary class="rw-material-dropdown-summary"><span class="rw-material-dropdown-value">'+escapeHtml(summary)+'</span><span class="rw-material-dropdown-caret" aria-hidden="true">▾</span></summary>'+
+    '<div class="rw-component-list">'+list.map(function(c){
+      return '<label class="rw-component-option"><input type="checkbox" class="rw-material-checkbox" value="'+escapeHtml(c.id)+'" '+(chosen.has(c.id)?'checked':'')+' '+(disabled?'disabled':'')+' onchange="updateReworkMaterialDropdown(this)"/>'+
+        '<span>'+escapeHtml(c.name)+'</span>'+(c.is_active?'':'<small>Inactive</small>')+'</label>';
+    }).join('')+'</div></details>';
+}
+function updateReworkMaterialDropdown(input){
+  var dropdown=input&&input.closest('.rw-material-dropdown');
+  if(!dropdown)return;
+  var names=Array.from(dropdown.querySelectorAll('.rw-material-checkbox:checked')).map(function(item){
+    var label=item.closest('.rw-component-option');
+    var name=label&&label.querySelector('span');
+    return name?name.textContent.trim():'';
+  }).filter(Boolean);
+  var value=dropdown.querySelector('.rw-material-dropdown-value');
+  if(value)value.textContent=names.length?names.join(', '):'Select component(s)';
 }
 async function openReworkBulkModal(id){
   var p=plans.find(function(x){return String(x.id)===String(id);});
