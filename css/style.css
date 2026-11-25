@@ -2424,3 +2424,82 @@ html,body{max-width:100%;overflow-x:hidden}
   font-size:11px;
   font-variant-numeric:tabular-nums;
 }
+
+
+/* Rework unit-level workflow V2 */
+.rework-pagehead{align-items:center;gap:14px}
+.rework-pagehead h1{margin-bottom:5px}
+#reworkSettingsBtn{white-space:nowrap}
+.rw-plan-modal,.rw-unit-modal,.rw-settings-modal{width:min(1180px,calc(100vw - 40px));max-width:1180px;max-height:min(90vh,900px);max-height:min(90dvh,900px);overflow:auto;padding:22px 24px}
+.rw-modal-header{align-items:flex-start}
+.rw-plan-context{margin-top:14px}
+.rw-summary-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:15px 0 18px}
+.rw-summary-card{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);background:#fbfcfe;border-radius:10px;padding:12px 14px;min-width:0}
+.rw-summary-card span{font-size:11px;color:var(--muted)}
+.rw-summary-card strong{font-size:22px;line-height:1.2;color:var(--ink);font-variant-numeric:tabular-nums}
+.rw-summary-card.pending{background:#fff8eb;border-color:#f4e4c7}
+.rw-summary-card.completed{background:#f0faf5;border-color:#d5efe2}
+.rw-summary-card.final{background:#fff3f2;border-color:#f4dddd}
+.rw-legacy-notice,.rw-configuration-notice{padding:11px 13px;margin:0 0 14px;border:1px solid #e8d9b5;background:#fffaf0;border-radius:9px;color:#76551b;font-size:11px;line-height:1.55}
+.rw-legacy-notice strong{display:block;color:#674a13;margin-bottom:3px}
+.rw-section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:18px 0 10px}
+.rw-section-title h3{margin:0;font-size:15px}
+.rw-section-title p{margin:4px 0 0;color:var(--muted);font-size:11px}
+.rw-cell-sub{display:block;margin-top:4px;font-size:10px;color:var(--muted);font-weight:400}
+.rw-modern-unit-table{min-width:1120px}
+.rw-modern-unit-table td{vertical-align:middle}
+.rw-modern-unit-table .rw-status-locked{font-size:10px}
+.rw-unit-meta-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:14px 0;padding:12px;background:#f6f8fb;border:1px solid var(--line);border-radius:10px}
+.rw-unit-meta-grid>div{display:flex;flex-direction:column;gap:5px;min-width:0}
+.rw-unit-meta-grid span{font-size:10px;color:var(--muted)}
+.rw-unit-meta-grid strong{font-size:12px;color:var(--ink);overflow-wrap:anywhere}
+.rw-unit-meta-grid em{font-style:normal;color:#9a6500;font-weight:650}
+.rw-outcome-locked{padding:10px 12px;margin-bottom:14px;border-radius:9px;border:1px solid #d8eadf;background:#f2faf5;color:#536b5d;font-size:12px}
+.rw-outcome-locked strong{color:#16794a}
+.rw-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 14px}
+.rw-form-grid .field{min-width:0;display:flex;flex-direction:column;gap:6px}
+.rw-form-grid .field label{font-size:11px;color:var(--muted);font-weight:650}
+.rw-form-grid .field input,.rw-form-grid .field select,.rw-form-grid .field textarea{width:100%;min-width:0;min-height:42px;border:1px solid var(--line);border-radius:8px;padding:10px 11px;background:#fff;color:var(--ink);font:inherit;font-size:13px}
+.rw-form-grid .field textarea{min-height:78px;resize:vertical}
+.rw-form-grid .field input:focus,.rw-form-grid .field select:focus,.rw-form-grid .field textarea:focus{outline:2px solid #dce8ff;border-color:#8fb2ff}
+.rw-material-field,.rw-remark-field,.rw-correction-note-field{grid-column:1/-1}
+.rw-required{font-size:9px;font-weight:650;color:#ac5b1c}
+.rw-component-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.rw-component-option{display:flex;align-items:center;gap:8px;min-height:38px;padding:8px 10px;background:#fbfcfe;border:1px solid var(--line);border-radius:8px;font-size:11px!important;color:var(--ink)!important}
+.rw-component-option input{width:15px!important;min-width:15px!important;height:15px;min-height:15px!important;margin:0;padding:0;accent-color:var(--blue)}
+.rw-component-option small{margin-left:auto;font-size:9px;color:var(--muted)}
+.rw-no-options{padding:11px;border:1px dashed #d8e0ea;border-radius:8px;color:var(--muted);font-size:11px;line-height:1.5}
+.rw-configuration-notice{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.rw-audit-section{margin-top:18px;border-top:1px solid var(--line);padding-top:12px}
+.rw-history-list{display:flex;flex-direction:column;gap:8px}
+.rw-history-item{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#fbfcfe}
+.rw-history-item>div{display:flex;flex-direction:column;gap:4px}
+.rw-history-item strong{font-size:11px;color:var(--ink)}
+.rw-history-item small,.rw-history-item p{font-size:10px;color:var(--muted);margin:0;line-height:1.45}
+.rw-settings-section{margin-top:18px;padding:15px;border:1px solid var(--line);border-radius:11px;background:#fff}
+.rw-settings-section h3{margin:0 0 4px;font-size:15px}
+.rw-settings-section>p{margin:0 0 12px;color:var(--muted);font-size:11px;line-height:1.5}
+.rw-settings-add{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px;margin-bottom:10px}
+.rw-settings-add input{min-width:0;min-height:40px}
+.rw-setting-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid #edf1f5}
+.rw-setting-row>div{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.rw-setting-row strong{font-size:12px;color:var(--ink)}
+.rw-setting-row small{font-size:10px;color:var(--muted)}
+.rw-master-state{font-size:10px;padding:4px 7px;border-radius:15px;background:#eaf8f0;color:#16804a}
+.rw-master-state.inactive{background:#f1f3f6;color:#778397}
+@media(max-width:800px){
+  .rw-plan-modal,.rw-unit-modal,.rw-settings-modal{width:calc(100vw - 20px);max-width:calc(100vw - 20px);padding:16px}
+  .rw-summary-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rw-unit-meta-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rw-component-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rw-settings-add{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+  .rework-pagehead{align-items:stretch;flex-direction:column}
+  #reworkSettingsBtn{width:100%}
+  .rw-form-grid{grid-template-columns:1fr}
+  .rw-material-field,.rw-remark-field,.rw-correction-note-field{grid-column:auto}
+  .rw-component-list{grid-template-columns:1fr}
+  .rw-configuration-notice{align-items:flex-start;flex-direction:column}
+  .rw-history-item{flex-direction:column}
+}
