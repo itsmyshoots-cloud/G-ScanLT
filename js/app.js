@@ -524,7 +524,16 @@ function openRejectedSerialPopup(quantity,existing){
     '<div class="hourly-rejected-serial-note">The number of serials must match the rejected quantity. Duplicate serial numbers are not allowed.</div>'+
     '<div class="modalactions hourly-rejected-serial-actions"><button class="btn" type="button" onclick="cancelRejectedSerialPopup()">Back</button><button class="btn primary" type="button" onclick="saveRejectedSerialMappings()">Save rejected serials</button></div>'+
     '</section></div>';
-  var first=host.querySelector('.pm-rejected-serial');if(first)first.focus({preventScroll:true});
+  var serialInputs=Array.from(host.querySelectorAll('.pm-rejected-serial'));
+  serialInputs.forEach(function(input,index){
+    input.addEventListener('keydown',function(event){
+      if(event.key!=='Enter')return;
+      event.preventDefault();
+      if(index<serialInputs.length-1)serialInputs[index+1].focus();
+      else saveRejectedSerialMappings();
+    });
+  });
+  if(serialInputs[0])serialInputs[0].focus({preventScroll:true});
 }
 function cancelRejectedSerialPopup(){
   var host=document.getElementById('hourlyRejectedSerialPopupHost');
@@ -538,6 +547,18 @@ function saveRejectedSerialMappings(){
   if(serials.some(function(serial){return !serial;}))return toast('Complete every rejected serial number.');
   var normalized=serials.map(function(serial){return serial.toLocaleLowerCase();});
   if(new Set(normalized).size!==normalized.length)return toast('A rejected serial number cannot be entered more than once.');
+  var currentPlan=plans.find(function(p){return String(p.id)===draft.id;});
+  var usedInOtherHours=[];
+  if(currentPlan){
+    Object.keys(currentPlan.entries||{}).forEach(function(hour){
+      if(Number(hour)===Number(draft.hourIndex))return;
+      var e=currentPlan.entries[hour];
+      (Array.isArray(e.rejectedSerials)?e.rejectedSerials:[]).forEach(function(value){usedInOtherHours.push(String(value).trim().toLowerCase());});
+      (Array.isArray(e.reworkItems)?e.reworkItems:[]).forEach(function(unit){if(unit.serial)usedInOtherHours.push(String(unit.serial).trim().toLowerCase());});
+    });
+  }
+  var duplicateInPlan=serials.find(function(value){return usedInOtherHours.includes(value.toLocaleLowerCase());});
+  if(duplicateInPlan)return toast('Serial '+duplicateInPlan+' is already recorded as rejected in another hour of this plan.');
   var start=String(draft.serialStart||'').trim(),end=String(draft.serialEnd||'').trim();
   var startNum=Number(start),endNum=Number(end);
   if(start&&end&&!Number.isNaN(startNum)&&!Number.isNaN(endNum)){
@@ -1303,7 +1324,7 @@ function reworkOperatorOptions(selectedId,selectedName){
     return '<option value="'+escapeHtml(x.id)+'" '+(x.id===selectedId?'selected':'')+'>'+escapeHtml(x.full_name)+(x.legacy?' (inactive / legacy)':'')+'</option>';
   }).join('');
 }
-function reworkComponentCheckboxes(selected){
+function reworkComponentCheckboxes(selected,disabled){
   var chosen=new Set((selected||[]).map(function(x){return x.component_id||x.id;}));
   var list=pmReworkComponents.slice();
   (selected||[]).forEach(function(x){
@@ -1312,7 +1333,8 @@ function reworkComponentCheckboxes(selected){
   });
   if(!list.length)return '<div class="rw-no-options">No components are configured. An Admin can add components in Rework Settings.</div>';
   return list.map(function(c){
-    return '<label class="rw-component-option"><input type="checkbox" class="rw-material-checkbox" value="'+escapeHtml(c.id)+'" '+(chosen.has(c.id)?'checked':'')+'/><span>'+escapeHtml(c.name)+'</span>'+(c.is_active?'':'<small>Inactive</small>')+'</label>';
+    return '<label class="rw-component-option"><input type="checkbox" class="rw-material-checkbox" value="'+escapeHtml(c.id)+'" '+(chosen.has(c.id)?'checked':'')+' '+(disabled?'disabled':'')+'/>'+
+      '<span>'+escapeHtml(c.name)+'</span>'+(c.is_active?'':'<small>Inactive</small>')+'</label>';
   }).join('');
 }
 async function openReworkUnit(id,h,unitIndex){
@@ -1342,7 +1364,10 @@ async function openReworkUnit(id,h,unitIndex){
   var historyHtml=history.length
     ?'<div class="rw-history-list">'+history.map(function(item){
        var label=item.event_type==='resolved'?'Rework resolved':item.event_type==='corrected'?'Record corrected':item.event_type==='serial_updated'?'Serial corrected':item.event_type==='removed_pending'?'Pending unit removed':'Rework unit created';
-       return '<article class="rw-history-item"><div><strong>'+escapeHtml(label)+'</strong><small>'+escapeHtml(reworkDateTimeLabel(item.changed_at))+' · '+escapeHtml(item.changed_by_name||'System')+'</small></div>'+(item.change_reason?'<p>'+escapeHtml(item.change_reason)+'</p>':'')+'</article>';
+       var before=item.before_values?escapeHtml(JSON.stringify(item.before_values,null,2)):'No previous values';
+       var after=item.after_values?escapeHtml(JSON.stringify(item.after_values,null,2)):'No after snapshot';
+       return '<article class="rw-history-item"><div><strong>'+escapeHtml(label)+'</strong><small>'+escapeHtml(reworkDateTimeLabel(item.changed_at))+' · '+escapeHtml(item.changed_by_name||'System')+'</small>'+(item.change_reason?'<p>'+escapeHtml(item.change_reason)+'</p>':'')+
+         '<details class="rw-history-diff"><summary>View before / after values</summary><div class="rw-history-diff-grid"><div><b>Before</b><pre>'+before+'</pre></div><div><b>After</b><pre>'+after+'</pre></div></div></details></div></article>';
      }).join('')+'</div>'
     :'<div class="rw-no-options">No correction history has been recorded for this unit yet.</div>';
   var modal=document.getElementById('modal');
@@ -1362,7 +1387,7 @@ async function openReworkUnit(id,h,unitIndex){
         '<div class="field"><label for="rwProblemType">Problem Type</label><select id="rwProblemType" '+(editable?'':'disabled')+'>'+reworkProblemOptions(unit.problemType||'')+'</select></div>'+
         '<div class="field"><label for="rwReworkDetails">Rework Details</label><select id="rwReworkDetails" '+(editable?'':'disabled')+' onchange="toggleReworkMaterialVisibility()"><option value="">Select repair performed</option><option value="adjusted" '+(unit.reworkDetails==='adjusted'?'selected':'')+'>Adjusted</option><option value="component_changed" '+(unit.reworkDetails==='component_changed'?'selected':'')+'>Component Changed</option></select></div>'+
         '<div class="field rw-rework-type-field"><label for="rwReworkType">Rework Type</label><select id="rwReworkType" '+(editable?'':'disabled')+'><option value="">Select rework type</option><option value="incoming_rejection" '+(unit.reworkType==='incoming_rejection'?'selected':'')+'>Incoming Rejection</option><option value="process_rejection" '+(unit.reworkType==='process_rejection'?'selected':'')+'>Process Rejection</option></select></div>'+
-        '<div class="field rw-material-field" id="rwMaterialField" '+(componentVisible?'':'hidden')+'><label>Material Changed <span class="rw-required">Required for Component Changed</span></label><div class="rw-component-list">'+reworkComponentCheckboxes(unit.materialChanged)+'</div></div>'+
+        '<div class="field rw-material-field" id="rwMaterialField" '+(componentVisible?'':'hidden')+'><label>Material Changed <span class="rw-required">Required for Component Changed</span></label><div class="rw-component-list">'+reworkComponentCheckboxes(unit.materialChanged,!editable)+'</div></div>'+
         '<div class="field"><label for="rwOperator">Operator Name</label><select id="rwOperator" '+(editable?'':'disabled')+'>'+reworkOperatorOptions(unit.operatorProfileId||'',unit.operatorName||'')+'</select></div>'+
         (isResolved&&!canCorrect?'':'<div class="field rw-outcome-field"><label for="rwOutcome">Final outcome</label><select id="rwOutcome" '+(isResolved?'disabled':'')+'><option value="">Select outcome</option><option value="completed" '+(status==='Completed'?'selected':'')+'>Rework completed</option><option value="finally_rejected" '+(status==='Finally Rejected'?'selected':'')+'>Finally rejected</option></select></div>')+
         '<div class="field rw-remark-field"><label for="rwResolutionRemark">Resolution Remark</label><textarea id="rwResolutionRemark" rows="3" '+(editable?'':'disabled')+' placeholder="Describe the repair or final rejection reason">'+escapeHtml(unit.remark||'')+'</textarea></div>'+
@@ -1490,7 +1515,7 @@ async function toggleReworkMaster(kind,id,active){
   if(!canManageReworkLists())return toast('Only Admin or Super Admin can manage rework lists.');
   try{
     var table=kind==='problem'?'pm_rework_problem_types':'pm_rework_components';
-    var result=await pmRequireDb().from(table).update({is_active:!!active}).eq('id',id).select('id').single();
+    var result=await pmRequireDb().from(table).update({is_active:!!active,updated_at:new Date().toISOString()}).eq('id',id).select('id').single();
     if(result.error)throw result.error;
     await pmLoadReworkLookups(true);
     openReworkSettings();
