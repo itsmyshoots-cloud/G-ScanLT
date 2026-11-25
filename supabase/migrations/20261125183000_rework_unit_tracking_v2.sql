@@ -375,7 +375,15 @@ BEGIN
     RAISE EXCEPTION 'Original rejection linkage and reason are immutable';
   END IF;
 
-  IF OLD.status = 'pending' THEN
+  IF OLD.status = 'pending' AND NEW.status = 'pending' THEN
+    -- Internal serial-number reconciliation performed by the trusted hourly
+    -- rejection-sync trigger may update only the serial field.
+    IF current_user = 'postgres'
+       AND (to_jsonb(NEW) - 'serial_number') = (to_jsonb(OLD) - 'serial_number') THEN
+      RETURN NEW;
+    END IF;
+    RAISE EXCEPTION 'Pending rework details must be saved with a final outcome';
+  ELSIF OLD.status = 'pending' THEN
     IF public.pm_current_role() NOT IN ('admin', 'supervisor', 'operator') THEN
       RAISE EXCEPTION 'Your role cannot resolve rejected units';
     END IF;
@@ -411,10 +419,10 @@ BEGIN
     RAISE EXCEPTION 'The selected problem type is unavailable. Refresh the list and select an active problem type';
   END IF;
 
-  IF NEW.rework_details NOT IN ('adjusted', 'component_changed') THEN
+  IF NEW.rework_details IS NULL OR NEW.rework_details NOT IN ('adjusted', 'component_changed') THEN
     RAISE EXCEPTION 'Select Adjusted or Component Changed';
   END IF;
-  IF NEW.rework_type NOT IN ('incoming_rejection', 'process_rejection') THEN
+  IF NEW.rework_type IS NULL OR NEW.rework_type NOT IN ('incoming_rejection', 'process_rejection') THEN
     RAISE EXCEPTION 'Select Incoming Rejection or Process Rejection';
   END IF;
 
@@ -438,7 +446,7 @@ BEGIN
       FROM jsonb_to_recordset(NEW.material_changed) AS x(component_id uuid, component_name text)
       LEFT JOIN public.pm_rework_components c ON c.id = x.component_id
       WHERE c.id IS NULL
-         OR c.name <> x.component_name
+         OR c.name IS DISTINCT FROM x.component_name
          OR (NOT c.is_active AND NOT EXISTS (
            SELECT 1
            FROM jsonb_to_recordset(OLD.material_changed) AS oldx(component_id uuid)
