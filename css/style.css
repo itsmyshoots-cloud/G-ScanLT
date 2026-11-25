@@ -2541,3 +2541,54 @@ html,body{max-width:100%;overflow-x:hidden}
   .rw-bulk-toolbar .btn{width:100%}
   .rw-history-diff-grid{grid-template-columns:1fr}
 }
+
+
+/* Rework record forms: one viewport, one scroll-free dialog, compact field grid. */
+#modal.modalback-rework:not(.hidden){
+  position:fixed!important;inset:0!important;display:flex!important;align-items:center!important;justify-content:center!important;
+  padding:12px!important;overflow:hidden!important;overscroll-behavior:none!important;
+}
+#modal.modalback-rework .rw-unit-modal{
+  display:flex!important;flex-direction:column!important;gap:0!important;
+  width:min(900px,calc(100vw - 28px))!important;max-width:900px!important;
+  max-height:calc(100vh - 24px)!important;max-height:calc(100dvh - 24px)!important;
+  height:auto!important;margin:auto!important;padding:16px 18px!important;
+  overflow:hidden!important;overscroll-behavior:none!important;
+}
+#modal.modalback-rework .rw-unit-modal>.pm-popup-back{display:none!important}
+#modal.modalback-rework .rw-modal-header{flex:0 0 auto;margin:0 0 8px;min-height:0}
+#modal.modalback-rework .rw-modal-header h2{font-size:19px;margin:2px 0 3px}
+#modal.modalback-rework .rw-unit-meta-grid{flex:0 0 auto;margin:7px 0 11px;padding:9px 11px;gap:8px}
+#modal.modalback-rework .rw-form-grid{flex:0 0 auto;gap:9px 12px}
+#modal.modalback-rework .rw-form-grid .field{gap:4px}
+#modal.modalback-rework .rw-form-grid .field input,
+#modal.modalback-rework .rw-form-grid .field select{min-height:39px;padding:8px 10px;font-size:13px}
+#modal.modalback-rework .rw-material-field{grid-column:auto}
+#modal.modalback-rework .rw-outcome-locked{flex:0 0 auto;margin:0 0 9px;padding:8px 10px}
+#modal.modalback-rework .modalactions{
+  position:static!important;flex:0 0 auto;margin-top:auto!important;padding:10px 0 0!important;
+  border-top:1px solid #edf1f6;background:#fff;
+}
+#modal.modalback-rework .rw-bulk-unit-preview{
+  flex:0 0 auto;max-height:none;overflow:visible;margin:6px 0 9px;padding:7px;
+  display:flex;flex-wrap:wrap;gap:5px;
+}
+#modal.modalback-rework .rw-bulk-unit-preview span{padding:4px 6px}
+#modal.modalback-rework .rw-rework-type-field select:disabled{background:#f4f6f9;color:#8a95a5;cursor:not-allowed}
+#modal.modalback-rework .rw-material-field select:disabled{background:#f4f6f9;color:#26364d;opacity:1}
+@media(max-width:700px){
+  #modal.modalback-rework .rw-unit-modal{padding:13px!important}
+  #modal.modalback-rework .rw-unit-meta-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #modal.modalback-rework .rw-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #modal.modalback-rework .rw-form-grid .field label{font-size:10px}
+}
+@media(max-width:420px){
+  #modal.modalback-rework .rw-unit-modal{width:calc(100vw - 14px)!important;max-width:calc(100vw - 14px)!important;padding:10px!important}
+  #modal.modalback-rework .rw-modal-header h2{font-size:16px}
+  #modal.modalback-rework .rw-unit-meta-grid{gap:6px;padding:7px}
+  #modal.modalback-rework .rw-unit-meta-grid strong{font-size:10px}
+  #modal.modalback-rework .rw-form-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  #modal.modalback-rework .rw-form-grid .field label{font-size:9px}
+  #modal.modalback-rework .rw-form-grid .field input,
+  #modal.modalback-rework .rw-form-grid .field select{min-height:35px;padding:6px;font-size:12px}
+}
